@@ -1,5 +1,5 @@
 const mysql = require('mysql');
-import TRAINC from "../../TRAINC";
+import {BCONST} from "../../BCONST";
 
 //////////////// Connection and Set Up ////////////////////////////////////////////////////////////////
 interface ISQLConn {
@@ -47,17 +47,19 @@ export async function connectSQL() {
 	}
     }
     console.log(`result: ${results}`);
-    console.log(`host: ${TRAINC.SQL_HOST}`);
-    console.log(`database: ${TRAINC.SQL_DB}`);
-    console.log(`username: ${TRAINC.SQL_USER}`);
-    console.log(`password: ${TRAINC.SQL_PASS}`);
+    console.log(`host: ${BCONST.SQL_HOST}`);
+    console.log(`database: ${BCONST.SQL_DB}`);
+    if (BCONST.SQL_DEBUG) {
+        console.log(`username: ${BCONST.SQL_USER}`);
+        console.log(`password: ${BCONST.SQL_PASS}`);
+    }
 
     con.conn = mysql.createPool({
         connectionLimit: 10,
-        host: TRAINC.SQL_HOST,
-        user: TRAINC.SQL_USER,
-        password: TRAINC.SQL_PASS,
-        database: TRAINC.SQL_DB
+        host: BCONST.SQL_HOST,
+        user: BCONST.SQL_USER,
+        password: BCONST.SQL_PASS,
+        database: BCONST.SQL_DB
     });
 
     con.conn.query("show tables", function na() { });

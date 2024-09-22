@@ -91,7 +91,7 @@ export class SQLDATA {
         await checkConnection();
         return new Promise((resolve, reject) => {
             // determine if this column exists
-            var sqlq = `SELECT * FROM proposal WHERE proposal_id = '${proposal_id}';`;
+            var sqlq = `SELECT * FROM proposal WHERE proposal_id = ${proposal_id};`;
             con.conn.query(sqlq, function (err: any, result: Array<string>) {
                 if (err) throw err;
 
@@ -135,11 +135,11 @@ export class SQLDATA {
         });
     }
 
-    static async getQuestionSQL(question_id: string): Promise<string> {
+    static async getQuestionSQL(question_id: number): Promise<string> {
         await checkConnection();
         return new Promise((resolve, reject) => {
             // determine if this column exists
-            var sqlq = `SELECT * FROM question WHERE question_id = '${question_id}';`;
+            var sqlq = `SELECT * FROM question WHERE question_id = ${question_id};`;
             con.conn.query(sqlq, function (err: any, result: Array<string>) {
                 if (err) throw err;
 
