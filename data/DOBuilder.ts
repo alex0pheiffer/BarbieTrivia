@@ -1,18 +1,16 @@
-import { GameO } from "./data_objects/game";
-import { GameI } from "./data_interfaces/game";
 import { GetData } from "./sql/GetData";
 import { UpdateData } from "./sql/UpdateData";
 import { InsertData } from "./sql/InsertData";
 import { DeleteData } from "./sql/DeleteData";
-import { GameTrainI } from "./data_interfaces/gameTrain";
-import { GameTileI } from "./data_interfaces/gameTile";
-import { GameTileO, GameTilesO } from "./data_objects/gameTile";
-import { GameTrainO, GameTrainsO } from "./data_objects/gameTrain";
-import { GameStatI } from "./data_interfaces/gameStats";
-import { PlayerI } from "./data_interfaces/player";
-import { GameStatsO } from "./data_objects/gameStats";
-import { PlayerO } from "./data_objects/player";
-import { PlayerTurnO } from "./data_objects/playerTurn";
+import { QuestionO } from "./data_objects/question";
+import { AdminO } from "./data_objects/admin";
+import { AskedQuestionO } from "./data_objects/askedQuesetion";
+import { ProposalI } from "./data_interfaces/proposal";
+import { ProposalO } from "./data_objects/proposal";
+import { QuestionChannelO } from "./data_objects/questionChannel";
+import { AdminI } from "./data_interfaces/admin";
+import { AskedQuestionI } from "./data_interfaces/askedQuestion";
+import { QuestionChannelI } from "./data_interfaces/questionChannel";
 
 export class DO {
 
@@ -22,74 +20,124 @@ export class DO {
      * 
      */
     
-    static async getGame(gameID: string): Promise<GameO | null> {
-        let game: GameO;
-        let gamejson = await GetData.getGame(gameID);
-        if (gamejson) {
-            game = new GameO(gamejson);
-            return game;
+    static async getAdmin(id: string): Promise<AdminO | null> {
+        let admin: AdminO;
+        let adminjson = await GetData.getAdmin(id);
+        if (adminjson) {
+            admin = new AdminO(adminjson);
+            return admin;
         }
         return null;
     }
 
-    static async getGameTiles(gameID: string): Promise<GameTilesO | null> {
-        let gameTiles: GameTilesO;
-        let gameTilesjsons = await GetData.getGameTiles(gameID);
-        if (gameTilesjsons.length > 0) {
-            gameTiles = new GameTilesO(gameTilesjsons);
-            return gameTiles;
+    static async getAskedQuestion(question_id: number, channel_id: string): Promise<Array<AskedQuestionO>> {
+        let askedArray: Array<AskedQuestionO> = [];
+        let asked: AskedQuestionO;
+        let askedjson = await GetData.getAskedQuestion(question_id, channel_id);
+        
+        if (askedjson.length > 0) {
+            for (let i=0; i < askedjson.length; i++) {
+                asked = new AskedQuestionO(askedjson[i]);
+                askedArray.push(asked);
+            }
+        }
+        
+        return askedArray;
+    }      
+
+    static async getProposal(id: number): Promise<ProposalO | null> {
+        let proposal: ProposalO;
+        let proposaljson = await GetData.getProposal(id);
+        if (proposaljson) {
+            proposal = new ProposalO(proposaljson);
+            return proposal;
         }
         return null;
     }
 
-    static async getGameTrains(gameID: string): Promise<GameTrainsO | null> {
-        let gameTrains: GameTrainsO;
-        let gameTrainsjsons = await GetData.getGameTrains(gameID);
-        if (gameTrainsjsons.length > 0) {
-            gameTrains = new GameTrainsO(gameTrainsjsons);
-            return gameTrains;
+    static async getProposals(): Promise<Array<ProposalO>> {
+        let proposalArray: Array<ProposalO> = [];
+        let proposal: ProposalO;
+        let proposaljson = await GetData.getProposals();
+        
+        if (proposaljson.length > 0) {
+            for (let i=0; i < proposaljson.length; i++) {
+                proposal = new ProposalO(proposaljson[i]);
+                proposalArray.push(proposal);
+            }
+        }
+        
+        return proposalArray;
+    }    
+
+    static async getQuestion(id: number): Promise<QuestionO | null> {
+        let question: QuestionO;
+        let questionjson = await GetData.getQuestion(id);
+        if (questionjson) {
+            question = new QuestionO(questionjson);
+            return question;
         }
         return null;
     }
 
-    static async getGameTrain(userID: string, gameID: string): Promise<GameTrainO | null> {
-        let gameTrain: GameTrainO;
-        let gameTrainjson = await GetData.getGameTrain(userID, gameID);
-        if (gameTrainjson)
-            return new GameTrainO(gameTrainjson);
-        return null;
-    }
-
-    static async getGameStats(gameID: string, startTime: number): Promise<GameStatsO | null> {
-        let gameStats: GameStatsO;
-        let gameStatsjsons = await GetData.getGameStats(gameID, startTime);
-        if (gameStatsjsons.length > 0) {
-            gameStats = new GameStatsO(gameStatsjsons);
-            return gameStats;
+    static async getAllQuestions(): Promise<Array<QuestionO>> {
+        let questionArray: Array<QuestionO> = [];
+        let question: QuestionO;
+        let questionjson = await GetData.getAllQuestions();
+        
+        if (questionjson.length > 0) {
+            for (let i=0; i < questionjson.length; i++) {
+                question = new QuestionO(questionjson[i]);
+                questionArray.push(question);
+            }
         }
-        return null;
+        
+        return questionArray;
     }
 
-    static async getPlayer(userID: string): Promise<PlayerO | null> {
-        let playerjson = await GetData.getPlayer(userID);
-        if (playerjson) return new PlayerO(playerjson);
-        else return null;
-    }
-
-    static async getPlayerTiles(userID: string, gameID: string): Promise<GameTilesO | null> {
-        let tiles: GameTilesO;
-        let tilejsons = await GetData.getPlayerTiles(userID, gameID);
-        if (tilejsons.length > 0) {
-            tiles = new GameTilesO(tilejsons);
-            return tiles;
+    static async getUnusedQuestions(): Promise<Array<QuestionO>> {
+        let questionArray: Array<QuestionO> = [];
+        let question: QuestionO;
+        let questionjson = await GetData.getUnusedQuestions();
+        
+        if (questionjson.length > 0) {
+            for (let i=0; i < questionjson.length; i++) {
+                question = new QuestionO(questionjson[i]);
+                questionArray.push(question);
+            }
         }
-        return null;
+        
+        return questionArray;
     }
 
-    static async getPlayerTurn(userID: string, gameID: string): Promise<PlayerTurnO | null> {
-        let turnJson  = await GetData.getPlayerTurn(userID, gameID);
-        if (turnJson) return new PlayerTurnO(turnJson);
-        return null; 
+    static async getUsedQuestions(): Promise<Array<QuestionO>> {
+        let questionArray: Array<QuestionO> = [];
+        let question: QuestionO;
+        let questionjson = await GetData.getUsedQuestions();
+        
+        if (questionjson.length > 0) {
+            for (let i=0; i < questionjson.length; i++) {
+                question = new QuestionO(questionjson[i]);
+                questionArray.push(question);
+            }
+        }
+        
+        return questionArray;
+    }
+
+    static async getQuestionChannel(channelID: string): Promise<Array<QuestionChannelO>> {
+        let channelArray: Array<QuestionChannelO> = [];
+        let channel: QuestionChannelO;
+        let channeljson = await GetData.getQuestionChannel(channelID);
+        
+        if (channeljson.length > 0) {
+            for (let i=0; i < channeljson.length; i++) {
+                channel = new QuestionChannelO(channeljson[i]);
+                channelArray.push(channel);
+            }
+        }
+        
+        return channelArray;
     }
 
     /*
@@ -98,62 +146,44 @@ export class DO {
      * 
      */
 
-    static async updateGame(game: GameO, errType: any): Promise<number> {
-        return await UpdateData.updateGame(game, errType);
+    static async updateProposal(proposal: ProposalO, errType: any): Promise<number> {
+        return await UpdateData.updateProposal(proposal, errType);
     }
 
-    static async updatePlayerTurn(turn: PlayerTurnO): Promise<number> {
-        return await UpdateData.updatePlayerturn(turn);
+    static async updateQuestion(question: QuestionO, errType: any): Promise<number> {
+        return await UpdateData.updateQuestion(question, errType);
     }
 
-    static async updateGameTrains(trains: GameTrainsO, errType: any): Promise<number> {
-        return await UpdateData.updateGameTrains(trains, errType);
+    static async updateAskedQuestion(question: AskedQuestionO, errType: any): Promise<number> {
+        return await UpdateData.updateAskedQuestion(question, errType);
     }
 
-    static async updatePlayer(player: PlayerO, errType: any): Promise<number> {
-        return await UpdateData.updatePlayer(player, errType);
-    }
-    
     /*
      *  Insert Functions
      *
      * 
      */
         
-    // returns a NewGameErr if not 0
-    static async insertGame(game: GameI): Promise<number> {
-        return await InsertData.insertGame(game);
+    static async insertAdmin(admin: AdminI): Promise<number> {
+        return await InsertData.insertAdmin(admin);
+    }
+    
+    static async insertAskedQuestion(question: AskedQuestionI): Promise<number> {
+        return await InsertData.insertAskedQuestion(question);
+    }
+    
+    static async insertProposal(proposal: ProposalO): Promise<number> {
+        return await InsertData.insertProposal(proposal);
+    }
+    
+    static async insertQuestion(question: QuestionO): Promise<number> {
+        return await InsertData.insertQuestion(question);
+    }
+    
+    static async insertQuestionChannel(channel: QuestionChannelI): Promise<number> {
+        return await InsertData.insertQuestionChannel(channel);
     }
 
-    // returns a NewGameErr if not 0
-    static async insertGameTile(gameID: string, s1: number, s2: number): Promise<number> {
-        return await InsertData.insertGameTiles(gameID, s1, s2);
-    }
-
-    // returns a NewGameErr if not 0
-    static async insertGameTrain(train: GameTrainI): Promise<number> {
-        return await InsertData.insertGameTrains(train);
-    }
-
-    static async insertGameStats(stats: GameStatI, errType: any): Promise<number> {
-        return await InsertData.insertGameRoundStats(stats, errType);
-    }
-
-    static async insertPlayer(player: PlayerI): Promise<number> {
-        return await InsertData.insertPlayer(player);
-    }
-
-    static async insertPlayerTiles(userID: string, tiles: Array<GameTileO>): Promise<number> {
-        return await InsertData.insertPlayerTiles(userID, tiles);
-    }
-
-    static async insertPlayerTile(userID: string, tile: GameTileO): Promise<number> {
-        return await InsertData.insertPlayerTile(userID, tile);
-    }
-
-    static async insertPlayerTurn(userID: string, gameID: string): Promise<number> {
-        return await InsertData.insertPlayerTurn(userID, gameID);
-    }
 
     /*
      *  Delete Functions
@@ -161,30 +191,16 @@ export class DO {
      * 
      */
 
-    // returns an EndGameErr if not 0
-    static async deleteWholeGame(gameID: string, players: Array<string>): Promise<number> {
-        return await DeleteData.deleteWholeGame(gameID, players);
+    static async deleteAdmin(userID: string): Promise<number> {
+        return await DeleteData.deleteAdmin(userID);
     }
-
-    static async deleteGameTiles(gameID: string): Promise<number> {
-        return await DeleteData.deleteGameTiles(gameID);
+    
+    static async deleteProposal(proposalID: number): Promise<number> {
+        return await DeleteData.deleteProposal(proposalID);
     }
-
-    static async deleteGameTile(tile: GameTileI | GameTileO): Promise<number> {
-        return await DeleteData.deleteGameTile(tile);
-    }
-
-    static async deletePlayerTiles(userID: string, gameID: string, errType: any): Promise<number> {
-        return await DeleteData.deletePlayerTiles(userID, gameID, errType);
-    }
-
-    static async deletePlayerTile(userID: string, tile: GameTileO): Promise<number> {
-        return await DeleteData.deletePlayerTile(userID, tile.gameID, tile.s1, tile.s2);
-    }
-
-    // overload function :
-    static async deletePlayerTile_(userID: string, gameID: string, s1: number, s2: number): Promise<number> {
-        return await DeleteData.deletePlayerTile(userID, gameID, s1, s2);
+    
+    static async deleteQuestionChannel(channel: string): Promise<number> {
+        return await DeleteData.deleteQuestionChannel(channel);
     }
     
 }
