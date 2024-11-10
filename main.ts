@@ -1,7 +1,7 @@
-import { ButtonInteraction, CacheType, ChatInputCommandInteraction, Client, Collection, Events, GatewayIntentBits, Interaction, PermissionsBitField, StringSelectMenuInteraction, TextChannel } from "discord.js";  q
+import { ButtonInteraction, CacheType, ChatInputCommandInteraction, Client, Collection, Events, GatewayIntentBits, Interaction, PermissionsBitField, StringSelectMenuInteraction, TextChannel } from "discord.js";
 import * as fs from "fs";
 const path = require('node:path');
-import { BCONST } from "./BCONST";
+import { BCONST }    from "./BCONST";
 import { Command, SlashCommand } from "./commands/types";
 import { EndGameErr, GoInteractionErr, InteractionErr, NewGameErr } from "./Errors";
 import { DO } from "./data/DOBuilder";

@@ -7,8 +7,8 @@ module.exports = {
         .setName('new')
         .setDMPermission(false)
         .setDefaultMemberPermissions(null)
-        .setDescription('Start a new trivia game. Must be a game owner.')
-        .addChannelOption(option =>
+        .setDescription('Start a new trivia game.')
+        .addChannelOption((option: any) =>
             option.setName('channel')
                 .setDescription('The channel to start the trivia.')
     			.addChannelTypes(ChannelType.GuildText)),
