@@ -1,41 +1,35 @@
-import { ActionRowBuilder, ButtonBuilder, ChatInputCommandInteraction, EmbedBuilder, StringSelectMenuBuilder } from "discord.js";
-import { DO } from "./data/DOBuilder"
-import { QuestionChannelI } from "./data/data_interfaces/questionChannel";
-import { GameInteractionErr } from "./Errors";
-import { BCONST } from "./BCONST";
-import { DropdownItem } from "./data/component_interfaces/dropdown_item";
-
-
-export async function createNewGame(interaction: ChatInputCommandInteraction): Promise<Number> {
-    let result: number;
-    let channelId: string;
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.canInitiateNewGame = exports.createNewGame = void 0;
+const DOBuilder_1 = require("./data/DOBuilder");
+const Errors_1 = require("./Errors");
+async function createNewGame(interaction) {
+    let result;
+    let channelId;
     let channel = interaction.options.getChannel(`chosenChannel`);
     if (!channel) {
-        channelId = interaction.channelId; 
+        channelId = interaction.channelId;
     }
     else {
         channelId = channel.id;
     }
-
     // is there an existing game for this channel?
-    let existingGame = await DO.getQuestionChannel(channelId);
+    let existingGame = await DOBuilder_1.DO.getQuestionChannel(channelId);
     console.log(`existing : ${existingGame}`);
-
     // create new game
     if ((existingGame).length < 1) {
         const d = new Date();
         let time = d.getTime();
-
         // register channel
-        let newQuestionChannel: QuestionChannelI = {
+        let newQuestionChannel = {
             qch_id: 0,
-            server:  interaction.guildId,
+            server: interaction.guildId,
             channel: channelId,
             owner: interaction.user.id,
             date: time,
             question: 0
         };
-        result = await DO.insertQuestionChannel(newQuestionChannel);
+        result = await DOBuilder_1.DO.insertQuestionChannel(newQuestionChannel);
         console.log(result);
         // // prompt for frequency
         // if (result < 1) {
@@ -50,10 +44,8 @@ export async function createNewGame(interaction: ChatInputCommandInteraction): P
         //     let thumbnail = BCONST.MAXIMUS_IMAGES[Math.floor(Math.random()*BCONST.MAXIMUS_IMAGES.length)].url;
         //     const embed = new EmbedBuilder().setTimestamp().setThumbnail(thumbnail).setFooter({text: 'Barbie Trivia', iconURL: BCONST.LOGO});
         //     embed.setTitle('**New Trivia Game**');
-
         //     description = `...description here...`;
         //     embed.setDescription(description);
-            
         //     if (interaction.isChatInputCommand() || interaction.isButton()) {
         //         interaction.editReply({ embeds:[embed], components: [dropdown_interval, btn_go]});
         //         /*
@@ -86,22 +78,17 @@ export async function createNewGame(interaction: ChatInputCommandInteraction): P
         //                     default:
         //                         resp = "Something went wrong.";
         //                 }
-        
         //                 if (err != 0) await inter.editReply(resp);
         //                 // continue onto the next turn, or prompt the user to choose their 2nd move
         //                 else {
         //                     let msg = "";
-                            
         //                     let turn = await DO.getPlayerTurn(userID, gameID);
         //                     if (turn == null) return InteractionErr.PlayerNotInGame;
-        
         //                     // get the game data again in case something changed
         //                     game = await DO.getGame(gameID);
         //                     if (game == null) return InteractionErr.GameDoesNotExist;
-        
         //                     let canPlayDrawn = false;
         //                     let drawnTile: GameTileO | null = null;
-        
         //                     // notify the user of their decision
         //                     // we need the user to draw a tile before we can send them an update on their decision
         //                     if (turn.getTrain() != TRAINC.DRAW_NAME && turn.getTile_s1() == turn.getTile_s2()) resp += "\nBecause you've played a double, you must go again. **Use \`/turn\` to play again.**";
@@ -115,7 +102,6 @@ export async function createNewGame(interaction: ChatInputCommandInteraction): P
         //                         }
         //                         if (drawnTile == null) resp += ".\nThere were no more tiles, so no tile was drawn. Your train is open.";
         //                         else resp += `.\nYou have drawn a ${createTileString(drawnTile!!.s1, drawnTile!!.s2)}.`;
-        
         //                         // check if the tile can be played again
         //                         if (drawnTile !== null) {                        
         //                             if (drawnTileIsValid(game, drawnTile!!, trains, isDoubleIgnore)) {
@@ -129,13 +115,10 @@ export async function createNewGame(interaction: ChatInputCommandInteraction): P
         //                         }
         //                     }
         //                     await inter.editReply(resp);
-        
         //                     // user is playing a double
         //                     if (turn.getTrain() != TRAINC.DRAW_NAME && turn.getTile_s1() == turn.getTile_s2()) {
-                        
         //                         [result, msg] = await playTile(interaction, turn, game, trains);
         //                         if (result) return result;
-        
         //                         // check if player has won
         //                         let gameOverResult = await gameOver(game.getPlayers(), game.getGameID());
         //                         if (gameOverResult != null) {
@@ -143,7 +126,6 @@ export async function createNewGame(interaction: ChatInputCommandInteraction): P
         //                             result = await endRound(inter, gameOverResult, WinType.Default, game, trains, msg);
         //                             return result;
         //                         }
-        
         //                         msg += `\nBecause it is a double, they will play again.\n`;
         //                         result = await showBoardForContinueTurn(interaction, msg);
         //                         // currently not passing the previous play as a msg
@@ -157,14 +139,11 @@ export async function createNewGame(interaction: ChatInputCommandInteraction): P
         //                         await interaction.deleteReply();
         //                         return result;
         //                     }
-        
         //                     if (turn.getPlay_drawn()) msg += `\n${await VC.getUsername(interaction, userID)} has drawn a tile, but was able to play it.`;
-        
         //                     // next turn
         //                     result = await endTurn(inter, turn, trains, game, msg, drawnTile);
         //                     return result;
         //                 }
-                        
         //             });
         //         });
         //         collector_btn.on('end', collected => {
@@ -194,11 +173,12 @@ export async function createNewGame(interaction: ChatInputCommandInteraction): P
         // }
     }
     else {
-        result = GameInteractionErr.GameAlreadyExists;
+        result = Errors_1.GameInteractionErr.GameAlreadyExists;
     }
     return result;
 }
-
-export async function canInitiateNewGame(interaction: ChatInputCommandInteraction): Promise<Number> {
+exports.createNewGame = createNewGame;
+async function canInitiateNewGame(interaction) {
     return 0;
 }
+exports.canInitiateNewGame = canInitiateNewGame;

@@ -1,6 +1,6 @@
 const { SlashCommandBuilder, ChannelType} = require('discord.js');
 import { ChatInputCommandInteraction } from "discord.js";
-import { CommandOption } from "./types";
+import { CommandOption } from "../data/types";
 
 module.exports = {
     data: new SlashCommandBuilder()
@@ -9,7 +9,7 @@ module.exports = {
         .setDefaultMemberPermissions(null)
         .setDescription('Start a new trivia game.')
         .addChannelOption((option: any) =>
-            option.setName('channel')
+            option.setName('chosen_channel')
                 .setDescription('The channel to start the trivia.')
     			.addChannelTypes(ChannelType.GuildText)),
         //.addUserOption((option: PlayerOption) =>

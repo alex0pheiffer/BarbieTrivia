@@ -2,7 +2,9 @@
   "dependencies": {
     "discord.js": "^14.16.2",
     "dotenv": "^16.4.5",
+    "fs": "^0.0.1-security",
     "install": "^0.13.0",
+    "mysql": "^2.18.1",
     "npm": "^10.8.3"
   }
 }

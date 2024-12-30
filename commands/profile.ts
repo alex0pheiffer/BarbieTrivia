@@ -1,6 +1,6 @@
 const { SlashCommandBuilder} = require('discord.js');
 import { ChatInputCommandInteraction } from "discord.js";
-import { CommandOption } from "./types";
+import { CommandOption } from "../data/types";
 
 module.exports = {
     data: new SlashCommandBuilder()

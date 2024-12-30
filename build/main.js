@@ -1,53 +1,72 @@
-import { ButtonInteraction, CacheType, ChatInputCommandInteraction, Client, Collection, Events, GatewayIntentBits, Interaction, PermissionsBitField, StringSelectMenuInteraction, TextChannel } from "discord.js";
-import * as fs from "fs";
-const path = require('node:path');
-import { BCONST }    from "./BCONST";
-import { Command, SlashCommand } from "./data/types";
-import { DO } from "./data/DOBuilder";
-import { canInitiateNewGame, createNewGame } from "./new";
-import { GameInteractionErr } from "./Errors";
-
-const client = new Client({  
-    intents: [GatewayIntentBits.MessageContent, GatewayIntentBits.Guilds, GatewayIntentBits.GuildMessages, GatewayIntentBits.GuildMembers, GatewayIntentBits.GuildMessageReactions] 
+"use strict";
+var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    var desc = Object.getOwnPropertyDescriptor(m, k);
+    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
+      desc = { enumerable: true, get: function() { return m[k]; } };
+    }
+    Object.defineProperty(o, k2, desc);
+}) : (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    o[k2] = m[k];
+}));
+var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
+    Object.defineProperty(o, "default", { enumerable: true, value: v });
+}) : function(o, v) {
+    o["default"] = v;
 });
-client.slashCommands = new Collection<string, SlashCommand>();
-client.commands = new Collection<string, Command>();
-
+var __importStar = (this && this.__importStar) || function (mod) {
+    if (mod && mod.__esModule) return mod;
+    var result = {};
+    if (mod != null) for (var k in mod) if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
+    __setModuleDefault(result, mod);
+    return result;
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+const discord_js_1 = require("discord.js");
+const fs = __importStar(require("fs"));
+const path = require('node:path');
+const BCONST_1 = require("./BCONST");
+const new_1 = require("./new");
+const Errors_1 = require("./Errors");
+const client = new discord_js_1.Client({
+    intents: [discord_js_1.GatewayIntentBits.MessageContent, discord_js_1.GatewayIntentBits.Guilds, discord_js_1.GatewayIntentBits.GuildMessages, discord_js_1.GatewayIntentBits.GuildMembers, discord_js_1.GatewayIntentBits.GuildMessageReactions]
+});
+client.slashCommands = new discord_js_1.Collection();
+client.commands = new discord_js_1.Collection();
 const commandsPath = path.join(__dirname, 'commands');
-const commandFiles = fs.readdirSync(commandsPath).filter((file: string) => file.endsWith('.js'));
-
-client.on(Events.InteractionCreate, async (interaction: Interaction<CacheType>) => {
+const commandFiles = fs.readdirSync(commandsPath).filter((file) => file.endsWith('.js'));
+client.on(discord_js_1.Events.InteractionCreate, async (interaction) => {
     /*
         // fail this nicer later
         if (!(interaction.isCommand() && interaction.isUserContextMenuCommand())) return -1;
         interaction = (<ChatInputCommandInteraction>interaction);
     */
-        //check permissions (we have to check viewchannel for interactions..)
-        if (!interaction.guild?.members.me?.permissionsIn(interaction.channelId!).has(PermissionsBitField.Flags.ViewChannel)) {
-            (<ChatInputCommandInteraction>interaction).reply({content: 'Bot does not have permission to **view** this channel. :frowning2:', ephemeral: true});
-            return;
-        }
-        else if (!interaction.guild.members.me.permissionsIn(interaction.channelId!).has(PermissionsBitField.Flags.SendMessages)) {
-            (<ChatInputCommandInteraction>interaction).reply({content: 'Bot does not have permission to **send messages** in this channel. :frowning2:', ephemeral: true});
-            return;
-        }
-        else if (!interaction.guild.members.me.permissionsIn(interaction.channelId!).has(PermissionsBitField.Flags.EmbedLinks)) {
-            (<ChatInputCommandInteraction>interaction).reply({content: 'Bot does not have permission to **embed links** in this channel. :frowning2:', ephemeral: true});
-            return;
-        }
-        else if (!interaction.guild.members.me.permissionsIn(interaction.channelId!).has(PermissionsBitField.Flags.UseExternalEmojis)) {
-            (<ChatInputCommandInteraction>interaction).reply({content: 'Bot does not have permission to **use external emojis** in this channel. :frowning2:', ephemeral: true});   
-            return;
-        }
-        else if (!interaction.guild.members.me.permissionsIn(interaction.channelId!).has(PermissionsBitField.Flags.AddReactions))  {
-            (<ChatInputCommandInteraction>interaction).reply({content: 'Bot does not have permission to **add reactions** in this channel. :frowning2:', ephemeral: true});
-            return;
-        }
-        else if (!interaction.guild.members.me.permissionsIn(interaction.channelId!).has(PermissionsBitField.Flags.ManageMessages))  {
-            (<ChatInputCommandInteraction>interaction).reply({content: 'Bot does not have permission to **manage messages** in this channel. :frowning2:', ephemeral: true});        
-            return;
-        }
-
+    //check permissions (we have to check viewchannel for interactions..)
+    if (!interaction.guild?.members.me?.permissionsIn(interaction.channelId).has(discord_js_1.PermissionsBitField.Flags.ViewChannel)) {
+        interaction.reply({ content: 'Bot does not have permission to **view** this channel. :frowning2:', ephemeral: true });
+        return;
+    }
+    else if (!interaction.guild.members.me.permissionsIn(interaction.channelId).has(discord_js_1.PermissionsBitField.Flags.SendMessages)) {
+        interaction.reply({ content: 'Bot does not have permission to **send messages** in this channel. :frowning2:', ephemeral: true });
+        return;
+    }
+    else if (!interaction.guild.members.me.permissionsIn(interaction.channelId).has(discord_js_1.PermissionsBitField.Flags.EmbedLinks)) {
+        interaction.reply({ content: 'Bot does not have permission to **embed links** in this channel. :frowning2:', ephemeral: true });
+        return;
+    }
+    else if (!interaction.guild.members.me.permissionsIn(interaction.channelId).has(discord_js_1.PermissionsBitField.Flags.UseExternalEmojis)) {
+        interaction.reply({ content: 'Bot does not have permission to **use external emojis** in this channel. :frowning2:', ephemeral: true });
+        return;
+    }
+    else if (!interaction.guild.members.me.permissionsIn(interaction.channelId).has(discord_js_1.PermissionsBitField.Flags.AddReactions)) {
+        interaction.reply({ content: 'Bot does not have permission to **add reactions** in this channel. :frowning2:', ephemeral: true });
+        return;
+    }
+    else if (!interaction.guild.members.me.permissionsIn(interaction.channelId).has(discord_js_1.PermissionsBitField.Flags.ManageMessages)) {
+        interaction.reply({ content: 'Bot does not have permission to **manage messages** in this channel. :frowning2:', ephemeral: true });
+        return;
+    }
     //interaction can be used in place of message, they share the same info, except author -> user
     //you have to reply to the interaction or else it sends an error message, even if it was executed fine
     //regular / command
@@ -59,19 +78,18 @@ client.on(Events.InteractionCreate, async (interaction: Interaction<CacheType>) 
         try {
             //parse cmd name
             let cmd = interaction.commandName;
-
             if (cmd == 'new') {
                 // defer must be command-specific in order to determine if its ephemeral
-                await interaction.deferReply({ephemeral: false});
-                switch(await canInitiateNewGame(interaction)) {
-                    case 0: 
-                        createNewGame(interaction);
+                await interaction.deferReply({ ephemeral: false });
+                switch (await (0, new_1.canInitiateNewGame)(interaction)) {
+                    case 0:
+                        (0, new_1.createNewGame)(interaction);
                         break;
-                    case GameInteractionErr.GameAlreadyExists:
-                        interaction.editReply({content: `A game already exists in this channel.`});
+                    case Errors_1.GameInteractionErr.GameAlreadyExists:
+                        interaction.editReply({ content: `A game already exists in this channel.` });
                         break;
                     default:
-                        interaction.editReply({content:"Something went wrong."});
+                        interaction.editReply({ content: "Something went wrong." });
                 }
             }
             // else if (cmd == 'add') {
@@ -146,11 +164,12 @@ client.on(Events.InteractionCreate, async (interaction: Interaction<CacheType>) 
             //             interaction.editReply({content: `Something went wrong.`});
             //     }
             // }
-            else await interaction.editReply({ content: 'There was an error while executing this command.'});
-    
-        } catch (error) {
+            else
+                await interaction.editReply({ content: 'There was an error while executing this command.' });
+        }
+        catch (error) {
             console.error(`err17774: ${error}`);
-            await interaction.editReply({ content: 'There was an error while executing this command.'});
+            await interaction.editReply({ content: 'There was an error while executing this command.' });
         }
     }
     //a selection menu event was triggered 
@@ -165,14 +184,14 @@ client.on(Events.InteractionCreate, async (interaction: Interaction<CacheType>) 
                     selectPlayerTurnMenu(interaction).then((err: number) => {
                         switch(err) {
                             case 0: return;
-                            case InteractionErr.PlayerNotInGame: 
-                                interaction.reply({ 
-                                    content: 'You cannot take a turn if you are not part of the game. Ask the game master [INSERT HERE] to add you.', 
+                            case InteractionErr.PlayerNotInGame:
+                                interaction.reply({
+                                    content: 'You cannot take a turn if you are not part of the game. Ask the game master [INSERT HERE] to add you.',
                                     ephemeral: true });
                                 break;
                             default:
-                                interaction.reply({ 
-                                    content: 'There was an error while executing this command.', 
+                                interaction.reply({
+                                    content: 'There was an error while executing this command.',
                                     ephemeral: true });
                         }
                     })
@@ -230,7 +249,6 @@ client.on(Events.InteractionCreate, async (interaction: Interaction<CacheType>) 
     }
     */
 });
-
 client.on('ready', () => {
     // ## SLASH COMMANDS
     for (const file of commandFiles) {
@@ -240,9 +258,10 @@ client.on('ready', () => {
         if ('data' in command && 'execute' in command) {
             client.commands.set(command.data.name, command);
         }
-        else console.log(`[WARNING] The command at ${filePath} is missing a required "data" or "execute" property.`);
+        else
+            console.log(`[WARNING] The command at ${filePath} is missing a required "data" or "execute" property.`);
     }
-    console.log(`${client.user?.username} Online -- Version: ${BCONST.VERSION}`);
+    console.log(`${client.user?.username} Online -- Version: ${BCONST_1.BCONST.VERSION}`);
 });
 /*
 client.on("guildCreate", guild => {
@@ -256,7 +275,7 @@ client.on("guildCreate", guild => {
         logchannel.send({embeds: [embed]}).catch((e) => console.log('error sending server update msg: ' + e));
     }
     catch {
-        console.log('error guildcreate?'); 
+        console.log('error guildcreate?');
     }
 
 });
@@ -272,15 +291,13 @@ client.on("guildDelete", function(guild){
         logchannel.send({embeds: [embed]}).catch((e) => console.log('error sending server update msg: ' + e));
     }
     catch {
-        console.log('error guilddelete?'); 
+        console.log('error guilddelete?');
     }
 });
 */
-
 client.on('error', function (err) {
     throw err;
 });
-
 /*
 function accountlessMessage(user, message) {
     return message.reply({content: 'You have no account yet, please use the `start` command to begin playing!', ephemeral: true});
@@ -289,11 +306,11 @@ function accountlessMessage(user, message) {
 //return string that is friendly for mdex, monster name etc... 'DeX' -> 'dex' | 'MR. sANdwichMAN' -> 'Mr. Sandwichman'
 //wont work for regions because of names like RightIsland which have capitalization in the middle of the string
 function stringToCorrectFormat(str) {
-    if (typeof str != 'string') return str; 
+    if (typeof str != 'string') return str;
     str = str.toLowerCase();
     return str.replace(/(^\w{1})|(\s+\w{1})/g, letter => letter.toUpperCase());
 }
 */
 // login
-console.log(`token: ${BCONST.BOT_KEY}`);
-client.login(BCONST.BOT_KEY);
+console.log(`token: ${BCONST_1.BCONST.BOT_KEY}`);
+client.login(BCONST_1.BCONST.BOT_KEY);

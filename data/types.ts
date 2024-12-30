@@ -1,15 +1,15 @@
 import { SlashCommandBuilder, CommandInteraction, Collection, PermissionResolvable, Message, AutocompleteInteraction } from "discord.js"
 
 export interface ICommandOption {
-    name: String,
-    description: String,
-    required: Boolean
+    _name: String,
+    _description: String,
+    _required: Boolean
 }
 
-class CommandOption implements ICommandOption {
-    private _name: String = "";
-    private _description: String = "";
-    private _required: Boolean = false;
+export class CommandOption implements ICommandOption {
+    _name: String = "";
+    _description: String = "";
+    _required: Boolean = false;
 
     public getName() {
         return this._name;
@@ -21,15 +21,15 @@ class CommandOption implements ICommandOption {
         return this._required;
     }
 
-    public setName(value) {
+    public setName(value: String) {
         this._name = value;
         return this;
     }
-    public setDescription(value) {
+    public setDescription(value: String) {
         this._description = value;
         return this;
     }
-    public setRequired(value) {
+    public setRequired(value: Boolean) {
         this._required = value;
         return this;
     }

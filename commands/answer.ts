@@ -1,6 +1,6 @@
 const { SlashCommandBuilder} = require('discord.js');
 import { ChatInputCommandInteraction } from "discord.js";
-import { CommandOption } from "./types";
+import { CommandOption } from "../data/types";
 
 module.exports = {
     data: new SlashCommandBuilder()
@@ -8,8 +8,8 @@ module.exports = {
         .setDMPermission(false)
         .setDefaultMemberPermissions(null)
         .setDescription('Response to an active question.')
-        .addStringOption(option =>
-            option.setName('Choice')
+        .addStringOption((option: any) =>
+            option.setName('choice')
                 .setDescription('(A,B,C,D)')
                 .setRequired(true)
                 .addChoices(
