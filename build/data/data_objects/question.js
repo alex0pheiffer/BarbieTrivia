@@ -175,13 +175,15 @@ class QuestionO {
         return [this.ans_a, this.ans_b, this.ans_c, this.ans_d];
     }
     getAnswersScrambled() {
-        let list = [this.ans_a, this.ans_b, this.ans_c];
+        let list = [{ "i": 0, "ans": this.ans_a },
+            { "i": 1, "ans": this.ans_b },
+            { "i": 2, "ans": this.ans_c }];
         if (!this.d_always_last) {
-            list.push(this.ans_d);
+            list.push({ "i": 3, "ans": this.ans_d });
         }
         list = list.sort(() => Math.random() - 0.5);
         if (this.d_always_last) {
-            list.push(this.ans_d);
+            list.push({ "i": 3, "ans": this.ans_d });
         }
         return list;
     }
@@ -294,6 +296,11 @@ class QuestionO {
         }
         this.submitter = value;
         this.changes.change_submitter();
+        return true;
+    }
+    setShownTotal(value) {
+        this.shown_total = value;
+        this.changes.change_shown_total();
         return true;
     }
     isChanges() {

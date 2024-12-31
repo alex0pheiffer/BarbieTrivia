@@ -31,9 +31,13 @@ class BCONST {
     static SQL_PASS = (this.USE_LOCAL_SQL) ? this.SQL_LOCAL_PASS : this.SQL_REMOTE_PASS;
     static SQL_HOST = (this.USE_LOCAL_SQL) ? this.SQL_LOCAL_HOST : this.SQL_REMOTE_HOST;
     static SQL_DEBUG = false;
+    // Master Channel
+    static MASTER_QUESTION_SERVER = "1266960173533237268";
     // UI Information
     static BTN_SUBMIT = "Submit";
     static DROPDOWN_INTERVAL = "Time Interval Selection";
+    static DROPDOWN_ANSWER = "Answer Selection";
+    static DROPDOWN_DURATION = 120000;
     // Game Specific Information
     static QUESTION_INTERVALS = [
         { "label": "Every Hour", "description": "", "value": 0 },
@@ -69,6 +73,51 @@ class BCONST {
         { "title": "Poised for Silent Treachery", "url": "https://media.discordapp.net/attachments/1305182222214496288/1305182455560409169/vlcsnap-00152_350.png?ex=67321962&is=6730c7e2&hm=9094b2d14e307f1e2c3f3cbdcf8d07ed15f2f875543dd793f920408e4fbfe03c&=&format=webp&quality=lossless" },
         { "title": "Betrayal Cloaked in Charm", "url": "https://media.discordapp.net/attachments/1305182222214496288/1305182455816392704/vlcsnap-00183_350.png?ex=67321962&is=6730c7e2&hm=876e9bcc6395ed7aa6beed0d7ddd7699e4d646167310aae25c485d31cb7c0a0f&=&format=webp&quality=lossless" },
         { "title": "Faithful yet Flawed", "url": "https://media.discordapp.net/attachments/1305182222214496288/1305182483444404374/vlcsnap-00186_350.png?ex=67321969&is=6730c7e9&hm=6a66a8eabb675669bf280444b19e22f58a4aa4ffffd6de7758eefad6993812d7&=&format=webp&quality=lossless" }
+    ];
+    static MAXIMUS_PHRASES_START = [
+        "I'd say; Good day for poisoning a lagoon.",
+        "Did I mention you're looking particularly devious today?",
+        "Why, you think you're so clever. How about this?",
+        "I've got a hard one for them this time, Your Wartiness.",
+        "Fancy yourself clever, do you? We’ll see about that.",
+        "Answer this, and you’re free to go. Fail, and, well... let’s not dwell on that.",
+        "If you don’t answer soon, I’ll take it as a forfeit, and we all know what happens then.",
+        "I've got a cove to poison, unless you think you can stop me.",
+        "Oh, Your Boginess, they'll never see it coming.",
+        "I'll give you one more chance to prove yourself.",
+        "I'm not any ordinary fungus. I am Fungus Maximus. You, unfortunate creature, can't say the same.",
+        "You think you can defeat my beautiful, handsome self?",
+        "What instrument can you hear, but can't see, and can't touch? Wait, wrong movie.",
+        "So, you want to save the merfolk. How brave.",
+        "Do you know how much toad venom it takes to poison seven guardians?"
+    ];
+    static MAXIMUS_PHRASES_END_BAD = [
+        "Too bad.",
+        "I'm sorry, were you answering this question?",
+        "Well, that was embarrassing. I almost feel bad for you.",
+        "Oh dear, that’s not even close.",
+        "And you thought you could save the merfolk?",
+        "Really? That’s the best you could come up with?",
+        "And here I thought you’d be a challenge. Guess I’ll keep waiting.",
+        "Well, I’m impressed... by how confidently wrong you were.",
+        "Not even close. Careful now, I’m losing patience... and you’re losing time.",
+        "You’re pushing your luck. Keep this up, and I might just drop this vial of poison.",
+        "Maybe if you had a hint of my beauty you'd have less ridiculous answers.",
+        "That answer? You must have the brain of a puffball.",
+        "I don't think I heard you correctly. Maybe try one of the berries so I can hear you better.",
+        "Such an answer deserves banishment to the Bogs of the Hinterlands.",
+        "Lefting, leftaroo! Let's try that again."
+    ];
+    static MAXIMUS_PHRASES_END_GOOD = [
+        "I see you've been studying.",
+        "Yes, wrong... Wait, what?",
+        "Her Deviousness is not going to be happy with this.",
+        "Nooo! How could this be?",
+        "I think you've spent too much time watching movies. Find a better hobby.",
+        "Oh no, oh dear. This is not good.",
+        "Not the berry!",
+        "You think you can best me? I won't be defeated!",
+        "Maybe we try that again before telling the mistress."
     ];
 }
 exports.BCONST = BCONST;

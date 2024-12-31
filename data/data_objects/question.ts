@@ -1,3 +1,4 @@
+import { ShuffledAnswerItem } from "../component_interfaces/shuffled_answer";
 import {QuestionI} from "../data_interfaces/question"
 import {DBC} from "../sql/Database_Constants"
 
@@ -188,17 +189,20 @@ export class QuestionO {
         return [this.ans_a, this.ans_b, this.ans_c, this.ans_d];
     }
 
-    public getAnswersScrambled(): Array<string> {
-        let list = [this.ans_a, this.ans_b, this.ans_c];
+    public getAnswersScrambled(): Array<ShuffledAnswerItem> {
+        let list = [{"i": 0, "ans": this.ans_a} as ShuffledAnswerItem, 
+            {"i": 1, "ans": this.ans_b} as ShuffledAnswerItem, 
+            {"i": 2, "ans": this.ans_c} as ShuffledAnswerItem];
         if (!this.d_always_last) {
-            list.push(this.ans_d);
+            list.push({"i": 3, "ans": this.ans_d} as ShuffledAnswerItem);
         }
         
         list = list.sort( ()=>Math.random()-0.5 );
         
         if (this.d_always_last) {
-            list.push(this.ans_d);
+            list.push({"i": 3, "ans": this.ans_d} as ShuffledAnswerItem);
         }
+
         return list;
     }
 

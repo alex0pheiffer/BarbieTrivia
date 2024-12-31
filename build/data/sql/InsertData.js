@@ -27,5 +27,9 @@ class InsertData {
         let result = await CommandsSQL_1.SQLDATA.insertQuestionChannel(channel);
         return result;
     }
+    static async insertPlayerAnswer(answer) {
+        let result = await CommandsSQL_1.SQLDATA.insertPlayerAnswer(answer);
+        return result;
+    }
 }
 exports.InsertData = InsertData;

@@ -10,6 +10,7 @@ const admin_1 = require("./data_objects/admin");
 const askedQuesetion_1 = require("./data_objects/askedQuesetion");
 const proposal_1 = require("./data_objects/proposal");
 const questionChannel_1 = require("./data_objects/questionChannel");
+const playerAnswer_1 = require("./data_objects/playerAnswer");
 class DO {
     /*
      *  Get Functions
@@ -29,6 +30,18 @@ class DO {
         let askedArray = [];
         let asked;
         let askedjson = await GetData_1.GetData.getAskedQuestion(question_id, channel_id);
+        if (askedjson.length > 0) {
+            for (let i = 0; i < askedjson.length; i++) {
+                asked = new askedQuesetion_1.AskedQuestionO(askedjson[i]);
+                askedArray.push(asked);
+            }
+        }
+        return askedArray;
+    }
+    static async getAskedQuestionByAskID(ask_id) {
+        let askedArray = [];
+        let asked;
+        let askedjson = await GetData_1.GetData.getAskedQuestionByAskID(ask_id);
         if (askedjson.length > 0) {
             for (let i = 0; i < askedjson.length; i++) {
                 asked = new askedQuesetion_1.AskedQuestionO(askedjson[i]);
@@ -127,6 +140,30 @@ class DO {
         }
         return channelArray;
     }
+    static async getPlayerAnswer(user, ask_id) {
+        let answerArray = [];
+        let answer;
+        let answerjson = await GetData_1.GetData.getPlayerAnswer(user, ask_id);
+        if (answerjson.length > 0) {
+            for (let i = 0; i < answerjson.length; i++) {
+                answer = new playerAnswer_1.PlayerAnswerO(answerjson[i]);
+                answerArray.push(answer);
+            }
+        }
+        return answerArray;
+    }
+    static async getPlayerAnswers(ask_id) {
+        let answerArray = [];
+        let answer;
+        let answerjson = await GetData_1.GetData.getPlayerAnswers(ask_id);
+        if (answerjson.length > 0) {
+            for (let i = 0; i < answerjson.length; i++) {
+                answer = new playerAnswer_1.PlayerAnswerO(answerjson[i]);
+                answerArray.push(answer);
+            }
+        }
+        return answerArray;
+    }
     /*
      *  Update Functions
      *
@@ -140,6 +177,9 @@ class DO {
     }
     static async updateAskedQuestion(question, errType) {
         return await UpdateData_1.UpdateData.updateAskedQuestion(question, errType);
+    }
+    static async updatePlayerAnswer(answer, errType) {
+        return await UpdateData_1.UpdateData.updatePlayerAnswer(answer, errType);
     }
     /*
      *  Insert Functions
@@ -160,6 +200,9 @@ class DO {
     }
     static async insertQuestionChannel(channel) {
         return await InsertData_1.InsertData.insertQuestionChannel(channel);
+    }
+    static async insertPlayerAnswer(answer) {
+        return await InsertData_1.InsertData.insertPlayerAnswer(answer);
     }
     /*
      *  Delete Functions

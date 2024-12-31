@@ -5,7 +5,7 @@ exports.DataErr = exports.StatErr = exports.GameInteractionErr = void 0;
 /* Normal Game Interaction Errors (ie, player turns)  */
 //export const InteractionErr = Object.freeze({ "GameDoesNotExist": 1, "InvalidInputToSQL": 2, "TileDoesNotExist": 3, "TrainAlreadyOpen": 4, "TrainNotOpen": 5, "PlayerDoesNotExist": 6, "PlayerTilesDoNotExist": 7, "PlayerNotInGame": 8, "NotPlayersTurn": 9, "TrainsDoNotExist": 10, "ReplyMessageDoesNotExist": 11, "RoundNotActive": 12});
 /* Game Interaction Errors */
-exports.GameInteractionErr = Object.freeze({ "GameAlreadyExists": 1, "GameAlreadyExistsInServer": 2, "GuildDataUnavailable": 3, "SQLConnectionError": 4 });
+exports.GameInteractionErr = Object.freeze({ "GameAlreadyExists": 1, "GameAlreadyExistsInServer": 2, "GuildDataUnavailable": 3, "SQLConnectionError": 4, "NoNewQuestionAvailable": 5, "NoAnswerSelected": 6, "QuestionDoesNotExist": 7, "QuestionExpired": 8, "NoPlayerResponses": 9 });
 /* Stat Errors */
 exports.StatErr = Object.freeze({ "GameDoesNotExist": 101, "InvalidInputToSQL": 102, "EntryAlreadyExists": 103 });
 /* Player Data Errors */

@@ -8,6 +8,7 @@ class AskedQuestionO_Changes {
     date = false;
     response_total = false;
     response_correct = false;
+    active = false;
     changes = new Array();
     constructor(ask_id) {
         this.ask_id = ask_id;
@@ -24,6 +25,12 @@ class AskedQuestionO_Changes {
         this.response_correct = true;
         this.changes.push("response_correct");
     }
+    change_active() {
+        if (this.active)
+            return;
+        this.active = true;
+        this.changes.push("active");
+    }
     generateChanges() {
         return this.changes;
     }
@@ -38,6 +45,12 @@ class AskedQuestionO {
     date;
     response_total;
     response_correct;
+    active;
+    ans_a;
+    ans_b;
+    ans_c;
+    ans_d;
+    max_img;
     changes;
     constructor(json) {
         this.ask_id = json.ask_id;
@@ -46,7 +59,13 @@ class AskedQuestionO {
         this.date = json.date;
         this.response_total = json.response_total;
         this.response_correct = json.response_correct;
-        this.changes = new AskedQuestionO_Changes(this.question_id);
+        this.active = json.active;
+        this.ans_a = json.ans_a;
+        this.ans_b = json.ans_b;
+        this.ans_c = json.ans_c;
+        this.ans_d = json.ans_d;
+        this.max_img = json.max_img;
+        this.changes = new AskedQuestionO_Changes(this.ask_id);
     }
     getAskID() {
         return this.ask_id;
@@ -66,6 +85,24 @@ class AskedQuestionO {
     getResponseCorrect() {
         return this.response_correct;
     }
+    getActive() {
+        return this.active;
+    }
+    getAnsA() {
+        return this.ans_a;
+    }
+    getAnsB() {
+        return this.ans_b;
+    }
+    getAnsC() {
+        return this.ans_c;
+    }
+    getAnsD() {
+        return this.ans_d;
+    }
+    getMaxImg() {
+        return this.max_img;
+    }
     setResponseTotal(value) {
         this.response_total = value;
         this.changes.change_response_total();
@@ -74,6 +111,11 @@ class AskedQuestionO {
     setResponseCorrect(value) {
         this.response_correct = value;
         this.changes.change_response_correct();
+        return true;
+    }
+    setActive(value) {
+        this.active = value;
+        this.changes.change_active();
         return true;
     }
     isChanges() {

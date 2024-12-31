@@ -12,6 +12,8 @@ import { QuestionO } from "../data_objects/question";
 import { QuestionChannelO } from "../data_objects/questionChannel";
 import { PlayerAnswerO } from "../data_objects/playerAnswer";
 import { PlayerAnswerI } from "../data_interfaces/playerAnswer";
+import { PlayerO } from "../data_objects/player";
+import { PlayerI } from "../data_interfaces/player";
 // assuming a 32-bit system
 const MAX_INT = Math.pow(2, 31) - 1;
 const MAX_UNSIGNED_INT = Math.pow(2, 32) - 1;
@@ -70,6 +72,31 @@ export class SQLDATA {
             }
             // determine if this column already exists
             var sqlq = `SELECT * FROM asked_question WHERE question_id = ${question_id} AND channel_id = '${channel_id}';`;
+            con.conn.query(sqlq, function (err: any, result: Array<string>) {
+                if (err) throw err;
+
+                if (BCONST.SQL_DEBUG) {
+                    console.log("Obtained Data: ");
+                    console.log(result);
+                }
+
+                // check that a result exists
+                if (result.length <= 0) {
+                    resolve([]);
+                    return;
+                }
+
+                return resolve(JSON.parse(JSON.stringify(result)));
+            }); 
+        });
+    }
+
+    static async getAskedQuestionByAskIDSQL(ask_id: number): Promise<Array<JSON>> {
+        await checkConnection();
+        return new Promise((resolve, reject) => {
+            
+            // determine if this column already exists
+            var sqlq = `SELECT * FROM asked_question WHERE ask_id = ${ask_id};`;
             con.conn.query(sqlq, function (err: any, result: Array<string>) {
                 if (err) throw err;
 
@@ -316,6 +343,60 @@ export class SQLDATA {
                 }
 
                 return resolve(JSON.parse(JSON.stringify(result)));
+            }); 
+        });
+    }
+
+    static async getPlayerAnswersSQL(ask_id: number): Promise<Array<JSON>> {
+        await checkConnection();
+        return new Promise((resolve, reject) => {
+
+            // determine if this column already exists
+            var sqlq = `SELECT * FROM player_answer WHERE ask_id=${ask_id};`;
+            con.conn.query(sqlq, function (err: any, result: Array<string>) {
+                if (err) throw err;
+
+                if (BCONST.SQL_DEBUG) {
+                    console.log("Obtained Data: ");
+                    console.log(result);
+                }
+
+                // check that a result exists
+                if (result.length <= 0) {
+                    resolve([]);
+                    return;
+                }
+
+                return resolve(JSON.parse(JSON.stringify(result)));
+            }); 
+        });
+    }
+
+    static async getPlayerSQL(userid: string): Promise<string> {
+        await checkConnection();
+        return new Promise((resolve, reject) => {
+            if (userid.length > DBC.userID_length) {
+                console.log("ERROR: USERID too long.");
+                // todo make this a valid error
+                return resolve("");
+            }
+            // determine if this column exists
+            var sqlq = `SELECT * FROM player WHERE user = '${userid}';`;
+            con.conn.query(sqlq, function (err: any, result: Array<string>) {
+                if (err) throw err;
+
+                if (BCONST.SQL_DEBUG) {
+                    console.log("Obtained Data: ");
+                    console.log(result);
+                }
+
+                // check that a result exists
+                if (result.length <= 0) {
+                    resolve("");
+                    return;
+                }
+
+                return resolve(JSON.stringify(result[0]));
             }); 
         });
     }
@@ -636,6 +717,66 @@ export class SQLDATA {
         });
     }  
 
+    static async updatePlayer(player: PlayerO, errType: any): Promise<number> {
+        if (!player.isChanges()) return 0;
+        
+        await checkConnection();
+        return new Promise(async (resolve, reject) => {
+            
+            let value: any;
+            let err: number;
+
+            value = player.getPlayer();
+            err = checkString(value, DBC.userID_length, DataErr.InvalidInputToSQL, "user");
+            if (err) return resolve(err);
+            
+            let sql_changes = "";
+            let sql_q = "UPDATE player SET";
+            
+            player.getChanges().forEach((p) => {
+                switch (p) {
+                    case "q_submitted":
+                        value = player.getQSubmitted();
+                        err = checkInt(value, errType.InvalidInputToSQL, p);
+                        if (err) return resolve(err);
+                        sql_changes += ` ${p} = ${value},`;
+                        break;
+                    case "q_submitted":
+                        value = player.getQSubmitted();
+                        err = checkInt(value, errType.InvalidInputToSQL, p);
+                        if (err) return resolve(err);
+                        sql_changes += ` ${p} = ${value},`;
+                        break;
+                    case "response_total":
+                        value = player.getResponseTotal();
+                        err = checkInt(value, errType.InvalidInputToSQL, p);
+                        if (err) return resolve(err);
+                        sql_changes += ` ${p} = ${value},`;
+                        break;
+                    case "response_correct":
+                        value = player.getResponseCorrect();
+                        err = checkInt(value, errType.InvalidInputToSQL, p);
+                        if (err) return resolve(err);
+                        sql_changes += ` ${p} = ${value},`;
+                        break;
+                    default:
+                        console.log("Error: the property "+p+" is not supported by updatePlayer.");
+                        break;
+                }
+            });
+
+            if (sql_changes != "") {
+                // remove the extra comma
+                sql_changes = sql_changes.slice(0, sql_changes.length - 1);
+                sql_q  += sql_changes;
+                sql_q += ` WHERE user = '${player.getPlayer()}';`;
+        
+                let result = await this.updateTable(sql_q);
+                resolve(result);
+            }
+        });
+    }  
+
     //
     //  Insert Functions
     static async insertProposal(proposal: ProposalO): Promise<number> {
@@ -878,21 +1019,46 @@ export class SQLDATA {
             if (err) return resolve(err);
             value = question.active;
             err = checkInt(value, DataErr.InvalidInputToSQL, "active");
+            if (err) return resolve(err);
+            value = question.ans_a;
+            err = checkInt(value, DataErr.InvalidInputToSQL, "ans_a");
+            if (err) return resolve(err);
+            value = question.ans_b;
+            err = checkInt(value, DataErr.InvalidInputToSQL, "ans_b");
             if (err) return resolve(err);   
+            value = question.ans_c;
+            err = checkInt(value, DataErr.InvalidInputToSQL, "ans_c");
+            if (err) return resolve(err);   
+            value = question.ans_d;
+            err = checkInt(value, DataErr.InvalidInputToSQL, "ans_d");
+            if (err) return resolve(err);   
+            value = question.max_img;
+            err = checkInt(value, DataErr.InvalidInputToSQL, "max_img");
+            if (err) return resolve(err);      
 
             var sql_columns = `(question_id, \
             date, \
             response_total, \
             response_correct, \
             channel_id, \
-            active)`;
+            active,
+            ans_a,
+            ans_b,
+            ans_c,
+            ans_d,
+            max_img)`;
 
             var sql_values = `(${question.question_id}, \
             ${question.date},\
             ${question.response_total},\
             ${question.response_correct},\
             '${question.channel_id}', \
-            ${question.active})`;
+            ${question.active},
+            ${question.ans_a},
+            ${question.ans_b},
+            ${question.ans_c},
+            ${question.ans_d},
+            ${question.max_img})`;
 
             var sqlq = `INSERT INTO asked_question ${sql_columns} VALUES ${sql_values};`;
             con.conn.query(sqlq, function (err: any, result: any) {
@@ -994,6 +1160,53 @@ export class SQLDATA {
             ${answer.submitted})`;
 
             var sqlq = `INSERT INTO player_answer ${sql_columns} VALUES ${sql_values};`;
+            con.conn.query(sqlq, function (err: any, result: any) {
+                if (err && err.errno == 1062) {
+                    return resolve(DataErr.IDAlreadyExists);
+                }
+                else if (err) {
+                    throw err;
+                }
+
+                if (BCONST.SQL_DEBUG) {
+                    console.log(`1 recored inserted: ${result.insertId}`);                    
+                }
+                return resolve(0);
+            }); 
+        });
+    }
+
+    static async insertPlayer(player: PlayerI): Promise<number> {
+        await checkConnection();
+        return new Promise((resolve, reject) => {
+
+            let value: any;
+            let err: number;
+
+            value = player.user;
+            err = checkString(value, DBC.userID_length, DataErr.InvalidInputToSQL, "user");
+            if (err) return resolve(err); 
+            value = player.response_total;
+            err = checkInt(value, DataErr.InvalidInputToSQL, "response_total");
+            if (err) return resolve(err);   
+            value = player.response_correct;
+            err = checkInt(value, DataErr.InvalidInputToSQL, "response_correct");
+            if (err) return resolve(err);   
+            value = player.q_submitted;
+            err = checkInt(value, DataErr.InvalidInputToSQL, "q_submitted");
+            if (err) return resolve(err);   
+
+            var sql_columns = `(user, \
+            q_submitted, \
+            response_total, \
+            response_correct)`;
+
+            var sql_values = `('${player.user}', \
+            ${player.q_submitted},\
+            ${player.response_total},\
+            ${player.response_correct})`;
+
+            var sqlq = `INSERT INTO player ${sql_columns} VALUES ${sql_values};`;
             con.conn.query(sqlq, function (err: any, result: any) {
                 if (err && err.errno == 1062) {
                     return resolve(DataErr.IDAlreadyExists);

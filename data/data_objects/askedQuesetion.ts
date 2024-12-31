@@ -50,6 +50,11 @@ export class AskedQuestionO {
     private response_total: number;
     private response_correct: number;
     private active: number;
+    private ans_a: number;
+    private ans_b: number;
+    private ans_c: number;
+    private ans_d: number;
+    private max_img: number;
 
     private changes: AskedQuestionO_Changes;
 
@@ -61,8 +66,13 @@ export class AskedQuestionO {
         this.response_total = json.response_total;
         this.response_correct = json.response_correct;
         this.active = json.active;
+        this.ans_a = json.ans_a;
+        this.ans_b = json.ans_b;
+        this.ans_c = json.ans_c;
+        this.ans_d = json.ans_d;
+        this.max_img = json.max_img;
 
-        this.changes = new AskedQuestionO_Changes(this.question_id);
+        this.changes = new AskedQuestionO_Changes(this.ask_id);
     }
 
     public getAskID(): number {
@@ -91,6 +101,26 @@ export class AskedQuestionO {
 
     public getActive(): number {
         return this.active;
+    }
+
+    public getAnsA(): number {
+        return this.ans_a;
+    }
+
+    public getAnsB(): number {
+        return this.ans_b;
+    }
+
+    public getAnsC(): number {
+        return this.ans_c;
+    }
+
+    public getAnsD(): number {
+        return this.ans_d;
+    }
+
+    public getMaxImg(): number {
+        return this.max_img;
     }
 
     public setResponseTotal(value: number): boolean {

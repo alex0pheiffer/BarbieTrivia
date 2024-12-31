@@ -6,6 +6,7 @@ import { ProposalI } from "../data_interfaces/proposal";
 import { QuestionI } from "../data_interfaces/question";
 import { QuestionChannelI } from "../data_interfaces/questionChannel";
 import { PlayerAnswerI } from "../data_interfaces/playerAnswer";
+import { PlayerI } from "../data_interfaces/player";
 
 /* 
  * Retrieves data and returns as JSON
@@ -22,6 +23,11 @@ export class GetData {
     static async getAskedQuestion(question_id: number, channel_id: string): Promise<Array<AskedQuestionI>> {
         let $DATA = await SQLDATA.getAskedQuestionSQL(question_id, channel_id);
         return $DATA as unknown as Array<AskedQuestionI>; // hopefully this doesnt cause issues
+    }
+
+    static async getAskedQuestionByAskID(ask_id: number): Promise<Array<AskedQuestionI>> {
+        let $DATA = await SQLDATA.getAskedQuestionByAskIDSQL(ask_id);
+        return $DATA as unknown as Array<AskedQuestionI>;
     }
     
     static async getProposal(id: number): Promise<ProposalI | null> {
@@ -69,5 +75,16 @@ export class GetData {
     static async getPlayerAnswer(user: string, ask_id: number): Promise<Array<PlayerAnswerI>> {
         let $DATA = await SQLDATA.getPlayerAnswerSQL(user, ask_id);
         return $DATA as unknown as Array<PlayerAnswerI>;
+    }
+
+    static async getPlayerAnswers(ask_id: number): Promise<Array<PlayerAnswerI>> {
+        let $DATA = await SQLDATA.getPlayerAnswersSQL(ask_id);
+        return $DATA as unknown as Array<PlayerAnswerI>;
+    }
+
+    static async getPlayer(userID: string): Promise<PlayerI | null> {
+        let $DATA = await SQLDATA.getPlayerSQL(userID);
+        if ($DATA == "") return null;
+        else return JSON.parse($DATA) as PlayerI;
     }
 }

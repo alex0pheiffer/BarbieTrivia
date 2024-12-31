@@ -19,5 +19,9 @@ class UpdateData {
         let result = await CommandsSQL_1.SQLDATA.updateAskedQuestion(question, errType);
         return result;
     }
+    static async updatePlayerAnswer(answer, errType) {
+        let result = await CommandsSQL_1.SQLDATA.updatePlayerAnswer(answer, errType);
+        return result;
+    }
 }
 exports.UpdateData = UpdateData;

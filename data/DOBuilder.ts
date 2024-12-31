@@ -13,6 +13,8 @@ import { AskedQuestionI } from "./data_interfaces/askedQuestion";
 import { QuestionChannelI } from "./data_interfaces/questionChannel";
 import { PlayerAnswerO } from "./data_objects/playerAnswer";
 import { PlayerAnswerI } from "./data_interfaces/playerAnswer";
+import { PlayerO } from "./data_objects/player";
+import { PlayerI } from "./data_interfaces/player";
 
 export class DO {
 
@@ -36,6 +38,21 @@ export class DO {
         let askedArray: Array<AskedQuestionO> = [];
         let asked: AskedQuestionO;
         let askedjson = await GetData.getAskedQuestion(question_id, channel_id);
+        
+        if (askedjson.length > 0) {
+            for (let i=0; i < askedjson.length; i++) {
+                asked = new AskedQuestionO(askedjson[i]);
+                askedArray.push(asked);
+            }
+        }
+        
+        return askedArray;
+    }     
+
+    static async getAskedQuestionByAskID(ask_id: number): Promise<Array<AskedQuestionO>> {
+        let askedArray: Array<AskedQuestionO> = [];
+        let asked: AskedQuestionO;
+        let askedjson = await GetData.getAskedQuestionByAskID(ask_id);
         
         if (askedjson.length > 0) {
             for (let i=0; i < askedjson.length; i++) {
@@ -172,6 +189,31 @@ export class DO {
         return answerArray;
     }
 
+    static async getPlayerAnswers(ask_id: number): Promise<Array<PlayerAnswerO>> {
+        let answerArray: Array<PlayerAnswerO> = [];
+        let answer: PlayerAnswerO;
+        let answerjson = await GetData.getPlayerAnswers(ask_id);
+        
+        if (answerjson.length > 0) {
+            for (let i=0; i < answerjson.length; i++) {
+                answer = new PlayerAnswerO(answerjson[i]);
+                answerArray.push(answer);
+            }
+        }
+        
+        return answerArray;
+    }    
+
+    static async getPlayer(userID: string): Promise<PlayerO | null> {
+        let player: PlayerO;
+        let playerjson = await GetData.getPlayer(userID);
+        if (playerjson) {
+            player = new PlayerO(playerjson);
+            return player;
+        }
+        return null;
+    }
+
     /*
      *  Update Functions
      *
@@ -192,6 +234,10 @@ export class DO {
 
     static async updatePlayerAnswer(answer: PlayerAnswerO, errType: any): Promise<number> {
         return await UpdateData.updatePlayerAnswer(answer, errType);
+    }
+
+    static async updatePlayer(player: PlayerO, errType: any): Promise<number> {
+        return await UpdateData.updatePlayer(player, errType);
     }
 
     /*
@@ -222,6 +268,10 @@ export class DO {
     
     static async insertPlayerAnswer(answer: PlayerAnswerI): Promise<number> {
         return await InsertData.insertPlayerAnswer(answer);
+    }
+
+    static async insertPlayer(player: PlayerI): Promise<number> {
+        return await InsertData.insertPlayer(player);
     }
 
 
