@@ -1,8 +1,10 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.canInitiateNewGame = exports.createNewGame = void 0;
+const discord_js_1 = require("discord.js");
 const DOBuilder_1 = require("./data/DOBuilder");
 const Errors_1 = require("./Errors");
+const BCONST_1 = require("./BCONST");
 async function createNewGame(interaction) {
     let result;
     let channelId;
@@ -14,6 +16,7 @@ async function createNewGame(interaction) {
         channelId = channel.id;
     }
     // is there an existing game for this channel?
+    console.log("Identified Channel: ", channelId);
     let existingGame = await DOBuilder_1.DO.getQuestionChannel(channelId);
     console.log(`existing : ${existingGame}`);
     // create new game
@@ -30,7 +33,17 @@ async function createNewGame(interaction) {
             question: 0
         };
         result = await DOBuilder_1.DO.insertQuestionChannel(newQuestionChannel);
-        console.log(result);
+        if (result) {
+            result = Errors_1.GameInteractionErr.SQLConnectionError;
+        }
+        else {
+            let thumbnail = BCONST_1.BCONST.MAXIMUS_IMAGES[Math.floor(Math.random() * BCONST_1.BCONST.MAXIMUS_IMAGES.length)].url;
+            const embed = new discord_js_1.EmbedBuilder().setTimestamp().setThumbnail(thumbnail).setFooter({ text: 'Barbie Trivia', iconURL: BCONST_1.BCONST.LOGO });
+            embed.setTitle('**New Trivia Game**');
+            let description = `This is the beginning of a new trivia game! This game is specific to this channel in this server. Every 24-48 hours, a new question will be asked. All participants in the channel have the next 23 hours to provide their answer to the question.`;
+            embed.setDescription(description);
+            interaction.editReply({ embeds: [embed] });
+        }
         // // prompt for frequency
         // if (result < 1) {
         //     let itemsDropDown_interval = Array<DropdownItem>();
@@ -179,6 +192,33 @@ async function createNewGame(interaction) {
 }
 exports.createNewGame = createNewGame;
 async function canInitiateNewGame(interaction) {
-    return 0;
+    let result;
+    let channelId;
+    let channel = interaction.options.getChannel(`chosenChannel`);
+    if (!channel) {
+        channelId = interaction.channelId;
+    }
+    else {
+        channelId = channel.id;
+    }
+    let serverId = interaction.guildId;
+    // is there an existing game for this channel?
+    console.log("Identified Channel: ", channelId);
+    console.log("Identified Server: ", serverId);
+    if (!serverId) {
+        result = Errors_1.GameInteractionErr.GuildDataUnavailable;
+    }
+    else {
+        let existingGame = await DOBuilder_1.DO.getQuestionChannelByServer(serverId);
+        console.log(`existing : ${existingGame}`);
+        if (existingGame.length > 0) {
+            result = Errors_1.GameInteractionErr.GameAlreadyExistsInServer;
+        }
+        else {
+            result = 0;
+        }
+    }
+    console.log(`result: ${result}`);
+    return result;
 }
 exports.canInitiateNewGame = canInitiateNewGame;

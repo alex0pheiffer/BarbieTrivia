@@ -7,6 +7,7 @@ class AskedQuestionO_Changes {
     date: boolean = false;
     response_total: boolean = false;
     response_correct: boolean = false;
+    active: boolean = false;
     
     private changes = new Array<string>();
 
@@ -25,6 +26,12 @@ class AskedQuestionO_Changes {
         this.response_correct= true;
         this.changes.push("response_correct");
     }
+
+    public change_active() {
+        if (this.active) return;
+        this.active = true;
+        this.changes.push("active");
+    }
     
     public generateChanges(): Array<string> {
         return this.changes;        
@@ -42,6 +49,7 @@ export class AskedQuestionO {
     private date: number;
     private response_total: number;
     private response_correct: number;
+    private active: number;
 
     private changes: AskedQuestionO_Changes;
 
@@ -52,6 +60,7 @@ export class AskedQuestionO {
         this.date = json.date;
         this.response_total = json.response_total;
         this.response_correct = json.response_correct;
+        this.active = json.active;
 
         this.changes = new AskedQuestionO_Changes(this.question_id);
     }
@@ -80,6 +89,10 @@ export class AskedQuestionO {
         return this.response_correct;
     }
 
+    public getActive(): number {
+        return this.active;
+    }
+
     public setResponseTotal(value: number): boolean {
         this.response_total = value;
         this.changes.change_response_total();
@@ -89,6 +102,12 @@ export class AskedQuestionO {
     public setResponseCorrect(value: number): boolean {
         this.response_correct = value;
         this.changes.change_response_correct();
+        return true;
+    }
+
+    public setActive(value: number): boolean {
+        this.active = value;
+        this.changes.change_active();
         return true;
     }
     

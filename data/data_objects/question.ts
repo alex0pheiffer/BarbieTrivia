@@ -332,6 +332,12 @@ export class QuestionO {
         return true;
     }
     
+    public setShownTotal(value: number): boolean {
+        this.shown_total = value;
+        this.changes.change_shown_total();
+        return true;
+    }
+
     public isChanges(): boolean {
         return this.changes.isChanges();
     }

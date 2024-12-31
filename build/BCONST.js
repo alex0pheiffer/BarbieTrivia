@@ -7,7 +7,7 @@ exports.BCONST = void 0;
 require('dotenv').config(); // get our passwords and such
 class BCONST {
     // Bot Information
-    static DISCORD_URL = "https://discord.com/oauth2/authorize?client_id=1266967306752491580";
+    static DISCORD_URL = "https://discord.com/oauth2/authorize?client_id=1266967306752491580&permissions=395137345600&integration_type=0&scope=bot";
     static BOT_KEY = process.env["TOKEN"];
     static CLIENT_ID = "1266967306752491580";
     // 0.0  : Initial

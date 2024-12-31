@@ -5,6 +5,7 @@ import { AskedQuestionI } from "../data_interfaces/askedQuestion";
 import { ProposalI } from "../data_interfaces/proposal";
 import { QuestionI } from "../data_interfaces/question";
 import { QuestionChannelI } from "../data_interfaces/questionChannel";
+import { PlayerAnswerI } from "../data_interfaces/playerAnswer";
 
 /* 
  * Retrieves data and returns as JSON
@@ -58,5 +59,15 @@ export class GetData {
     static async getQuestionChannel(id: string): Promise<Array<QuestionChannelI>> {
         let $DATA = await SQLDATA.getQuestionChannelsSQL(id);
         return $DATA as unknown as Array<QuestionChannelI>;
+    }
+    
+    static async getQuestionChannelByServer(id: string): Promise<Array<QuestionChannelI>> {
+        let $DATA = await SQLDATA.getQuestionChannelsByServerSQL(id);
+        return $DATA as unknown as Array<QuestionChannelI>;
+    }
+
+    static async getPlayerAnswer(user: string, ask_id: number): Promise<Array<PlayerAnswerI>> {
+        let $DATA = await SQLDATA.getPlayerAnswerSQL(user, ask_id);
+        return $DATA as unknown as Array<PlayerAnswerI>;
     }
 }

@@ -115,6 +115,18 @@ class DO {
         }
         return channelArray;
     }
+    static async getQuestionChannelByServer(serverID) {
+        let channelArray = [];
+        let channel;
+        let channeljson = await GetData_1.GetData.getQuestionChannelByServer(serverID);
+        if (channeljson.length > 0) {
+            for (let i = 0; i < channeljson.length; i++) {
+                channel = new questionChannel_1.QuestionChannelO(channeljson[i]);
+                channelArray.push(channel);
+            }
+        }
+        return channelArray;
+    }
     /*
      *  Update Functions
      *

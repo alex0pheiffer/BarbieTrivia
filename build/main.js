@@ -83,9 +83,19 @@ client.on(discord_js_1.Events.InteractionCreate, async (interaction) => {
                 await interaction.deferReply({ ephemeral: false });
                 switch (await (0, new_1.canInitiateNewGame)(interaction)) {
                     case 0:
-                        (0, new_1.createNewGame)(interaction);
+                        console.log("Creating new game...");
+                        switch (await (0, new_1.createNewGame)(interaction)) {
+                            case 0:
+                                break;
+                            case Errors_1.GameInteractionErr.GameAlreadyExists:
+                            case Errors_1.GameInteractionErr.GameAlreadyExistsInServer:
+                                interaction.editReply({ content: `A game already exists in this channel.` });
+                            default:
+                                interaction.editReply({ content: "Something went wrong." });
+                        }
                         break;
                     case Errors_1.GameInteractionErr.GameAlreadyExists:
+                    case Errors_1.GameInteractionErr.GameAlreadyExistsInServer:
                         interaction.editReply({ content: `A game already exists in this channel.` });
                         break;
                     default:
@@ -312,5 +322,4 @@ function stringToCorrectFormat(str) {
 }
 */
 // login
-console.log(`token: ${BCONST_1.BCONST.BOT_KEY}`);
 client.login(BCONST_1.BCONST.BOT_KEY);

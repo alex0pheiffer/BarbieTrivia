@@ -53,5 +53,9 @@ class GetData {
         let $DATA = await CommandsSQL_1.SQLDATA.getQuestionChannelsSQL(id);
         return $DATA;
     }
+    static async getQuestionChannelByServer(id) {
+        let $DATA = await CommandsSQL_1.SQLDATA.getQuestionChannelsByServerSQL(id);
+        return $DATA;
+    }
 }
 exports.GetData = GetData;

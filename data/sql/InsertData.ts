@@ -1,6 +1,7 @@
 // Retrieve data from the SQL database
 import { AdminI } from "../data_interfaces/admin";
 import { AskedQuestionI } from "../data_interfaces/askedQuestion";
+import { PlayerAnswerI } from "../data_interfaces/playerAnswer";
 import { QuestionChannelI } from "../data_interfaces/questionChannel";
 import { ProposalO } from "../data_objects/proposal";
 import { QuestionO } from "../data_objects/question";
@@ -33,6 +34,11 @@ export class InsertData {
 
     static async insertQuestionChannel(channel: QuestionChannelI): Promise<number> {
         let result = await SQLDATA.insertQuestionChannel(channel);
+        return result;
+    }        
+    
+    static async insertPlayerAnswer(answer: PlayerAnswerI ): Promise<number> {
+        let result = await SQLDATA.insertPlayerAnswer(answer);
         return result;
     }        
 

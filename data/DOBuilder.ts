@@ -11,6 +11,8 @@ import { QuestionChannelO } from "./data_objects/questionChannel";
 import { AdminI } from "./data_interfaces/admin";
 import { AskedQuestionI } from "./data_interfaces/askedQuestion";
 import { QuestionChannelI } from "./data_interfaces/questionChannel";
+import { PlayerAnswerO } from "./data_objects/playerAnswer";
+import { PlayerAnswerI } from "./data_interfaces/playerAnswer";
 
 export class DO {
 
@@ -140,6 +142,36 @@ export class DO {
         return channelArray;
     }
 
+    static async getQuestionChannelByServer(serverID: string): Promise<Array<QuestionChannelO>> {
+        let channelArray: Array<QuestionChannelO> = [];
+        let channel: QuestionChannelO;
+        let channeljson = await GetData.getQuestionChannelByServer(serverID);
+        
+        if (channeljson.length > 0) {
+            for (let i=0; i < channeljson.length; i++) {
+                channel = new QuestionChannelO(channeljson[i]);
+                channelArray.push(channel);
+            }
+        }
+        
+        return channelArray;
+    }
+
+    static async getPlayerAnswer(user: string, ask_id: number): Promise<Array<PlayerAnswerO>> {
+        let answerArray: Array<PlayerAnswerO> = [];
+        let answer: PlayerAnswerO;
+        let answerjson = await GetData.getPlayerAnswer(user, ask_id);
+        
+        if (answerjson.length > 0) {
+            for (let i=0; i < answerjson.length; i++) {
+                answer = new PlayerAnswerO(answerjson[i]);
+                answerArray.push(answer);
+            }
+        }
+        
+        return answerArray;
+    }
+
     /*
      *  Update Functions
      *
@@ -156,6 +188,10 @@ export class DO {
 
     static async updateAskedQuestion(question: AskedQuestionO, errType: any): Promise<number> {
         return await UpdateData.updateAskedQuestion(question, errType);
+    }
+
+    static async updatePlayerAnswer(answer: PlayerAnswerO, errType: any): Promise<number> {
+        return await UpdateData.updatePlayerAnswer(answer, errType);
     }
 
     /*
@@ -182,6 +218,10 @@ export class DO {
     
     static async insertQuestionChannel(channel: QuestionChannelI): Promise<number> {
         return await InsertData.insertQuestionChannel(channel);
+    }
+    
+    static async insertPlayerAnswer(answer: PlayerAnswerI): Promise<number> {
+        return await InsertData.insertPlayerAnswer(answer);
     }
 
 

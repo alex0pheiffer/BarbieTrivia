@@ -65,9 +65,19 @@ client.on(Events.InteractionCreate, async (interaction: Interaction<CacheType>) 
                 await interaction.deferReply({ephemeral: false});
                 switch(await canInitiateNewGame(interaction)) {
                     case 0: 
-                        createNewGame(interaction);
+                        console.log("Creating new game...");
+                        switch (await createNewGame(interaction)) {
+                            case 0:
+                                break;
+                            case GameInteractionErr.GameAlreadyExists:
+                            case GameInteractionErr.GameAlreadyExistsInServer:
+                                interaction.editReply({content: `A game already exists in this channel.`});
+                            default:
+                                interaction.editReply({content:"Something went wrong."});
+                        }
                         break;
                     case GameInteractionErr.GameAlreadyExists:
+                    case GameInteractionErr.GameAlreadyExistsInServer:
                         interaction.editReply({content: `A game already exists in this channel.`});
                         break;
                     default:
@@ -295,5 +305,4 @@ function stringToCorrectFormat(str) {
 }
 */
 // login
-console.log(`token: ${BCONST.BOT_KEY}`);
 client.login(BCONST.BOT_KEY);

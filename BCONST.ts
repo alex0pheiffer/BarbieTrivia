@@ -6,7 +6,7 @@ require('dotenv').config() // get our passwords and such
 
 export class BCONST {
     // Bot Information
-    static DISCORD_URL = "https://discord.com/oauth2/authorize?client_id=1266967306752491580";
+    static DISCORD_URL = "https://discord.com/oauth2/authorize?client_id=1266967306752491580&permissions=395137345600&integration_type=0&scope=bot";
     static BOT_KEY = process.env["TOKEN"];
     static CLIENT_ID = "1266967306752491580";
     // 0.0  : Initial
@@ -34,9 +34,14 @@ export class BCONST {
 
     static SQL_DEBUG = false;
 
+    // Master Channel
+    static MASTER_QUESTION_SERVER = "1266960173533237268";
+
     // UI Information
     static BTN_SUBMIT = "Submit";
     static DROPDOWN_INTERVAL = "Time Interval Selection";
+    static DROPDOWN_ANSWER = "Answer Selection";
+    static DROPDOWN_DURATION = 120_000;
 
     // Game Specific Information
     static QUESTION_INTERVALS = [

@@ -38,7 +38,6 @@ async function connectSQL() {
             }
         }
     }
-    console.log(BCONST_1.BCONST.BOT_KEY);
     console.log(`result: ${results}`);
     console.log(`host: ${BCONST_1.BCONST.SQL_HOST}`);
     console.log(`database: ${BCONST_1.BCONST.SQL_DB}`);

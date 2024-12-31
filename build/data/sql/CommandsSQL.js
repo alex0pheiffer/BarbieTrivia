@@ -224,6 +224,32 @@ class SQLDATA {
             });
         });
     }
+    static async getQuestionChannelsByServerSQL(serverID) {
+        await checkConnection();
+        return new Promise((resolve, reject) => {
+            if (serverID.length > Database_Constants_1.DBC.channelID_length) {
+                console.log("ERROR: SERVERID too long.");
+                // todo make this a valid error
+                return resolve([]);
+            }
+            // determine if this column already exists
+            var sqlq = `SELECT * FROM question_channel WHERE server='${serverID}';`;
+            StartSQL_1.con.conn.query(sqlq, function (err, result) {
+                if (err)
+                    throw err;
+                if (BCONST_1.BCONST.SQL_DEBUG) {
+                    console.log("Obtained Data: ");
+                    console.log(result);
+                }
+                // check that a result exists
+                if (result.length <= 0) {
+                    resolve([]);
+                    return;
+                }
+                return resolve(JSON.parse(JSON.stringify(result)));
+            });
+        });
+    }
     //
     //  Update Functions
     // general update table function for all upadate functions

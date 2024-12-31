@@ -5,6 +5,7 @@
 // date             :   bigint (time in ms)
 // response_total   :   int (total number of responses)
 // response_correct :   int (total number of correct responses)
+// active           :   int (if the question is currently active)
 
 export interface AskedQuestionI {
     ask_id: number;
@@ -13,4 +14,5 @@ export interface AskedQuestionI {
     date: number;
     response_total: number;
     response_correct: number;
+    active: number;
 }
