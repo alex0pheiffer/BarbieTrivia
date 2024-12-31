@@ -303,6 +303,16 @@ class QuestionO {
         this.changes.change_shown_total();
         return true;
     }
+    setResponseTotal(value) {
+        this.response_total = value;
+        this.changes.change_response_total();
+        return true;
+    }
+    setResponseCorrect(value) {
+        this.response_correct = value;
+        this.changes.change_response_correct();
+        return true;
+    }
     isChanges() {
         return this.changes.isChanges();
     }

@@ -5,6 +5,7 @@ const discord_js_1 = require("discord.js");
 const BCONST_1 = require("./BCONST");
 const DOBuilder_1 = require("./data/DOBuilder");
 const Errors_1 = require("./Errors");
+const new_1 = require("./new");
 async function showQuestionResult(message, ask_id) {
     console.log("Enterinig question result.");
     let result = 0;
@@ -39,6 +40,23 @@ async function showQuestionResult(message, ask_id) {
                     if (r.getSubmtitted()) {
                         count[r.getResponse()]++;
                     }
+                    // update the player's information
+                    // check if this user has a profile. if not, create one.
+                    let player_profile = await DOBuilder_1.DO.getPlayer(r.getUser());
+                    let correct = Number(r.getResponse() == question.getCorrect());
+                    if (player_profile == null) {
+                        let new_player = { "player_id": 0, "user": r.getUser(), "q_submitted": 0, "response_total": 1, "response_correct": correct };
+                        result = await DOBuilder_1.DO.insertPlayer(new_player);
+                    }
+                    else {
+                        player_profile.setResponseTotal(player_profile.getResponseTotal() + 1);
+                        if (correct) {
+                            player_profile.setResponseCorrect(player_profile.getResponseCorrect() + 1);
+                        }
+                        result = await DOBuilder_1.DO.updatePlayer(player_profile, result);
+                    }
+                    // delete the player response
+                    result = await DOBuilder_1.DO.deletePlayerAnswer(r.getAnswerID());
                 }
                 let total = responses.length;
                 let ratio = count[question.getCorrect()] / total;
@@ -51,12 +69,14 @@ async function showQuestionResult(message, ask_id) {
                 const embed = new discord_js_1.EmbedBuilder().setTimestamp().setThumbnail(thumbnail).setFooter({ text: 'Barbie Trivia', iconURL: BCONST_1.BCONST.LOGO });
                 embed.setTitle(`**Question (${month}/${day}/${year})**`);
                 let description;
+                let second_description;
                 if (ratio > 0.3) {
-                    description = BCONST_1.BCONST.MAXIMUS_PHRASES_END_GOOD[Math.floor(Math.random() * BCONST_1.BCONST.MAXIMUS_PHRASES_END_GOOD.length)] + "\n\n";
+                    description = "_" + BCONST_1.BCONST.MAXIMUS_PHRASES_END_GOOD[Math.floor(Math.random() * BCONST_1.BCONST.MAXIMUS_PHRASES_END_GOOD.length)] + "_\n\n";
                 }
                 else {
-                    description = BCONST_1.BCONST.MAXIMUS_PHRASES_END_BAD[Math.floor(Math.random() * BCONST_1.BCONST.MAXIMUS_PHRASES_END_BAD.length)] + "\n\n";
+                    description = "_" + BCONST_1.BCONST.MAXIMUS_PHRASES_END_BAD[Math.floor(Math.random() * BCONST_1.BCONST.MAXIMUS_PHRASES_END_BAD.length)] + "_\n\n";
                 }
+                second_description = description;
                 description += question.getQuestion() + '\n';
                 let letter;
                 let ans;
@@ -95,10 +115,40 @@ async function showQuestionResult(message, ask_id) {
                     }
                     description += count_str;
                 }
-                console.log("editing message");
+                description += `\n\nThe correct answer was \`${question.getAnswers()[question.getCorrect()]}\`!`;
+                if (question.getFunFact().length > 2) {
+                    description += `\n${question.getFunFact()}`;
+                }
+                if (question.getImage().length > 3) {
+                    embed.setImage(question.getImage());
+                }
                 embed.setDescription(description);
-                message.edit({ embeds: [embed] });
-                // todo update the sql database
+                message.edit({ embeds: [embed], components: [] });
+                console.log("before updates result: ", result);
+                // update the asked_question to be disabled, and with the respective responses
+                asked_question.setActive(0);
+                asked_question.setResponseTotal(total);
+                asked_question.setResponseCorrect(count[question.getCorrect()]);
+                result = await DOBuilder_1.DO.updateAskedQuestion(asked_question, result);
+                console.log("First result: ", result);
+                // update the question responses
+                question.setResponseTotal(question.getResponseTotal() + total);
+                question.setResponseCorrect(question.getResponseCorrect() + count[question.getCorrect()]);
+                result = await DOBuilder_1.DO.updateQuestion(question, result);
+                console.log(`End of the updates. Going to send next question. ${result}`);
+                if (!result) {
+                    // add an extra ping to notify the users
+                    let channel = await message.client.channels.cache.get(message.channelId);
+                    if (typeof channel === 'undefined')
+                        result = Errors_1.GameInteractionErr.GuildDataUnavailable;
+                    channel = channel;
+                    second_description += `Polling has closed! The correct answer was \`${question.getAnswers()[question.getCorrect()]}\`!`;
+                    let new_message = await channel.send(second_description);
+                    // start the next question
+                    let duration = Math.random() * 60 * 5 * 1000; //60 * 60 * 23 * 1000; // 23 hours in ms
+                    console.log("duration set: ", duration);
+                    setTimeout(new_1.createNewQuestion, duration, message.guildId, message.channelId, message.client);
+                }
             }
         }
     }

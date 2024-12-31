@@ -11,6 +11,7 @@ const askedQuesetion_1 = require("./data_objects/askedQuesetion");
 const proposal_1 = require("./data_objects/proposal");
 const questionChannel_1 = require("./data_objects/questionChannel");
 const playerAnswer_1 = require("./data_objects/playerAnswer");
+const player_1 = require("./data_objects/player");
 class DO {
     /*
      *  Get Functions
@@ -164,6 +165,15 @@ class DO {
         }
         return answerArray;
     }
+    static async getPlayer(userID) {
+        let player;
+        let playerjson = await GetData_1.GetData.getPlayer(userID);
+        if (playerjson) {
+            player = new player_1.PlayerO(playerjson);
+            return player;
+        }
+        return null;
+    }
     /*
      *  Update Functions
      *
@@ -180,6 +190,9 @@ class DO {
     }
     static async updatePlayerAnswer(answer, errType) {
         return await UpdateData_1.UpdateData.updatePlayerAnswer(answer, errType);
+    }
+    static async updatePlayer(player, errType) {
+        return await UpdateData_1.UpdateData.updatePlayer(player, errType);
     }
     /*
      *  Insert Functions
@@ -204,6 +217,9 @@ class DO {
     static async insertPlayerAnswer(answer) {
         return await InsertData_1.InsertData.insertPlayerAnswer(answer);
     }
+    static async insertPlayer(player) {
+        return await InsertData_1.InsertData.insertPlayer(player);
+    }
     /*
      *  Delete Functions
      *
@@ -217,6 +233,9 @@ class DO {
     }
     static async deleteQuestionChannel(channel) {
         return await DeleteData_1.DeleteData.deleteQuestionChannel(channel);
+    }
+    static async deletePlayerAnswer(answer_id) {
+        return await DeleteData_1.DeleteData.deletePlayerAnswer(answer_id);
     }
 }
 exports.DO = DO;

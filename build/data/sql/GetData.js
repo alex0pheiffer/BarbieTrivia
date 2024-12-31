@@ -69,5 +69,12 @@ class GetData {
         let $DATA = await CommandsSQL_1.SQLDATA.getPlayerAnswersSQL(ask_id);
         return $DATA;
     }
+    static async getPlayer(userID) {
+        let $DATA = await CommandsSQL_1.SQLDATA.getPlayerSQL(userID);
+        if ($DATA == "")
+            return null;
+        else
+            return JSON.parse($DATA);
+    }
 }
 exports.GetData = GetData;

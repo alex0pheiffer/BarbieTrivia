@@ -342,6 +342,18 @@ export class QuestionO {
         return true;
     }
 
+    public setResponseTotal(value: number): boolean {
+        this.response_total = value;
+        this.changes.change_response_total();
+        return true;
+    }
+
+    public setResponseCorrect(value: number): boolean {
+        this.response_correct = value;
+        this.changes.change_response_correct();
+        return true;
+    }
+
     public isChanges(): boolean {
         return this.changes.isChanges();
     }

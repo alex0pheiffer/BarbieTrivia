@@ -31,5 +31,9 @@ class InsertData {
         let result = await CommandsSQL_1.SQLDATA.insertPlayerAnswer(answer);
         return result;
     }
+    static async insertPlayer(player) {
+        let result = await CommandsSQL_1.SQLDATA.insertPlayer(player);
+        return result;
+    }
 }
 exports.InsertData = InsertData;

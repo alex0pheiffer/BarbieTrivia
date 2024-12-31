@@ -318,6 +318,32 @@ class SQLDATA {
             });
         });
     }
+    static async getPlayerSQL(userid) {
+        await checkConnection();
+        return new Promise((resolve, reject) => {
+            if (userid.length > Database_Constants_1.DBC.userID_length) {
+                console.log("ERROR: USERID too long.");
+                // todo make this a valid error
+                return resolve("");
+            }
+            // determine if this column exists
+            var sqlq = `SELECT * FROM player WHERE user = '${userid}';`;
+            StartSQL_1.con.conn.query(sqlq, function (err, result) {
+                if (err)
+                    throw err;
+                if (BCONST_1.BCONST.SQL_DEBUG) {
+                    console.log("Obtained Data: ");
+                    console.log(result);
+                }
+                // check that a result exists
+                if (result.length <= 0) {
+                    resolve("");
+                    return;
+                }
+                return resolve(JSON.stringify(result[0]));
+            });
+        });
+    }
     //
     //  Update Functions
     // general update table function for all upadate functions
@@ -567,6 +593,7 @@ class SQLDATA {
                         if (err)
                             return resolve(err);
                         sql_changes += ` ${p} = ${value},`;
+                        break;
                     default:
                         console.log("Error: the property " + p + " is not supported by updateAskedQuestion.");
                         break;
@@ -628,6 +655,64 @@ class SQLDATA {
                 sql_changes = sql_changes.slice(0, sql_changes.length - 1);
                 sql_q += sql_changes;
                 sql_q += ` WHERE answer_id = '${answer.getAnswerID()}';`;
+                let result = await this.updateTable(sql_q);
+                resolve(result);
+            }
+        });
+    }
+    static async updatePlayer(player, errType) {
+        if (!player.isChanges())
+            return 0;
+        await checkConnection();
+        return new Promise(async (resolve, reject) => {
+            let value;
+            let err;
+            value = player.getPlayer();
+            err = checkString(value, Database_Constants_1.DBC.userID_length, Errors_1.DataErr.InvalidInputToSQL, "user");
+            if (err)
+                return resolve(err);
+            let sql_changes = "";
+            let sql_q = "UPDATE player SET";
+            player.getChanges().forEach((p) => {
+                switch (p) {
+                    case "q_submitted":
+                        value = player.getQSubmitted();
+                        err = checkInt(value, errType.InvalidInputToSQL, p);
+                        if (err)
+                            return resolve(err);
+                        sql_changes += ` ${p} = ${value},`;
+                        break;
+                    case "q_submitted":
+                        value = player.getQSubmitted();
+                        err = checkInt(value, errType.InvalidInputToSQL, p);
+                        if (err)
+                            return resolve(err);
+                        sql_changes += ` ${p} = ${value},`;
+                        break;
+                    case "response_total":
+                        value = player.getResponseTotal();
+                        err = checkInt(value, errType.InvalidInputToSQL, p);
+                        if (err)
+                            return resolve(err);
+                        sql_changes += ` ${p} = ${value},`;
+                        break;
+                    case "response_correct":
+                        value = player.getResponseCorrect();
+                        err = checkInt(value, errType.InvalidInputToSQL, p);
+                        if (err)
+                            return resolve(err);
+                        sql_changes += ` ${p} = ${value},`;
+                        break;
+                    default:
+                        console.log("Error: the property " + p + " is not supported by updatePlayer.");
+                        break;
+                }
+            });
+            if (sql_changes != "") {
+                // remove the extra comma
+                sql_changes = sql_changes.slice(0, sql_changes.length - 1);
+                sql_q += sql_changes;
+                sql_q += ` WHERE user = '${player.getPlayer()}';`;
                 let result = await this.updateTable(sql_q);
                 resolve(result);
             }
@@ -1037,6 +1122,50 @@ class SQLDATA {
             });
         });
     }
+    static async insertPlayer(player) {
+        await checkConnection();
+        return new Promise((resolve, reject) => {
+            let value;
+            let err;
+            value = player.user;
+            err = checkString(value, Database_Constants_1.DBC.userID_length, Errors_1.DataErr.InvalidInputToSQL, "user");
+            if (err)
+                return resolve(err);
+            value = player.response_total;
+            err = checkInt(value, Errors_1.DataErr.InvalidInputToSQL, "response_total");
+            if (err)
+                return resolve(err);
+            value = player.response_correct;
+            err = checkInt(value, Errors_1.DataErr.InvalidInputToSQL, "response_correct");
+            if (err)
+                return resolve(err);
+            value = player.q_submitted;
+            err = checkInt(value, Errors_1.DataErr.InvalidInputToSQL, "q_submitted");
+            if (err)
+                return resolve(err);
+            var sql_columns = `(user, \
+            q_submitted, \
+            response_total, \
+            response_correct)`;
+            var sql_values = `('${player.user}', \
+            ${player.q_submitted},\
+            ${player.response_total},\
+            ${player.response_correct})`;
+            var sqlq = `INSERT INTO player ${sql_columns} VALUES ${sql_values};`;
+            StartSQL_1.con.conn.query(sqlq, function (err, result) {
+                if (err && err.errno == 1062) {
+                    return resolve(Errors_1.DataErr.IDAlreadyExists);
+                }
+                else if (err) {
+                    throw err;
+                }
+                if (BCONST_1.BCONST.SQL_DEBUG) {
+                    console.log(`1 recored inserted: ${result.insertId}`);
+                }
+                return resolve(0);
+            });
+        });
+    }
     //
     //  Delete Functions
     static async deleteAdmin(userID) {
@@ -1083,6 +1212,24 @@ class SQLDATA {
         await checkConnection();
         return new Promise((resolve, reject) => {
             let sqlq = `DELETE FROM question_channel WHERE channel=${channel};`;
+            StartSQL_1.con.conn.query(sqlq, function (err, result) {
+                if (err && err.errno == 1062) {
+                    return resolve(Errors_1.DataErr.IDDoesNotExist);
+                }
+                else if (err) {
+                    throw err;
+                }
+                if (BCONST_1.BCONST.SQL_DEBUG) {
+                    console.log(`1 recored deleted.`);
+                }
+                return resolve(0);
+            });
+        });
+    }
+    static async deletePlayerAnswer(answer_id) {
+        await checkConnection();
+        return new Promise((resolve, reject) => {
+            let sqlq = `DELETE FROM player_answer WHERE answer_id=${answer_id};`;
             StartSQL_1.con.conn.query(sqlq, function (err, result) {
                 if (err && err.errno == 1062) {
                     return resolve(Errors_1.DataErr.IDDoesNotExist);

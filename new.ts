@@ -10,6 +10,7 @@ import { PlayerAnswerI } from "./data/data_interfaces/playerAnswer";
 import { AskedQuestionI } from "./data/data_interfaces/askedQuestion";
 import { PlayerAnswerO } from "./data/data_objects/playerAnswer";
 import { showQuestionResult } from "./question_cycle";
+import { PlayerI } from "./data/data_interfaces/player";
 
 
 export async function createNewGame(interaction: ChatInputCommandInteraction): Promise<Number> {
@@ -215,7 +216,11 @@ export async function createNewQuestion(serverID: string, channelID: string, cli
             const embed = new EmbedBuilder().setTimestamp().setThumbnail(thumbnail).setFooter({text: 'Barbie Trivia', iconURL: BCONST.LOGO});
             embed.setTitle(`**Question (${month}/${day}/${year})**`);
             let description = "_" + BCONST.MAXIMUS_PHRASES_START[Math.floor(Math.random()*BCONST.MAXIMUS_PHRASES_START.length)] + "_\n\n";
-            description += question!!.getQuestion() + '\n';
+            description += "**" + question!!.getQuestion() + '**\n';
+
+            if (question!!.getImage().length > 3) {
+                embed.setImage(question!!.getImage());
+            }
             
             let itemsDropDown_interval = Array<DropdownItem>();
             let letter: string;
@@ -241,7 +246,7 @@ export async function createNewQuestion(serverID: string, channelID: string, cli
             const collector_drop = message.createMessageComponentCollector({filter: filter_dropdown});
             collector_btn.on('collect', async (inter: ButtonInteraction) => {
                 await inter.deferReply({ephemeral: true});
-                pressGoButton(inter, question_id, ask_id).then(async ([err, selected]) => {
+                pressGoButton(inter, message, question_id, ask_id, embed, description).then(async ([err, selected]) => {
                     let resp = "";
                     switch (err) {
                         case 0: 
@@ -288,7 +293,8 @@ export async function createNewQuestion(serverID: string, channelID: string, cli
 
             // in 23 hours, display the response
             // TODO replace with 23 hours
-            let duration = 60 * 60 * 5 * 1000; //60 * 60 * 23 * 1000; // 23 hours in ms
+            let duration = 60 * 5 * 1000; //60 * 60 * 23 * 1000; // 23 hours in ms
+            console.log("duration set: ", duration);
             setTimeout(showQuestionResult, duration, message, ask_id);
         }
     }
@@ -296,7 +302,7 @@ export async function createNewQuestion(serverID: string, channelID: string, cli
     return result;
 }
 
-async function pressGoButton(interaction: Interaction, questionID: number, ask_id: number): Promise<[number, number]> {
+async function pressGoButton(interaction: Interaction, message: Message, questionID: number, ask_id: number, base_embed: EmbedBuilder, base_description: string): Promise<[number, number]> {
     let result = 0;
     let player_answer_number = -1;
     let player_answer: PlayerAnswerO[];
@@ -342,9 +348,14 @@ async function pressGoButton(interaction: Interaction, questionID: number, ask_i
     if (!result) {
         player_answer!![0].setSubmitted(1);
         result = await DO.updatePlayerAnswer(player_answer!![0], result);
+    }
 
-        // check if this user has a profile. if not, create one.
-        let player_profile = await DO.get
+    // update the message for total number of responses:
+    let responses = await DO.getPlayerAnswers(ask_id);
+    if (responses.length > 0) {
+        base_description += `\n\nCurrent Responses: \`${responses.length}\``;
+        base_embed.setDescription(base_description);
+        message.edit({embeds: [base_embed]});
     }
     
     return [result, player_answer_number];

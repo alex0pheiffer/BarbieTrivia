@@ -645,6 +645,7 @@ export class SQLDATA {
                         err = checkInt(value, errType.InvalidInputToSQL, p);
                         if (err) return resolve(err);
                         sql_changes += ` ${p} = ${value},`;
+                        break;
                     default:
                         console.log("Error: the property "+p+" is not supported by updateAskedQuestion.");
                         break;
@@ -1275,6 +1276,26 @@ export class SQLDATA {
         await checkConnection();
         return new Promise((resolve, reject) => {
             let sqlq = `DELETE FROM question_channel WHERE channel=${channel};`;
+            con.conn.query(sqlq, function (err: any, result: any) {
+                if (err && err.errno == 1062) {
+                    return resolve(DataErr.IDDoesNotExist);
+                }
+                else if (err) {
+                    throw err;
+                }
+
+                if (BCONST.SQL_DEBUG) {
+                    console.log(`1 recored deleted.`);                    
+                }
+                return resolve(0);
+            }); 
+        });
+    }
+
+    static async deletePlayerAnswer(answer_id: number): Promise<number> {
+        await checkConnection();
+        return new Promise((resolve, reject) => {
+            let sqlq = `DELETE FROM player_answer WHERE answer_id=${answer_id};`;
             con.conn.query(sqlq, function (err: any, result: any) {
                 if (err && err.errno == 1062) {
                     return resolve(DataErr.IDDoesNotExist);

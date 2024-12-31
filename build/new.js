@@ -186,8 +186,11 @@ async function createNewQuestion(serverID, channelID, client) {
             let thumbnail = BCONST_1.BCONST.MAXIMUS_IMAGES[max_img_index].url;
             const embed = new discord_js_1.EmbedBuilder().setTimestamp().setThumbnail(thumbnail).setFooter({ text: 'Barbie Trivia', iconURL: BCONST_1.BCONST.LOGO });
             embed.setTitle(`**Question (${month}/${day}/${year})**`);
-            let description = BCONST_1.BCONST.MAXIMUS_PHRASES_START[Math.floor(Math.random() * BCONST_1.BCONST.MAXIMUS_PHRASES_START.length)] + "\n\n";
+            let description = "_" + BCONST_1.BCONST.MAXIMUS_PHRASES_START[Math.floor(Math.random() * BCONST_1.BCONST.MAXIMUS_PHRASES_START.length)] + "_\n\n";
             description += question.getQuestion() + '\n';
+            if (question.getImage().length > 3) {
+                embed.setImage(question.getImage());
+            }
             let itemsDropDown_interval = Array();
             let letter;
             for (let i = 0; i < 4; i++) {
@@ -213,7 +216,7 @@ async function createNewQuestion(serverID, channelID, client) {
             const collector_drop = message.createMessageComponentCollector({ filter: filter_dropdown });
             collector_btn.on('collect', async (inter) => {
                 await inter.deferReply({ ephemeral: true });
-                pressGoButton(inter, question_id, ask_id).then(async ([err, selected]) => {
+                pressGoButton(inter, message, question_id, ask_id, embed, description).then(async ([err, selected]) => {
                     let resp = "";
                     switch (err) {
                         case 0:
@@ -258,14 +261,15 @@ async function createNewQuestion(serverID, channelID, client) {
             });
             // in 23 hours, display the response
             // TODO replace with 23 hours
-            let duration = 60 * 60 * 5 * 1000; //60 * 60 * 23 * 1000; // 23 hours in ms
+            let duration = 60 * 5 * 1000; //60 * 60 * 23 * 1000; // 23 hours in ms
+            console.log("duration set: ", duration);
             setTimeout(question_cycle_1.showQuestionResult, duration, message, ask_id);
         }
     }
     return result;
 }
 exports.createNewQuestion = createNewQuestion;
-async function pressGoButton(interaction, questionID, ask_id) {
+async function pressGoButton(interaction, message, questionID, ask_id, base_embed, base_description) {
     let result = 0;
     let player_answer_number = -1;
     let player_answer;
@@ -309,6 +313,13 @@ async function pressGoButton(interaction, questionID, ask_id) {
     if (!result) {
         player_answer[0].setSubmitted(1);
         result = await DOBuilder_1.DO.updatePlayerAnswer(player_answer[0], result);
+    }
+    // update the message for total number of responses:
+    let responses = await DOBuilder_1.DO.getPlayerAnswers(ask_id);
+    if (responses.length > 0) {
+        base_description += `\n\nCurrent Responses: ${responses.length}`;
+        base_embed.setDescription(base_description);
+        message.edit({ embeds: [base_embed] });
     }
     return [result, player_answer_number];
 }

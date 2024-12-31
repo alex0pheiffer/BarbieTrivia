@@ -23,5 +23,9 @@ class UpdateData {
         let result = await CommandsSQL_1.SQLDATA.updatePlayerAnswer(answer, errType);
         return result;
     }
+    static async updatePlayer(player, errType) {
+        let result = await CommandsSQL_1.SQLDATA.updatePlayer(player, errType);
+        return result;
+    }
 }
 exports.UpdateData = UpdateData;

@@ -274,7 +274,6 @@ export class DO {
         return await InsertData.insertPlayer(player);
     }
 
-
     /*
      *  Delete Functions
      *
@@ -291,6 +290,10 @@ export class DO {
     
     static async deleteQuestionChannel(channel: string): Promise<number> {
         return await DeleteData.deleteQuestionChannel(channel);
+    }
+
+    static async deletePlayerAnswer(answer_id: number): Promise<number> {
+        return await DeleteData.deletePlayerAnswer(answer_id);
     }
     
 }

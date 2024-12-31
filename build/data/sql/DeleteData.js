@@ -20,5 +20,9 @@ class DeleteData {
         let result = await CommandsSQL_1.SQLDATA.deleteQuestionChannel(channel);
         return result;
     }
+    static async deletePlayerAnswer(answer_id) {
+        let result = await CommandsSQL_1.SQLDATA.deletePlayerAnswer(answer_id);
+        return result;
+    }
 }
 exports.DeleteData = DeleteData;
