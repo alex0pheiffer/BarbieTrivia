@@ -8,7 +8,6 @@ import { PlayerI } from "./data/data_interfaces/player";
 import { createNewQuestion } from "./new";
 
 export async function showQuestionResult(message: Message, ask_id: number): Promise<Number> {
-    console.log("Enterinig question result.");
     let result = 0;
 
     // question
@@ -28,10 +27,14 @@ export async function showQuestionResult(message: Message, ask_id: number): Prom
         else {
             // collect the responses to this question
             let responses = await DO.getPlayerAnswers(ask_id);
-            if (responses.length < 1) {
-                result = GameInteractionErr.NoPlayerResponses;
-                // if no responses have been recorded, extend the life of this question.
-                // TODO
+            if (responses.length < 2) {
+                let duration = 60 * 60 * 23 * 1000; // 23 hours in ms
+                setTimeout(showQuestionResult, duration, message, ask_id);
+                let channel: Channel | undefined = await message.client.channels.cache.get(message.channelId);
+                if (typeof channel === 'undefined') result = GameInteractionErr.GuildDataUnavailable;
+                channel = channel as TextChannel;
+                let description = `Because nobody has responded to the trivia question, the question is being extended another 24 hours.`
+                let new_message = await channel!!.send(description);
             }
             else {
                 let r: PlayerAnswerO;
@@ -133,14 +136,11 @@ export async function showQuestionResult(message: Message, ask_id: number): Prom
                 embed.setDescription(description);
                 message.edit({embeds: [embed], components: []});
 
-                console.log("before updates result: ", result);
-
                 // update the asked_question to be disabled, and with the respective responses
                 asked_question!!.setActive(0);
                 asked_question!!.setResponseTotal(total);
                 asked_question!!.setResponseCorrect(count[question.getCorrect()]);
                 result = await DO.updateAskedQuestion(asked_question!!, result);
-                console.log("First result: ", result);
                 // update the question responses
                 question.setResponseTotal(question.getResponseTotal() + total);
                 question.setResponseCorrect(question.getResponseCorrect() + count[question.getCorrect()]);

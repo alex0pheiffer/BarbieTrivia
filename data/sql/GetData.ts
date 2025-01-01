@@ -35,6 +35,12 @@ export class GetData {
         if ($DATA == "") return null;
         else return JSON.parse($DATA) as ProposalI;
     }
+    
+    static async getProposalByQuestion(question: string): Promise<ProposalI | null> {
+        let $DATA = await SQLDATA.getProposalByQuestionSQL(question);
+        if ($DATA == "") return null;
+        else return JSON.parse($DATA) as ProposalI;
+    }
 
     static async getProposals(): Promise<Array<ProposalI>> {
         let $DATA = await SQLDATA.getProposalsSQL();

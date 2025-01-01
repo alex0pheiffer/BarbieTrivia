@@ -1,4 +1,5 @@
 import {ProposalI} from "../data_interfaces/proposal"
+import { QuestionI } from "../data_interfaces/question";
 import {DBC} from "../sql/Database_Constants"
 
 class ProposalO_Changes {
@@ -15,6 +16,7 @@ class ProposalO_Changes {
     correct: boolean = false;
     date: boolean = false;
     submitter: boolean = false;
+    submitted: boolean = false;
 
     private changes = new Array<string>();
 
@@ -87,6 +89,12 @@ class ProposalO_Changes {
         this.submitter = true;
         this.changes.push("submitter");
     }
+
+    public change_submitted() {
+        if (this.submitted) return;
+        this.submitted = true;
+        this.changes.push("submitted");
+    }
     
     public generateChanges(): Array<string> {
         return this.changes;        
@@ -111,6 +119,7 @@ export class ProposalO {
     private correct: number;
     private date: number;
     private submitter: string;
+    private submitted: number;
 
     private changes: ProposalO_Changes;
 
@@ -127,6 +136,7 @@ export class ProposalO {
         this.correct = json.correct;
         this.date = json.date;
         this.submitter = json.submitter;
+        this.submitted = json.submitted;
 
         this.changes = new ProposalO_Changes(this.proposal_id);
     }
@@ -194,6 +204,10 @@ export class ProposalO {
 
     public getSubmitter(): string {
         return this.submitter;
+    }
+
+    public getSubmitted(): number {
+        return this.submitted;
     }
 
     public setQuestion(value: string): boolean {
@@ -293,6 +307,12 @@ export class ProposalO {
         this.changes.change_submitter();
         return true;
     }
+
+    public setSubmitted(value: number): boolean {
+        this.submitted = value;
+        this.changes.change_submitted();
+        return true;
+    }
     
     public isChanges(): boolean {
         return this.changes.isChanges();
@@ -301,5 +321,27 @@ export class ProposalO {
     public getChanges(): Array<string> {
         return this.changes.generateChanges();
     }
+
+    public getQuestionI(): QuestionI {
+        let qi: QuestionI = {
+            "question_id": 0,
+            "question": this.question,
+            "image": this.image,
+            "ans_a": this.ans_a,
+            "ans_b": this.ans_b,
+            "ans_c": this.ans_c,
+            "ans_d": this.ans_d,
+            "d_always_last": this.d_always_last,
+            "fun_fact": this.fun_fact,
+            "correct": this.correct,
+            "date": this.date,
+            "submitter": this.submitter,
+            "response_total": 0,
+            "response_correct": 0,
+            "shown_total": 0} as QuestionI;
+
+        return qi;
+    }
+        
 
 }

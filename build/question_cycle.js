@@ -7,7 +7,6 @@ const DOBuilder_1 = require("./data/DOBuilder");
 const Errors_1 = require("./Errors");
 const new_1 = require("./new");
 async function showQuestionResult(message, ask_id) {
-    console.log("Enterinig question result.");
     let result = 0;
     // question
     let asked_questions = await DOBuilder_1.DO.getAskedQuestionByAskID(ask_id);
@@ -26,10 +25,15 @@ async function showQuestionResult(message, ask_id) {
         else {
             // collect the responses to this question
             let responses = await DOBuilder_1.DO.getPlayerAnswers(ask_id);
-            if (responses.length < 1) {
-                result = Errors_1.GameInteractionErr.NoPlayerResponses;
-                // if no responses have been recorded, extend the life of this question.
-                // TODO
+            if (responses.length < 2) {
+                let duration = 60 * 60 * 23 * 1000; // 23 hours in ms
+                setTimeout(showQuestionResult, duration, message, ask_id);
+                let channel = await message.client.channels.cache.get(message.channelId);
+                if (typeof channel === 'undefined')
+                    result = Errors_1.GameInteractionErr.GuildDataUnavailable;
+                channel = channel;
+                let description = `Because nobody has responded to the trivia question, the question is being extended another 24 hours.`;
+                let new_message = await channel.send(description);
             }
             else {
                 let r;
@@ -77,7 +81,7 @@ async function showQuestionResult(message, ask_id) {
                     description = "_" + BCONST_1.BCONST.MAXIMUS_PHRASES_END_BAD[Math.floor(Math.random() * BCONST_1.BCONST.MAXIMUS_PHRASES_END_BAD.length)] + "_\n\n";
                 }
                 second_description = description;
-                description += question.getQuestion() + '\n';
+                description += "**" + question.getQuestion() + '**\n';
                 let letter;
                 let ans;
                 let count_str;
@@ -124,13 +128,11 @@ async function showQuestionResult(message, ask_id) {
                 }
                 embed.setDescription(description);
                 message.edit({ embeds: [embed], components: [] });
-                console.log("before updates result: ", result);
                 // update the asked_question to be disabled, and with the respective responses
                 asked_question.setActive(0);
                 asked_question.setResponseTotal(total);
                 asked_question.setResponseCorrect(count[question.getCorrect()]);
                 result = await DOBuilder_1.DO.updateAskedQuestion(asked_question, result);
-                console.log("First result: ", result);
                 // update the question responses
                 question.setResponseTotal(question.getResponseTotal() + total);
                 question.setResponseCorrect(question.getResponseCorrect() + count[question.getCorrect()]);

@@ -73,6 +73,16 @@ export class DO {
         }
         return null;
     }
+          
+    static async getProposalByQuestion(question: string): Promise<ProposalO | null> {
+        let proposal: ProposalO;
+        let proposaljson = await GetData.getProposalByQuestion(question);
+        if (proposaljson) {
+            proposal = new ProposalO(proposaljson);
+            return proposal;
+        }
+        return null;
+    }
 
     static async getProposals(): Promise<Array<ProposalO>> {
         let proposalArray: Array<ProposalO> = [];

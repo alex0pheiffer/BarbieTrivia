@@ -118,8 +118,6 @@ export async function createNewQuestion(serverID: string, channelID: string, cli
         
         let unused_questions = await DO.getUnusedQuestions();
         let rand = Math.floor(Math.random()*unused_questions.length);
-        // TODO remove
-        rand = 0;
         question = unused_questions[rand];
 
         console.log(`Selected question: [${question.getQuestionID()}][${question.getQuestion()}]`);
@@ -172,8 +170,6 @@ export async function createNewQuestion(serverID: string, channelID: string, cli
     if (typeof channel === 'undefined') result = GameInteractionErr.GuildDataUnavailable;
     channel = channel as TextChannel;
 
-    console.log(`Selected channel: ${channel.id}`);
-
     if (!result) {
         // current date/time
         const d = new Date();
@@ -199,12 +195,9 @@ export async function createNewQuestion(serverID: string, channelID: string, cli
             "ans_d": answers_scrambled[3]["i"],
             "max_img": max_img_index} as AskedQuestionI;
         result = await DO.insertAskedQuestion(aq);
-        console.log("inserting question");
         question!!.setShownTotal(question!!.getShownTotal() + 1);
         result = await DO.updateQuestion(question!!, result);
-        console.log("updating question 0->1");
         let aq_sql = await DO.getAskedQuestion(question_id!!, channelID);
-        console.log("Asked Question: ", aq_sql);
         if (aq_sql.length < 1) {
             result = GameInteractionErr.SQLConnectionError;
         }

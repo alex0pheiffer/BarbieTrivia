@@ -7,9 +7,7 @@ module.exports = {
         .setName('add')
         .setDMPermission(false)
         .setDefaultMemberPermissions(null)
-        .setDescription('Add a new question to the game.')
-        .addStringOption((option: CommandOption) =>
-            option.setName('question').setDescription('The Barbie trivia question.')),
+        .setDescription('Add a new question to the game.'),
     async execute(interaction: ChatInputCommandInteraction) {
         //nothing here
     },

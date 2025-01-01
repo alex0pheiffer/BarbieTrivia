@@ -60,6 +60,15 @@ class DO {
         }
         return null;
     }
+    static async getProposalByQuestion(question) {
+        let proposal;
+        let proposaljson = await GetData_1.GetData.getProposalByQuestion(question);
+        if (proposaljson) {
+            proposal = new proposal_1.ProposalO(proposaljson);
+            return proposal;
+        }
+        return null;
+    }
     static async getProposals() {
         let proposalArray = [];
         let proposal;

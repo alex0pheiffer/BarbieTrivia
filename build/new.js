@@ -99,8 +99,6 @@ async function createNewQuestion(serverID, channelID, client) {
         console.log("Master Server Confirmed");
         let unused_questions = await DOBuilder_1.DO.getUnusedQuestions();
         let rand = Math.floor(Math.random() * unused_questions.length);
-        // TODO remove
-        rand = 0;
         question = unused_questions[rand];
         console.log(`Selected question: [${question.getQuestionID()}][${question.getQuestion()}]`);
         question_id = question.getQuestionID();
@@ -146,7 +144,6 @@ async function createNewQuestion(serverID, channelID, client) {
     if (typeof channel === 'undefined')
         result = Errors_1.GameInteractionErr.GuildDataUnavailable;
     channel = channel;
-    console.log(`Selected channel: ${channel.id}`);
     if (!result) {
         // current date/time
         const d = new Date();
@@ -170,12 +167,9 @@ async function createNewQuestion(serverID, channelID, client) {
             "ans_d": answers_scrambled[3]["i"],
             "max_img": max_img_index };
         result = await DOBuilder_1.DO.insertAskedQuestion(aq);
-        console.log("inserting question");
         question.setShownTotal(question.getShownTotal() + 1);
         result = await DOBuilder_1.DO.updateQuestion(question, result);
-        console.log("updating question 0->1");
         let aq_sql = await DOBuilder_1.DO.getAskedQuestion(question_id, channelID);
-        console.log("Asked Question: ", aq_sql);
         if (aq_sql.length < 1) {
             result = Errors_1.GameInteractionErr.SQLConnectionError;
         }
@@ -187,7 +181,7 @@ async function createNewQuestion(serverID, channelID, client) {
             const embed = new discord_js_1.EmbedBuilder().setTimestamp().setThumbnail(thumbnail).setFooter({ text: 'Barbie Trivia', iconURL: BCONST_1.BCONST.LOGO });
             embed.setTitle(`**Question (${month}/${day}/${year})**`);
             let description = "_" + BCONST_1.BCONST.MAXIMUS_PHRASES_START[Math.floor(Math.random() * BCONST_1.BCONST.MAXIMUS_PHRASES_START.length)] + "_\n\n";
-            description += question.getQuestion() + '\n';
+            description += "**" + question.getQuestion() + '**\n';
             if (question.getImage().length > 3) {
                 embed.setImage(question.getImage());
             }
@@ -317,7 +311,7 @@ async function pressGoButton(interaction, message, questionID, ask_id, base_embe
     // update the message for total number of responses:
     let responses = await DOBuilder_1.DO.getPlayerAnswers(ask_id);
     if (responses.length > 0) {
-        base_description += `\n\nCurrent Responses: ${responses.length}`;
+        base_description += `\n\nCurrent Responses: \`${responses.length}\``;
         base_embed.setDescription(base_description);
         message.edit({ embeds: [base_embed] });
     }

@@ -1,4 +1,4 @@
-import { ButtonInteraction, CacheType, ChatInputCommandInteraction, Client, Collection, Events, GatewayIntentBits, Interaction, PermissionsBitField, StringSelectMenuInteraction, TextChannel } from "discord.js";
+import { ButtonInteraction, CacheType, Channel, ChatInputCommandInteraction, Client, Collection, EmbedBuilder, Events, GatewayIntentBits, Interaction, PermissionsBitField, StringSelectMenuInteraction, TextChannel } from "discord.js";
 import * as fs from "fs";
 const path = require('node:path');
 import { BCONST }    from "./BCONST";
@@ -6,6 +6,8 @@ import { Command, SlashCommand } from "./data/types";
 import { DO } from "./data/DOBuilder";
 import { canInitiateNewGame, createNewGame } from "./new";
 import { GameInteractionErr } from "./Errors";
+import { addPrompt } from "./prompt";
+import { PlayerI } from "./data/data_interfaces/player";
 
 const client = new Client({  
     intents: [GatewayIntentBits.MessageContent, GatewayIntentBits.Guilds, GatewayIntentBits.GuildMessages, GatewayIntentBits.GuildMembers, GatewayIntentBits.GuildMessageReactions] 
@@ -83,6 +85,36 @@ client.on(Events.InteractionCreate, async (interaction: Interaction<CacheType>) 
                     default:
                         interaction.editReply({content:"Something went wrong."});
                 }
+            }
+            else if (cmd == 'add') {
+                let result = await addPrompt(interaction);
+            }
+            else if (cmd == 'profile') {
+                let user = interaction.options.getUser(`user`);
+                let user_id: string;
+                if (!user) {
+                    user_id = interaction.user.id;
+                    user = await client.users.fetch(user_id);
+                }
+                else {
+                    user_id = user.id;
+                }
+                let user_profile = await DO.getPlayer(user_id);
+                if (user_profile == null) {
+                    // create a new user profile
+                    let new_profile = {"player_id": 0, "user": user_id, "q_submitted": 0, "response_total": 0, "response_correct": 0} as PlayerI;
+                    await DO.insertPlayer(new_profile);
+                    user_profile = await DO.getPlayer(user_id);
+                }
+
+                const embed = new EmbedBuilder().setFooter({text: 'Barbie Trivia', iconURL: BCONST.LOGO});
+                embed.setTitle(`**${user.username}'s Profile**`);
+                let description = `\nTotal Responses: \`${user_profile!!.getResponseTotal()}\`\n \
+                Correct Responses: \`${user_profile!!.getResponseCorrect()}\`\n \
+                Submitted Questions: \`${user_profile!!.getQSubmitted()}\``;
+
+                embed.setDescription(description);
+                let message = await interaction.reply({embeds: [embed]});
             }
             // else if (cmd == 'add') {
             //     await interaction.deferReply({ephemeral: true});

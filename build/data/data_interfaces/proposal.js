@@ -12,4 +12,5 @@
 // correct          :   int     (0==a, 1==b, 2==c, 3==d)
 // date             :   bigint (time in ms)
 // submitter        :   20char str
+// submitted        :   int (if the prompt has been officially sent)
 Object.defineProperty(exports, "__esModule", { value: true });

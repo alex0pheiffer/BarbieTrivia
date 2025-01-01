@@ -32,12 +32,30 @@ class BCONST {
     static SQL_HOST = (this.USE_LOCAL_SQL) ? this.SQL_LOCAL_HOST : this.SQL_REMOTE_HOST;
     static SQL_DEBUG = false;
     // Master Channel
-    static MASTER_QUESTION_SERVER = "1266960173533237268";
+    static MASTER_QUESTION_SERVER = process.env["MASTER_SERVER"];
+    static MASTER_PROMPT_CHANNEL = process.env["PROMPT_CHANNEL"];
     // UI Information
     static BTN_SUBMIT = "Submit";
     static DROPDOWN_INTERVAL = "Time Interval Selection";
     static DROPDOWN_ANSWER = "Answer Selection";
-    static DROPDOWN_DURATION = 120000;
+    static MODAL_PROMPT = "Modal Prompt";
+    static MODAL_PROMPT2 = "Modal Prompt2";
+    static MODAL_PROMPT3 = "Modal Prompt3";
+    static MODAL_QUESTION_INPUT = "Question Input";
+    static MODAL_ANS_A_INPUT = "Answer A Input";
+    static MODAL_ANS_B_INPUT = "Answer B Input";
+    static MODAL_ANS_C_INPUT = "Answer C Input";
+    static MODAL_ANS_D_INPUT = "Answer D Input";
+    static MODAL_IMAGE_INPUT = "Image Input";
+    static MODAL_FUNFACT_INPUT = "Fun Fact Input";
+    static BTN_QUESTION = "Question";
+    static BTN_ANSWER = "Answer";
+    static DROPDOWN_ABCD = "ABCD Prompt Selection";
+    static DROPDOWN_DLAST = "D Last Selection";
+    static BTN_FUNFACT = "FunFact";
+    static BTN_PROPOSAL_SUBMIT = "Proposal Submit";
+    static BTN_PROPOSAL_ACCEPT = "Proposal Accept";
+    static BTN_PROPOSAL_DECLINE = "Proposal Decline";
     // Game Specific Information
     static QUESTION_INTERVALS = [
         { "label": "Every Hour", "description": "", "value": 0 },
@@ -89,7 +107,9 @@ class BCONST {
         "You think you can defeat my beautiful, handsome self?",
         "What instrument can you hear, but can't see, and can't touch? Wait, wrong movie.",
         "So, you want to save the merfolk. How brave.",
-        "Do you know how much toad venom it takes to poison seven guardians?"
+        "Do you know how much toad venom it takes to poison seven guardians?",
+        "Just one drop, and I can pollute all of Mermaidia.",
+        "This will be sure to confound them, Your Evilness."
     ];
     static MAXIMUS_PHRASES_END_BAD = [
         "Too bad.",
@@ -117,7 +137,8 @@ class BCONST {
         "Oh no, oh dear. This is not good.",
         "Not the berry!",
         "You think you can best me? I won't be defeated!",
-        "Maybe we try that again before telling the mistress."
+        "Maybe we try that again before telling Her Wartiness.",
+        "Looks like it wasn't the right berry after all."
     ];
 }
 exports.BCONST = BCONST;

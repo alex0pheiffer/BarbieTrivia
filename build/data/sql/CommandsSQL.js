@@ -114,6 +114,32 @@ class SQLDATA {
             });
         });
     }
+    static async getProposalByQuestionSQL(question) {
+        await checkConnection();
+        return new Promise((resolve, reject) => {
+            if (question.length > Database_Constants_1.DBC.question_length) {
+                console.log("ERROR: QUESTION too long.");
+                // todo make this a valid error
+                return resolve("");
+            }
+            // determine if this column exists
+            var sqlq = `SELECT * FROM proposal WHERE question = '${question}';`;
+            StartSQL_1.con.conn.query(sqlq, function (err, result) {
+                if (err)
+                    throw err;
+                if (BCONST_1.BCONST.SQL_DEBUG) {
+                    console.log("Obtained Data: ");
+                    console.log(result);
+                }
+                // check that a result exists
+                if (result.length <= 0) {
+                    resolve("");
+                    return;
+                }
+                return resolve(JSON.stringify(result[0]));
+            });
+        });
+    }
     static async getProposalsSQL() {
         await checkConnection();
         return new Promise((resolve, reject) => {
@@ -432,6 +458,13 @@ class SQLDATA {
                         if (err)
                             return resolve(err);
                         sql_changes += ` ${p} = '${value}',`;
+                        break;
+                    case "submitted":
+                        value = proposal.getSubmitted();
+                        err = checkInt(value, errType.InvalidInputToSQL, p);
+                        if (err)
+                            return resolve(err);
+                        sql_changes += ` ${p} = ${value},`;
                         break;
                     default:
                         console.log("Error: the property " + p + " is not supported by updateProposal.");
@@ -769,6 +802,10 @@ class SQLDATA {
             err = checkString(value, Database_Constants_1.DBC.userID_length, Errors_1.DataErr.InvalidInputToSQL, "submitter");
             if (err)
                 return resolve(err);
+            value = proposal.getSubmitted();
+            err = checkInt(value, Errors_1.DataErr.InvalidInputToSQL, "submitted");
+            if (err)
+                return resolve(err);
             var sql_columns = `(question, \
             image, \
             ans_a, \
@@ -779,18 +816,20 @@ class SQLDATA {
             fun_fact, \
             correct, \
             date, \
-            submitter)`;
-            var sql_values = `('${proposal.getQuestion()}', \
-            '${proposal.getImage()}',\
-            '${proposal.getAnswer("ans_a")}',\
-            '${proposal.getAnswer("ans_b")}',\
-            '${proposal.getAnswer("ans_c")}',\
-            '${proposal.getAnswer("ans_d")}',\
+            submitter, \
+            submitted)`;
+            var sql_values = `("${proposal.getQuestion().replaceAll('"', '""')}", \
+            "${proposal.getImage()}",\
+            "${proposal.getAnswer("ans_a").replaceAll('"', '""')}",\
+            "${proposal.getAnswer("ans_b").replaceAll('"', '""')}",\
+            "${proposal.getAnswer("ans_c").replaceAll('"', '""')}",\
+            "${proposal.getAnswer("ans_d").replaceAll('"', '""')}",\
             ${proposal.getDAlwaysLast()},\
-            '${proposal.getFunFact()}',\
+            "${proposal.getFunFact().replaceAll('"', '""')}",\
             ${proposal.getCorrect()},\
             ${proposal.getDate()},\
-            '${proposal.getSubmitter()}')`;
+            "${proposal.getSubmitter()}",
+            ${proposal.getSubmitted()})`;
             var sqlq = `INSERT INTO proposal ${sql_columns} VALUES ${sql_values};`;
             StartSQL_1.con.conn.query(sqlq, function (err, result) {
                 if (err && err.errno == 1062) {

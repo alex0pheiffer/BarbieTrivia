@@ -30,6 +30,13 @@ class GetData {
         else
             return JSON.parse($DATA);
     }
+    static async getProposalByQuestion(question) {
+        let $DATA = await CommandsSQL_1.SQLDATA.getProposalByQuestionSQL(question);
+        if ($DATA == "")
+            return null;
+        else
+            return JSON.parse($DATA);
+    }
     static async getProposals() {
         let $DATA = await CommandsSQL_1.SQLDATA.getProposalsSQL();
         return $DATA; //idk this kinda seems like sus casting

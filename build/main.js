@@ -27,8 +27,10 @@ const discord_js_1 = require("discord.js");
 const fs = __importStar(require("fs"));
 const path = require('node:path');
 const BCONST_1 = require("./BCONST");
+const DOBuilder_1 = require("./data/DOBuilder");
 const new_1 = require("./new");
 const Errors_1 = require("./Errors");
+const prompt_1 = require("./prompt");
 const client = new discord_js_1.Client({
     intents: [discord_js_1.GatewayIntentBits.MessageContent, discord_js_1.GatewayIntentBits.Guilds, discord_js_1.GatewayIntentBits.GuildMessages, discord_js_1.GatewayIntentBits.GuildMembers, discord_js_1.GatewayIntentBits.GuildMessageReactions]
 });
@@ -101,6 +103,34 @@ client.on(discord_js_1.Events.InteractionCreate, async (interaction) => {
                     default:
                         interaction.editReply({ content: "Something went wrong." });
                 }
+            }
+            else if (cmd == 'add') {
+                let result = await (0, prompt_1.addPrompt)(interaction);
+            }
+            else if (cmd == 'profile') {
+                let user = interaction.options.getUser(`user`);
+                let user_id;
+                if (!user) {
+                    user_id = interaction.user.id;
+                    user = await client.users.fetch(user_id);
+                }
+                else {
+                    user_id = user.id;
+                }
+                let user_profile = await DOBuilder_1.DO.getPlayer(user_id);
+                if (user_profile == null) {
+                    // create a new user profile
+                    let new_profile = { "player_id": 0, "user": user_id, "q_submitted": 0, "response_total": 0, "response_correct": 0 };
+                    await DOBuilder_1.DO.insertPlayer(new_profile);
+                    user_profile = await DOBuilder_1.DO.getPlayer(user_id);
+                }
+                const embed = new discord_js_1.EmbedBuilder().setFooter({ text: 'Barbie Trivia', iconURL: BCONST_1.BCONST.LOGO });
+                embed.setTitle(`**${user.username}'s Profile**`);
+                let description = `\nTotal Responses: \`${user_profile.getResponseTotal()}\`\n \
+                Correct Responses: \`${user_profile.getResponseCorrect()}\`\n \
+                Submitted Questions: \`${user_profile.getQSubmitted()}\``;
+                embed.setDescription(description);
+                let message = await interaction.reply({ embeds: [embed] });
             }
             // else if (cmd == 'add') {
             //     await interaction.deferReply({ephemeral: true});
