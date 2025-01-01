@@ -35,12 +35,11 @@ async function connectSQL() {
                     results[name] = [];
                 }
                 results[name].push(net.address);
+                console.log(net.address);
             }
         }
     }
-    console.log(`result: ${results}`);
-    console.log(`host: ${BCONST_1.BCONST.SQL_HOST}`);
-    console.log(`database: ${BCONST_1.BCONST.SQL_DB}`);
+    console.log(results);
     if (BCONST_1.BCONST.SQL_DEBUG) {
         console.log(`username: ${BCONST_1.BCONST.SQL_USER}`);
         console.log(`password: ${BCONST_1.BCONST.SQL_PASS}`);

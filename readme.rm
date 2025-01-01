@@ -1,0 +1,19 @@
+##### Locally ######
+directory: D:/Important_Things/Applications/DiscordJS/BarbieTrivia/
+tsc -p tsconfig.json    // build the typescript
+node ./build/main.json
+
+##### Docker ######
+first, verify the ip address the docker is using with the
+    const {networkInterfaces}= require('os');
+    const nets = networkInterfaces();
+logic that is found in data/startSQL.ts.
+the console.log statements for result print out the ip address.
+
+I had to make sure to use 127.0.0.1 and not localhost as the mysql address.
+I also had to make sure to add the --network="host" argument to ensure it could reach mysql.
+
+directory: ~/BarbieTrivia/build/
+docker build . -t max_vX
+>> get the id of the build
+docker run --network="host" build_id

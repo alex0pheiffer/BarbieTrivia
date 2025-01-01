@@ -43,12 +43,11 @@ export async function connectSQL() {
                     results[name] = [];
 		}
 		results[name].push(net.address);
+        console.log(net.address);
             }
 	}
     }
-    console.log(`result: ${results}`);
-    console.log(`host: ${BCONST.SQL_HOST}`);
-    console.log(`database: ${BCONST.SQL_DB}`);
+    console.log(results);
     if (BCONST.SQL_DEBUG) {
         console.log(`username: ${BCONST.SQL_USER}`);
         console.log(`password: ${BCONST.SQL_PASS}`);

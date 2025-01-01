@@ -31,7 +31,6 @@ const DOBuilder_1 = require("./data/DOBuilder");
 const new_1 = require("./new");
 const Errors_1 = require("./Errors");
 const prompt_1 = require("./prompt");
-const startup_1 = require("./startup");
 const client = new discord_js_1.Client({
     intents: [discord_js_1.GatewayIntentBits.MessageContent, discord_js_1.GatewayIntentBits.Guilds, discord_js_1.GatewayIntentBits.GuildMessages, discord_js_1.GatewayIntentBits.GuildMembers, discord_js_1.GatewayIntentBits.GuildMessageReactions]
 });
@@ -321,7 +320,7 @@ client.on('ready', () => {
     }
     console.log(`${client.user?.username} Online -- Version: ${BCONST_1.BCONST.VERSION}`);
     // on start up, make sure that all the question_channels are running.
-    (0, startup_1.startAllQuestionChannels)(client);
+    //startAllQuestionChannels(client);
 });
 /*
 client.on("guildCreate", guild => {
