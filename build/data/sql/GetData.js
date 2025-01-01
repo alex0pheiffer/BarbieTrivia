@@ -23,6 +23,10 @@ class GetData {
         let $DATA = await CommandsSQL_1.SQLDATA.getAskedQuestionByAskIDSQL(ask_id);
         return $DATA;
     }
+    static async getLatestAskedQuestion(channel_id) {
+        let $DATA = await CommandsSQL_1.SQLDATA.getLatestAskedQuestionSQL(channel_id);
+        return $DATA; // hopefully this doesnt cause issues
+    }
     static async getProposal(id) {
         let $DATA = await CommandsSQL_1.SQLDATA.getProposalSQL(id);
         if ($DATA == "")
@@ -66,6 +70,10 @@ class GetData {
     }
     static async getQuestionChannelByServer(id) {
         let $DATA = await CommandsSQL_1.SQLDATA.getQuestionChannelsByServerSQL(id);
+        return $DATA;
+    }
+    static async getQuestionChannels() {
+        let $DATA = await CommandsSQL_1.SQLDATA.getQuestionChannelsAllSQL();
         return $DATA;
     }
     static async getPlayerAnswer(user, ask_id) {

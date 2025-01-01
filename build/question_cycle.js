@@ -147,7 +147,7 @@ async function showQuestionResult(message, ask_id) {
                     second_description += `Polling has closed! The correct answer was \`${question.getAnswers()[question.getCorrect()]}\`!`;
                     let new_message = await channel.send(second_description);
                     // start the next question
-                    let duration = Math.random() * 60 * 5 * 1000; //60 * 60 * 23 * 1000; // 23 hours in ms
+                    let duration = Math.random() * 60 * 60 * 23 * 1000; // 23 hours in ms
                     console.log("duration set: ", duration);
                     setTimeout(new_1.createNewQuestion, duration, message.guildId, message.channelId, message.client);
                 }

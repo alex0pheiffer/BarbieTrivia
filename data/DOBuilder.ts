@@ -64,6 +64,21 @@ export class DO {
         return askedArray;
     }      
 
+    static async getLatestAskedQuestion(channel_id: string): Promise<Array<AskedQuestionO>> {
+        let askedArray: Array<AskedQuestionO> = [];
+        let asked: AskedQuestionO;
+        let askedjson = await GetData.getLatestAskedQuestion(channel_id);
+        
+        if (askedjson.length > 0) {
+            for (let i=0; i < askedjson.length; i++) {
+                asked = new AskedQuestionO(askedjson[i]);
+                askedArray.push(asked);
+            }
+        }
+        
+        return askedArray;
+    }
+
     static async getProposal(id: number): Promise<ProposalO | null> {
         let proposal: ProposalO;
         let proposaljson = await GetData.getProposal(id);
@@ -173,6 +188,21 @@ export class DO {
         let channelArray: Array<QuestionChannelO> = [];
         let channel: QuestionChannelO;
         let channeljson = await GetData.getQuestionChannelByServer(serverID);
+        
+        if (channeljson.length > 0) {
+            for (let i=0; i < channeljson.length; i++) {
+                channel = new QuestionChannelO(channeljson[i]);
+                channelArray.push(channel);
+            }
+        }
+        
+        return channelArray;
+    }
+
+    static async getQuestionChannels(): Promise<Array<QuestionChannelO>> {
+        let channelArray: Array<QuestionChannelO> = [];
+        let channel: QuestionChannelO;
+        let channeljson = await GetData.getQuestionChannels();
         
         if (channeljson.length > 0) {
             for (let i=0; i < channeljson.length; i++) {

@@ -31,6 +31,7 @@ const DOBuilder_1 = require("./data/DOBuilder");
 const new_1 = require("./new");
 const Errors_1 = require("./Errors");
 const prompt_1 = require("./prompt");
+const startup_1 = require("./startup");
 const client = new discord_js_1.Client({
     intents: [discord_js_1.GatewayIntentBits.MessageContent, discord_js_1.GatewayIntentBits.Guilds, discord_js_1.GatewayIntentBits.GuildMessages, discord_js_1.GatewayIntentBits.GuildMembers, discord_js_1.GatewayIntentBits.GuildMessageReactions]
 });
@@ -129,6 +130,23 @@ client.on(discord_js_1.Events.InteractionCreate, async (interaction) => {
                 let description = `\nTotal Responses: \`${user_profile.getResponseTotal()}\`\n \
                 Correct Responses: \`${user_profile.getResponseCorrect()}\`\n \
                 Submitted Questions: \`${user_profile.getQSubmitted()}\``;
+                embed.setDescription(description);
+                let message = await interaction.reply({ embeds: [embed] });
+            }
+            else if (cmd == 'help') {
+                let max_img_index = Math.floor(Math.random() * BCONST_1.BCONST.MAXIMUS_IMAGES.length);
+                let thumbnail = BCONST_1.BCONST.MAXIMUS_IMAGES[max_img_index].url;
+                const embed = new discord_js_1.EmbedBuilder().setTimestamp().setThumbnail(thumbnail).setFooter({ text: 'Barbie Trivia', iconURL: BCONST_1.BCONST.LOGO });
+                embed.setTitle(`**Help Page**`);
+                let description = `**General Information**\n \
+                Welcome to the Barbie Trivia Bot. Every 24-48 hours, a question is sent for responses, and 23 hours later, the answer will be given. The focus of these questions is the core 2000 Barbie movies as well as Barbie Life in the Dreamhouse.\n\n
+                **Commands**:\n \
+                \`/new\` Starts a new trivia game. There can only be one per server.\n \
+                \`/add\` Add new trivia to the database!\n \
+                \`/profile\` See stats of yourself and friends!\n \
+                There is currently no "stop" functionality. I apologize for the inconvinence.\n\n \
+                **Bot Invite URL**\n \
+                ${BCONST_1.BCONST.DISCORD_URL}`;
                 embed.setDescription(description);
                 let message = await interaction.reply({ embeds: [embed] });
             }
@@ -302,6 +320,8 @@ client.on('ready', () => {
             console.log(`[WARNING] The command at ${filePath} is missing a required "data" or "execute" property.`);
     }
     console.log(`${client.user?.username} Online -- Version: ${BCONST_1.BCONST.VERSION}`);
+    // on start up, make sure that all the question_channels are running.
+    (0, startup_1.startAllQuestionChannels)(client);
 });
 /*
 client.on("guildCreate", guild => {

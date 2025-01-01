@@ -29,6 +29,11 @@ export class GetData {
         let $DATA = await SQLDATA.getAskedQuestionByAskIDSQL(ask_id);
         return $DATA as unknown as Array<AskedQuestionI>;
     }
+
+    static async getLatestAskedQuestion(channel_id: string): Promise<Array<AskedQuestionI>> {
+        let $DATA = await SQLDATA.getLatestAskedQuestionSQL(channel_id);
+        return $DATA as unknown as Array<AskedQuestionI>; // hopefully this doesnt cause issues
+    }
     
     static async getProposal(id: number): Promise<ProposalI | null> {
         let $DATA = await SQLDATA.getProposalSQL(id);
@@ -75,6 +80,11 @@ export class GetData {
     
     static async getQuestionChannelByServer(id: string): Promise<Array<QuestionChannelI>> {
         let $DATA = await SQLDATA.getQuestionChannelsByServerSQL(id);
+        return $DATA as unknown as Array<QuestionChannelI>;
+    }
+
+    static async getQuestionChannels(): Promise<Array<QuestionChannelI>> {
+        let $DATA = await SQLDATA.getQuestionChannelsAllSQL();
         return $DATA as unknown as Array<QuestionChannelI>;
     }
 

@@ -106,15 +106,23 @@ export async function canInitiateNewGame(interaction: ChatInputCommandInteractio
     return result;
 }
 
-export async function createNewQuestion(serverID: string, channelID: string, client: Client): Promise<Number> {
+export async function createNewQuestion(serverID: string, channelID: string, client: Client, selected_question: number=-1): Promise<Number> {
     let result = 0;
     let question: QuestionO;
     let question_id: number;
 
     // are we in the lead/master server?
-    if (serverID == BCONST.MASTER_QUESTION_SERVER) {
-
-        console.log("Master Server Confirmed");
+    if (selected_question >= 0) {
+        let question_attempt = await DO.getQuestion(selected_question);
+        if (question_attempt) {
+            question = question_attempt;
+            question_id = question.getQuestionID();
+        }
+        else {
+            result = GameInteractionErr.QuestionDoesNotExist;
+        }
+    }
+    else if (serverID == BCONST.MASTER_QUESTION_SERVER) {
         
         let unused_questions = await DO.getUnusedQuestions();
         let rand = Math.floor(Math.random()*unused_questions.length);
@@ -286,7 +294,7 @@ export async function createNewQuestion(serverID: string, channelID: string, cli
 
             // in 23 hours, display the response
             // TODO replace with 23 hours
-            let duration = 60 * 5 * 1000; //60 * 60 * 23 * 1000; // 23 hours in ms
+            let duration = 60 * 60 * 23 * 1000; // 23 hours in ms
             console.log("duration set: ", duration);
             setTimeout(showQuestionResult, duration, message, ask_id);
         }

@@ -51,6 +51,18 @@ class DO {
         }
         return askedArray;
     }
+    static async getLatestAskedQuestion(channel_id) {
+        let askedArray = [];
+        let asked;
+        let askedjson = await GetData_1.GetData.getLatestAskedQuestion(channel_id);
+        if (askedjson.length > 0) {
+            for (let i = 0; i < askedjson.length; i++) {
+                asked = new askedQuesetion_1.AskedQuestionO(askedjson[i]);
+                askedArray.push(asked);
+            }
+        }
+        return askedArray;
+    }
     static async getProposal(id) {
         let proposal;
         let proposaljson = await GetData_1.GetData.getProposal(id);
@@ -142,6 +154,18 @@ class DO {
         let channelArray = [];
         let channel;
         let channeljson = await GetData_1.GetData.getQuestionChannelByServer(serverID);
+        if (channeljson.length > 0) {
+            for (let i = 0; i < channeljson.length; i++) {
+                channel = new questionChannel_1.QuestionChannelO(channeljson[i]);
+                channelArray.push(channel);
+            }
+        }
+        return channelArray;
+    }
+    static async getQuestionChannels() {
+        let channelArray = [];
+        let channel;
+        let channeljson = await GetData_1.GetData.getQuestionChannels();
         if (channeljson.length > 0) {
             for (let i = 0; i < channeljson.length; i++) {
                 channel = new questionChannel_1.QuestionChannelO(channeljson[i]);

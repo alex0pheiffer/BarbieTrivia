@@ -115,6 +115,35 @@ export class SQLDATA {
             }); 
         });
     }
+    
+    static async getLatestAskedQuestionSQL(channel_id: string): Promise<Array<JSON>> {
+        await checkConnection();
+        return new Promise((resolve, reject) => {
+            if (channel_id.length > DBC.channelID_length) {
+                console.log("ERROR: CHANNELID too long.");
+                // todo make this a valid error
+                return resolve([]);
+            }
+            // determine if this column already exists
+            var sqlq = `SELECT * FROM asked_question WHERE (date) IN (SELECT MAX(date) from asked_question where channel_id='${channel_id}');`;
+            con.conn.query(sqlq, function (err: any, result: Array<string>) {
+                if (err) throw err;
+
+                if (BCONST.SQL_DEBUG) {
+                    console.log("Obtained Data: ");
+                    console.log(result);
+                }
+
+                // check that a result exists
+                if (result.length <= 0) {
+                    resolve([]);
+                    return;
+                }
+
+                return resolve(JSON.parse(JSON.stringify(result)));
+            }); 
+        });
+    }
 
     static async getProposalSQL(proposal_id: number): Promise<string> {
         await checkConnection();
@@ -329,6 +358,30 @@ export class SQLDATA {
             }
             // determine if this column already exists
             var sqlq = `SELECT * FROM question_channel WHERE server='${serverID}';`;
+            con.conn.query(sqlq, function (err: any, result: Array<string>) {
+                if (err) throw err;
+
+                if (BCONST.SQL_DEBUG) {
+                    console.log("Obtained Data: ");
+                    console.log(result);
+                }
+
+                // check that a result exists
+                if (result.length <= 0) {
+                    resolve([]);
+                    return;
+                }
+
+                return resolve(JSON.parse(JSON.stringify(result)));
+            }); 
+        });
+    }
+
+    static async getQuestionChannelsAllSQL(): Promise<Array<JSON>> {
+        await checkConnection();
+        return new Promise((resolve, reject) => {
+            // determine if this column already exists
+            var sqlq = `SELECT * FROM question_channel;`;
             con.conn.query(sqlq, function (err: any, result: Array<string>) {
                 if (err) throw err;
 
