@@ -27,9 +27,12 @@ export async function startAllQuestionChannels(client: Client) {
             channel.send({ embeds:[embed]});
 
             // create the new question
-            createNewQuestion(qc.getServer()!!, qc.getChannel(), client, latest_question[0].getQuestionID());
-        }
-
-        
-    }
+            if (latest_question[0].getActive() > 0) {
+                createNewQuestion(qc.getServer()!!, qc.getChannel(), client, latest_question[0].getQuestionID());
+            }
+            else {
+                createNewQuestion(qc.getServer()!!, qc.getChannel(), client);
+            }
+        }            
+    }   
 }

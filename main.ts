@@ -306,7 +306,7 @@ client.on('ready', () => {
     console.log(`${client.user?.username} Online -- Version: ${BCONST.VERSION}`);
 
     // on start up, make sure that all the question_channels are running.
-    startAllQuestionChannels(client);
+    //startAllQuestionChannels(client);
     
 });
 /*

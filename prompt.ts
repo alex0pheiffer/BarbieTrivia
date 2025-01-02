@@ -6,6 +6,7 @@ import { GameInteractionErr } from "./Errors";
 import { ProposalI } from "./data/data_interfaces/proposal";
 import { DropdownItem } from "./data/component_interfaces/dropdown_item";
 import { QuestionO } from "./data/data_objects/question";
+import { PlayerI } from "./data/data_interfaces/player";
 
 // hour time out period
 const modal_timeout = 60 * 60 * 1000;
@@ -657,9 +658,28 @@ async function buttonResponse(interaction: ButtonInteraction, proposal_id: numbe
                         let user_profile = await DO.getPlayer(interaction.user.id);
                         if (user_profile != null) {
                             user_profile.setQSubmitted(user_profile.getQSubmitted() + 1);
+                            console.log("user profile q submitted: ", user_profile.getQSubmitted());
                             result = await DO.updatePlayer(user_profile, result);
+                            console.log("questioni submitted increment update:", result);
+                        }
+                        else {
+                            let new_player = {"player_id": 0, "user": interaction.user.id, "q_submitted": 1, "response_total": 0, "response_correct": 0} as PlayerI;
+                            result = await DO.insertPlayer(new_player);
+                            console.log("User profile was null; made a new profile");
                         }
                     }
+                    // inform the group that a new question was submitted
+                    // get the trivia channel
+                    if (interaction.guildId) {
+                        let quest_channel = await DO.getQuestionChannelByServer(interaction.guildId);
+                        if (quest_channel.length > 0) {
+                            let channel: Channel | undefined = await interaction.client.channels.cache.get(quest_channel[0].getChannel());
+                            if (typeof channel === 'undefined') result = GameInteractionErr.GuildDataUnavailable;
+                            channel = channel as TextChannel;
+                            let new_message = await channel!!.send("A new question was submitted to the database!");
+                        }
+                    }
+                    
                 }
                 else {
                     // you cannot submit the current prompt
@@ -679,6 +699,10 @@ async function buttonResponse(interaction: ButtonInteraction, proposal_id: numbe
                 if (user_profile != null) {
                     user_profile.setQSubmitted(user_profile.getQSubmitted() + 1);
                     result = await DO.updatePlayer(user_profile, result);
+                }
+                else {
+                    let new_player = {"player_id": 0, "user": interaction.user.id, "q_submitted": 1, "response_total": 0, "response_correct": 0} as PlayerI;
+                    result = await DO.insertPlayer(new_player);
                 }
                 break;
             case BCONST.BTN_PROPOSAL_DECLINE:

@@ -134,7 +134,9 @@ export class BCONST {
         "That answer? You must have the brain of a puffball.",
         "I don't think I heard you correctly. Maybe try one of the berries so I can hear you better.",
         "Such an answer deserves banishment to the Bogs of the Hinterlands.",
-        "Lefting, leftaroo! Let's try that again."
+        "Lefting, leftaroo! Let's try that again.",
+        "I found it! The immunity berry!",
+        "You make the Carousel of Confusion look logical."
     ]
 
     static MAXIMUS_PHRASES_END_GOOD = [
@@ -147,7 +149,9 @@ export class BCONST {
         "Not the berry!",
         "You think you can best me? I won't be defeated!",
         "Maybe we try that again before telling Her Wartiness.",
-        "Looks like it wasn't the right berry after all."
+        "Looks like it wasn't the right berry after all.",
+        "Fungus? Oh, no, no, no. These buffoons are fungus. Call me, Fungus Maximus.",
+        "Best 2 out of 3?"
     ]
 
 

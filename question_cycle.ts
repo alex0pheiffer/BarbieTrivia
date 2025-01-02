@@ -13,6 +13,7 @@ export async function showQuestionResult(message: Message, ask_id: number): Prom
     // question
     let asked_questions = await DO.getAskedQuestionByAskID(ask_id);
     let asked_question: AskedQuestionO;
+    let users_correct_list: string[] = [];
     if (asked_questions.length < 1) {
         result = GameInteractionErr.QuestionDoesNotExist;
     }
@@ -50,6 +51,9 @@ export async function showQuestionResult(message: Message, ask_id: number): Prom
                     // check if this user has a profile. if not, create one.
                     let player_profile = await DO.getPlayer(r.getUser());
                     let correct = Number(r.getResponse() == question.getCorrect());
+                    if (correct) {
+                        users_correct_list.push(r.getUser());
+                    }
                     if (player_profile == null) {
                         let new_player = {"player_id": 0, "user": r.getUser(), "q_submitted": 0, "response_total": 1, "response_correct": correct} as PlayerI;
                         result = await DO.insertPlayer(new_player);
@@ -154,9 +158,42 @@ export async function showQuestionResult(message: Message, ask_id: number): Prom
                     if (typeof channel === 'undefined') result = GameInteractionErr.GuildDataUnavailable;
                     channel = channel as TextChannel;
                     second_description += `Polling has closed! The correct answer was \`${question.getAnswers()[question.getCorrect()]}\`!`
+                    // congrats to those who got it right!
+                    if (users_correct_list.length > 0) {
+                        second_description += "\nCongrats to "
+                        for (let i=0; i < users_correct_list.length; i++) {
+                            if (i < users_correct_list.length - 1 && users_correct_list.length > 2) {
+                                second_description += `<@${users_correct_list[i]}>, `;
+                            }
+                            else if (users_correct_list.length < 2) {
+                                second_description += `<@${users_correct_list[i]}>!`;
+                            }
+                            else if (users_correct_list.length < 3 && i < 1) {
+                                second_description += `<@${users_correct_list[i]}> `;
+                            }
+                            else {
+                                second_description += `and <@${users_correct_list[i]}>!`;
+                            }
+                            
+                        }
+                    }
+                    else {
+                        second_description += "\nNobody got it right!";
+                    }
+                    let duration = Math.random() * 60 * 60 * 8 * 1000; // 23 hours in ms
+                    let hrs = Math.floor(duration / 1000 / 60 / 60);
+                    if (hrs > 1) {
+                        second_description += `\n\nThe next question will appear in ${hrs} hours.`;
+                    }
+                    else if (hrs > 0) {
+                        second_description += `\n\nThe next question will appear in 1 hour.`;
+                    }
+                    else {
+                        second_description += `\n\nThe next question will appear in less than an hour.`;
+                    }
+
                     let new_message = await channel!!.send(second_description);
                     // start the next question
-                    let duration = Math.random() * 60 * 60 * 23 * 1000; // 23 hours in ms
                     console.log("duration set: ", duration);
                     setTimeout(createNewQuestion, duration, message.guildId, message.channelId, message.client);
                 }

@@ -523,7 +523,7 @@ export class SQLDATA {
                         value = proposal.getQuestion();
                         err = checkString(value, DBC.question_length, errType.InvalidInputToSQL, p);
                         if (err) return resolve(err);
-                        sql_changes += ` ${p} = '${value}',`;
+                        sql_changes += ` ${p} = '${value.replaceAll('"', '""')}',`;
                         break;
                     case "ans_a":
                     case "ans_b":
@@ -532,7 +532,7 @@ export class SQLDATA {
                         value = proposal.getAnswer(p);
                         err = checkString(value, DBC.answer_length, errType.InvalidInputToSQL, p);
                         if (err) return resolve(err);
-                        sql_changes += ` ${p} = '${value}',`;
+                        sql_changes += ` ${p} = '${value.replaceAll('"', '""')}',`;
                         break;
                     case "d_always_last":
                         value = proposal.getDAlwaysLast();
@@ -544,7 +544,7 @@ export class SQLDATA {
                         value = proposal.getFunFact();
                         err = checkString(value, DBC.funfact_length, errType.InvalidInputToSQL, p);
                         if (err) return resolve(err);
-                        sql_changes += ` ${p} = '${value}',`;
+                        sql_changes += ` ${p} = '${value.replaceAll('"', '""')}',`;
                         break;
                     case "correct":
                         value = proposal.getCorrect();
@@ -616,7 +616,7 @@ export class SQLDATA {
                         value = question.getQuestion();
                         err = checkString(value, DBC.question_length, errType.InvalidInputToSQL, p);
                         if (err) return resolve(err);
-                        sql_changes += ` ${p} = '${value}',`;
+                        sql_changes += ` ${p} = '${value.replaceAll('"', '""')}',`;
                         break;
                     case "ans_a":
                     case "ans_b":
@@ -625,7 +625,7 @@ export class SQLDATA {
                         value = question.getAnswer(p);
                         err = checkString(value, DBC.answer_length, errType.InvalidInputToSQL, p);
                         if (err) return resolve(err);
-                        sql_changes += ` ${p} = '${value}',`;
+                        sql_changes += ` ${p} = '${value.replaceAll('"', '""')}',`;
                         break;
                     case "d_always_last":
                         value = question.getDAlwaysLast();
@@ -637,7 +637,7 @@ export class SQLDATA {
                         value = question.getFunFact();
                         err = checkString(value, DBC.funfact_length, errType.InvalidInputToSQL, p);
                         if (err) return resolve(err);
-                        sql_changes += ` ${p} = '${value}',`;
+                        sql_changes += ` ${p} = '${value.replaceAll('"', '""')}',`;
                         break;
                     case "correct":
                         value = question.getCorrect();
@@ -831,12 +831,6 @@ export class SQLDATA {
                         if (err) return resolve(err);
                         sql_changes += ` ${p} = ${value},`;
                         break;
-                    case "q_submitted":
-                        value = player.getQSubmitted();
-                        err = checkInt(value, errType.InvalidInputToSQL, p);
-                        if (err) return resolve(err);
-                        sql_changes += ` ${p} = ${value},`;
-                        break;
                     case "response_total":
                         value = player.getResponseTotal();
                         err = checkInt(value, errType.InvalidInputToSQL, p);
@@ -1021,14 +1015,14 @@ export class SQLDATA {
             response_correct, \
             shown_total)`;
 
-            var sql_values = `('${question.getQuestion()}', \
+            var sql_values = `('${question.getQuestion().replaceAll('"', '""')}', \
             '${question.getImage()}',\
-            '${question.getAnswer("ans_a")}',\
-            '${question.getAnswer("ans_b")}',\
-            '${question.getAnswer("ans_c")}',\
-            '${question.getAnswer("ans_d")}',\
+            '${question.getAnswer("ans_a").replaceAll('"', '""')}',\
+            '${question.getAnswer("ans_b").replaceAll('"', '""')}',\
+            '${question.getAnswer("ans_c").replaceAll('"', '""')}',\
+            '${question.getAnswer("ans_d").replaceAll('"', '""')}',\
             ${question.getDAlwaysLast()},\
-            '${question.getFunFact()}',\
+            '${question.getFunFact().replaceAll('"', '""')}',\
             ${question.getCorrect()},\
             ${question.getDate()},\
             '${question.getSubmitter()}',\
