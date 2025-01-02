@@ -65,6 +65,7 @@ async function populate_sql() {
                 break;
             case "c":
                 answer = 2;
+                break;
             case "d":
                 answer = 3;
         }

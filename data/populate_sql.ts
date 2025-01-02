@@ -48,6 +48,7 @@ async function populate_sql(): Promise<void> {
                 break;
             case "c":
                 answer = 2;
+                break;
             case "d":
                 answer = 3;
         }
