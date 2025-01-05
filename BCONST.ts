@@ -7,7 +7,8 @@ require('dotenv').config() // get our passwords and such
 export class BCONST {
     // Bot Information
     static DISCORD_URL = "https://discord.com/oauth2/authorize?client_id=1266967306752491580&permissions=395137345600&integration_type=0&scope=bot";
-    static BOT_KEY = process.env["TOKEN"];
+    static USE_DEV = !!parseInt(process.env["IS_DEV"] ? process.env["IS_DEV"] : "1"); // 1 or 0
+    static BOT_KEY = (BCONST.USE_DEV) ? process.env["DEV_TOKEN"] : process.env["TOKEN"];
     static CLIENT_ID = "1266967306752491580";
     // 0.0  : Initial
     // 1.0  : 
@@ -17,7 +18,7 @@ export class BCONST {
     // Server-Specific Information for Ryan
     // SQL information
     static USE_LOCAL_SQL = !!parseInt(process.env["USE_LOCAL_SERVER"] ? process.env["USE_LOCAL_SERVER"] : "1"); // 1 or 0
-    static USE_DEV = !!parseInt(process.env["IS_DEV"] ? process.env["IS_DEV"] : "1"); // 1 or 0
+    
     static SQL_DB_REAL = process.env["SQL_DB"];
     static SQL_DB_DEV = this.SQL_DB_REAL;
     static SQL_REMOTE_USER = process.env["SQL_REMOTE_USER"];
