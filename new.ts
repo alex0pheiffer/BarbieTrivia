@@ -11,6 +11,7 @@ import { AskedQuestionI } from "./data/data_interfaces/askedQuestion";
 import { PlayerAnswerO } from "./data/data_objects/playerAnswer";
 import { showQuestionResult } from "./question_cycle";
 import { PlayerI } from "./data/data_interfaces/player";
+import { ShuffledAnswerItem } from "./data/component_interfaces/shuffled_answer";
 
 
 export async function createNewGame(interaction: ChatInputCommandInteraction): Promise<Number> {
@@ -106,7 +107,7 @@ export async function canInitiateNewGame(interaction: ChatInputCommandInteractio
     return result;
 }
 
-export async function createNewQuestion(serverID: string, channelID: string, client: Client, selected_question: number=-1): Promise<Number> {
+export async function createNewQuestion(serverID: string, channelID: string, client: Client, selected_question: number=-1, prev_question_time_remaining: number=-1): Promise<Number> {
     let result = 0;
     let question: QuestionO;
     let question_id: number;
@@ -173,41 +174,56 @@ export async function createNewQuestion(serverID: string, channelID: string, cli
         }
     }
 
-    // get the channel
     let channel: Channel | undefined = await client.channels.cache.get(channelID);
     if (typeof channel === 'undefined') result = GameInteractionErr.GuildDataUnavailable;
     channel = channel as TextChannel;
 
+    // in 23 hours, display the response
+    let duration = BCONST.TIME_UNTIL_ANSWER;
+    if (prev_question_time_remaining > 0) {
+        duration = prev_question_time_remaining;
+    }
+
     if (!result) {
-        // current date/time
         const d = new Date();
         let time = d.getTime();
         let day = d.getDate();
         let month = d.getMonth() + 1;
         let year = d.getFullYear();
-
-        let answers_scrambled = question!!.getAnswersScrambled();
+        // check if the question already exists
+        let aq_sql: AskedQuestionO[];
+        aq_sql  = await DO.getAskedQuestion(question_id!!, channelID);
         let max_img_index = Math.floor(Math.random()*BCONST.MAXIMUS_IMAGES.length);
-        
-        // create the new question
-        let aq = {"ask_id": 0,
-            "channel_id": channelID,
-            "question_id": question_id!!,
-            "date": time,
-            "response_total": 0,
-            "response_correct": 0,
-            "active": 1,
-            "ans_a": answers_scrambled[0]["i"],
-            "ans_b": answers_scrambled[1]["i"],
-            "ans_c": answers_scrambled[2]["i"],
-            "ans_d": answers_scrambled[3]["i"],
-            "max_img": max_img_index,
-            "message_id": "",
-            "next_question_time": -1} as AskedQuestionI;
-        result = await DO.insertAskedQuestion(aq);
-        question!!.setShownTotal(question!!.getShownTotal() + 1);
-        result = await DO.updateQuestion(question!!, result);
-        let aq_sql = await DO.getAskedQuestion(question_id!!, channelID);
+        let answers_scrambled: ShuffledAnswerItem[]
+        if (aq_sql.length <= 0) {
+            console.log("scrambling the answers");
+            answers_scrambled = question!!.getAnswersScrambled();
+            // create the new question
+            let aq = {"ask_id": 0,
+                "channel_id": channelID,
+                "question_id": question_id!!,
+                "date": time,
+                "response_total": 0,
+                "response_correct": 0,
+                "active": 1,
+                "ans_a": answers_scrambled[0]["i"],
+                "ans_b": answers_scrambled[1]["i"],
+                "ans_c": answers_scrambled[2]["i"],
+                "ans_d": answers_scrambled[3]["i"],
+                "max_img": max_img_index,
+                "message_id": "",
+                "next_question_time": -1,
+                "show_result_time": time + duration} as AskedQuestionI;
+            result = await DO.insertAskedQuestion(aq);
+            question!!.setShownTotal(question!!.getShownTotal() + 1);
+            result = await DO.updateQuestion(question!!, result);   
+            aq_sql = await DO.getAskedQuestion(question_id!!, channelID);
+        }
+        else {
+            console.log("usingn aq sql scrambled answers")
+            answers_scrambled = aq_sql[0].getAnswersScrambled(question!!);
+        }
+        console.log(answers_scrambled);
         if (aq_sql.length < 1) {
             result = GameInteractionErr.SQLConnectionError;
         }
@@ -235,6 +251,16 @@ export async function createNewQuestion(serverID: string, channelID: string, cli
                 description += `\n${letter}. ${answers_scrambled[i].ans}`;
                 itemsDropDown_interval.push({"description": `${letter}. ${answers_scrambled[i].ans}`, "label": letter, "value": String(answers_scrambled[i].i)});
             }
+            if (duration/1000/60/60 > 1) {
+                description += `\n\nUsers have ${Math.ceil(duration/1000/60/60)} hours to answer the question.`;
+            }
+            else if (duration/1000/60/60 < 1) {
+                description += `\n\nUsers have less than an hour to answer the question.`;
+            }
+            else {
+                description += `\n\nUsers have an hour to answer the question.`;
+            }
+            
             embed.setDescription(description);
             const dropdown_answer: any = new ActionRowBuilder().addComponents( new StringSelectMenuBuilder().setCustomId(BCONST.DROPDOWN_ANSWER).setPlaceholder('Select a response.').addOptions(itemsDropDown_interval));
             const btn_go: any = new ActionRowBuilder().addComponents(
@@ -297,8 +323,6 @@ export async function createNewQuestion(serverID: string, channelID: string, cli
                 // nothing
             });
 
-            // in 23 hours, display the response
-            let duration = BCONST.TIME_UNTIL_ANSWER;
             setTimeout(showQuestionResult, duration, message, ask_id);
         }
     }

@@ -8,8 +8,9 @@ require('dotenv').config(); // get our passwords and such
 class BCONST {
     // Bot Information
     static DISCORD_URL = "https://discord.com/oauth2/authorize?client_id=1266967306752491580&permissions=395137345600&integration_type=0&scope=bot";
-    static BOT_KEY = process.env["TOKEN"];
-    static CLIENT_ID = "1266967306752491580";
+    static USE_DEV = !!parseInt(process.env["IS_DEV"] ? process.env["IS_DEV"] : "1"); // 1 or 0
+    static BOT_KEY = (this.USE_DEV) ? process.env["DEV_TOKEN"] : process.env["TOKEN"];
+    static CLIENT_ID = (this.USE_DEV) ? process.env["DEV_CLIENT_ID"] : process.env["CLIENT_ID"];
     // 0.0  : Initial
     // 1.0  : 
     static VERSION = 1.0;
@@ -17,23 +18,26 @@ class BCONST {
     // Server-Specific Information for Ryan
     // SQL information
     static USE_LOCAL_SQL = !!parseInt(process.env["USE_LOCAL_SERVER"] ? process.env["USE_LOCAL_SERVER"] : "1"); // 1 or 0
-    static USE_DEV = !!parseInt(process.env["IS_DEV"] ? process.env["IS_DEV"] : "1"); // 1 or 0
     static SQL_DB_REAL = process.env["SQL_DB"];
-    static SQL_DB_DEV = this.SQL_DB_REAL;
+    static SQL_DB_DEV = process.env["SQL_DB_DEV"];
     static SQL_REMOTE_USER = process.env["SQL_REMOTE_USER"];
     static SQL_REMOTE_PASS = process.env["SQL_REMOTE_PASS"];
     static SQL_REMOTE_HOST = process.env["SQL_REMOTE_HOST"];
+    static SQL_REMOTE_DEV_USER = process.env["SQL_REMOTE_DEV_USER"];
+    static SQL_REMOTE_DEV_PASS = process.env["SQL_REMOTE_DEV_PASS"];
+    static SQL_REMOTE_DEV_HOST = process.env["SQL_REMOTE_DEV_HOST"];
     static SQL_LOCAL_USER = process.env["SQL_LOCAL_USER"];
     static SQL_LOCAL_PASS = process.env["SQL_LOCAL_PASS"];
     static SQL_LOCAL_HOST = process.env["SQL_LOCAL_HOST"];
     static SQL_DB = (this.USE_DEV) ? this.SQL_DB_DEV : this.SQL_DB_REAL;
-    static SQL_USER = (this.USE_LOCAL_SQL) ? this.SQL_LOCAL_USER : this.SQL_REMOTE_USER;
-    static SQL_PASS = (this.USE_LOCAL_SQL) ? this.SQL_LOCAL_PASS : this.SQL_REMOTE_PASS;
-    static SQL_HOST = (this.USE_LOCAL_SQL) ? this.SQL_LOCAL_HOST : this.SQL_REMOTE_HOST;
+    static SQL_USER = (this.USE_LOCAL_SQL) ? this.SQL_LOCAL_USER : ((this.USE_DEV) ? this.SQL_REMOTE_DEV_USER : this.SQL_REMOTE_USER);
+    static SQL_PASS = (this.USE_LOCAL_SQL) ? this.SQL_LOCAL_PASS : ((this.USE_DEV) ? this.SQL_REMOTE_DEV_PASS : this.SQL_REMOTE_PASS);
+    static SQL_HOST = (this.USE_LOCAL_SQL) ? this.SQL_LOCAL_HOST : ((this.USE_DEV) ? this.SQL_REMOTE_DEV_HOST : this.SQL_REMOTE_HOST);
     static SQL_DEBUG = false;
     // Master Channel
     static MASTER_QUESTION_SERVER = process.env["MASTER_SERVER"];
     static MASTER_PROMPT_CHANNEL = process.env["PROMPT_CHANNEL"];
+    static DEV_CHANNEL = process.env["DEV_CHANNEL"];
     // UI Information
     static BTN_SUBMIT = "Submit";
     static DROPDOWN_INTERVAL = "Time Interval Selection";

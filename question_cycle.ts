@@ -36,6 +36,8 @@ export async function showQuestionResult(message: Message, ask_id: number): Prom
                 channel = channel as TextChannel;
                 let description = `Because nobody has responded to the trivia question, the question is being extended another 24 hours.`
                 let new_message = await channel!!.send(description);
+                asked_question!!.setShowResultTime(asked_question!!.getShowResultTime() + duration);
+                result = await DO.updateAskedQuestion(asked_question!!, result);
             }
             else {
                 let r: PlayerAnswerO;

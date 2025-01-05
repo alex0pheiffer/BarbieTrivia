@@ -1,4 +1,4 @@
-const mysql = require('mysql');
+const mysql = require('mysql2');
 import {BCONST} from "../../BCONST";
 
 //////////////// Connection and Set Up ////////////////////////////////////////////////////////////////

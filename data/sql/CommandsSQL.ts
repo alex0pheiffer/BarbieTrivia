@@ -747,6 +747,12 @@ export class SQLDATA {
                         if (err) return resolve(err);
                         sql_changes += ` ${p} = ${value},`;
                         break;
+                    case "show_result_time":
+                        value = question.getShowResultTime();
+                        err = checkBigInt(value, errType.InvalidInputToSQL, p);
+                        if (err) return resolve(err);
+                        sql_changes += ` ${p} = ${value},`;
+                        break;
                     default:
                         console.log("Error: the property "+p+" is not supported by updateAskedQuestion.");
                         break;
@@ -1141,7 +1147,10 @@ export class SQLDATA {
             if (err) return resolve(err);
             value = question.next_question_time;
             err = checkBigInt(value, DataErr.InvalidInputToSQL, "next_question_time");
-            if (err) return resolve(err);     
+            if (err) return resolve(err);
+            value = question.show_result_time;
+            err = checkBigInt(value, DataErr.InvalidInputToSQL, "show_result_time");
+            if (err) return resolve(err);      
 
             var sql_columns = `(question_id, \
             date, \
@@ -1155,7 +1164,8 @@ export class SQLDATA {
             ans_d,
             max_img,
             message_id,
-            next_question_time)`;
+            next_question_time,
+            show_result_time)`;
 
             var sql_values = `(${question.question_id}, \
             ${question.date},\
@@ -1169,7 +1179,8 @@ export class SQLDATA {
             ${question.ans_d},
             ${question.max_img},
             '${question.message_id}',
-            ${question.next_question_time})`;
+            ${question.next_question_time},
+            ${question.show_result_time})`;
 
             var sqlq = `INSERT INTO asked_question ${sql_columns} VALUES ${sql_values};`;
             con.conn.query(sqlq, function (err: any, result: any) {

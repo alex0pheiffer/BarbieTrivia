@@ -19,6 +19,7 @@ export async function startAllQuestionChannels(client: Client) {
         // get the last submitted question to the question channel, and resubmit it.
         let latest_question = await DO.getLatestAskedQuestion(qc.getChannel());
         if (latest_question.length > 0) {
+            console.log("Latest ask_id: ", latest_question[0].getAskID());
             // inform the user of the err
             // let thumbnail = BCONST.MAXIMUS_IMAGES[Math.floor(Math.random()*BCONST.MAXIMUS_IMAGES.length)].url;
             // const embed = new EmbedBuilder().setTimestamp().setThumbnail(thumbnail).setFooter({text: 'Barbie Trivia', iconURL: BCONST.LOGO});
@@ -31,10 +32,12 @@ export async function startAllQuestionChannels(client: Client) {
             const d = new Date();
             let time = d.getTime();
             if (latest_question[0].getActive() > 0) {
+                console.log("Question is active");
                 // pretend this question has reached its time limit (even though it hasn't) and move on to the next question
                 // get the message id
-                let message = await channel.messages.fetch(latest_question[0].getMessageID());
-                if (time - (latest_question[0].getDate() + BCONST.TIME_UNTIL_ANSWER) >= 0) {
+                // TODO check if channel is undefined; this can happen if the bot isn't in the server
+                if (time - latest_question[0].getShowResultTime() >= 0) {
+                    let message = await channel.messages.fetch(latest_question[0].getMessageID());
                     showQuestionResult(message, latest_question[0].getAskID());
                 }
                 else {
@@ -44,32 +47,34 @@ export async function startAllQuestionChannels(client: Client) {
                     let description = `There appeared to have been an error. Please respond to the new prompt for your answers. (Previous answers are still recorded).`;
                     embed.setDescription(description);
                     channel.send({ embeds:[embed]});
-                    // change this question to be inactive since we will make a new one
-                    latest_question[0].setActive(0);
-                    result = await DO.updateAskedQuestion(latest_question[0], result);
-                    createNewQuestion(qc.getServer()!!, qc.getChannel(), client, latest_question[0].getQuestionID());
-                    // change all previous answers to that asked_question to the new question
-                    let latest_question_remake = await DO.getLatestAskedQuestion(qc.getChannel());
-                    if (latest_question_remake.length > 0) {
-                        let responses = await DO.getPlayerAnswers(latest_question[0].getAskID());
-                        for (let i=0; i < responses.length; i++) {
-                            responses[i].setAskID(latest_question_remake[0].getAskID());
-                            result = await DO.updatePlayerAnswer(responses[i], result);
-                        }
-                    }
-                    // TODO edit the embed to reflect that we know this many people have answered so far
-                    else {
-                        console.log("Newest Question not created properly");
-                    }
+                    let new_time_difference = latest_question[0].getShowResultTime() - time;
+                    createNewQuestion(qc.getServer()!!, qc.getChannel(), client, latest_question[0].getQuestionID(), new_time_difference);
+                    
+                    // let latest_question_remake = await DO.getLatestAskedQuestion(qc.getChannel());
+                    // if (latest_question_remake.length > 0) {
+                    //     console.log("Latest Question Remake ask_id: ", latest_question_remake[0].getAskID())
+                    //     let responses = await DO.getPlayerAnswers(latest_question[0].getAskID());
+                    //     for (let i=0; i < responses.length; i++) {
+                    //         responses[i].setAskID(latest_question_remake[0].getAskID());
+                    //         result = await DO.updatePlayerAnswer(responses[i], result);
+                    //     }
+                    // }
+                    // // TODO edit the embed to reflect that we know this many people have answered so far
+                    // else {
+                    //     console.log("Newest Question not created properly");
+                    // }
                 }
                 //createNewQuestion(qc.getServer()!!, qc.getChannel(), client, latest_question[0].getQuestionID());
             }
             else {
-                if (time - latest_question[0].getNextQuestionTime() <= 0) {
+                console.log("Question is not active.")
+                if (time - latest_question[0].getNextQuestionTime() >= 0) {
+                    console.log(`Question should have appeared at ${latest_question[0].getNextQuestionTime()}, which is after now (${time})`);
                     createNewQuestion(qc.getServer()!!, qc.getChannel(), client);
                 }
                 else {
-                    setTimeout(createNewQuestion, time - latest_question[0].getNextQuestionTime(), qc.getServer(), qc.getChannel(), client);
+                    console.log(`there are still ${latest_question[0].getNextQuestionTime()-time}ms until the next question,`);
+                    setTimeout(createNewQuestion, latest_question[0].getNextQuestionTime()-time, qc.getServer(), qc.getChannel(), client);
                 }
             }
         }            

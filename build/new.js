@@ -90,7 +90,7 @@ async function canInitiateNewGame(interaction) {
     return result;
 }
 exports.canInitiateNewGame = canInitiateNewGame;
-async function createNewQuestion(serverID, channelID, client, selected_question = -1) {
+async function createNewQuestion(serverID, channelID, client, selected_question = -1, prev_question_time_remaining = -1) {
     let result = 0;
     let question;
     let question_id;
@@ -148,39 +148,55 @@ async function createNewQuestion(serverID, channelID, client, selected_question 
             }
         }
     }
-    // get the channel
     let channel = await client.channels.cache.get(channelID);
     if (typeof channel === 'undefined')
         result = Errors_1.GameInteractionErr.GuildDataUnavailable;
     channel = channel;
+    // in 23 hours, display the response
+    let duration = BCONST_1.BCONST.TIME_UNTIL_ANSWER;
+    if (prev_question_time_remaining > 0) {
+        duration = prev_question_time_remaining;
+    }
     if (!result) {
-        // current date/time
         const d = new Date();
         let time = d.getTime();
         let day = d.getDate();
         let month = d.getMonth() + 1;
         let year = d.getFullYear();
-        let answers_scrambled = question.getAnswersScrambled();
+        // check if the question already exists
+        let aq_sql;
+        aq_sql = await DOBuilder_1.DO.getAskedQuestion(question_id, channelID);
         let max_img_index = Math.floor(Math.random() * BCONST_1.BCONST.MAXIMUS_IMAGES.length);
-        // create the new question
-        let aq = { "ask_id": 0,
-            "channel_id": channelID,
-            "question_id": question_id,
-            "date": time,
-            "response_total": 0,
-            "response_correct": 0,
-            "active": 1,
-            "ans_a": answers_scrambled[0]["i"],
-            "ans_b": answers_scrambled[1]["i"],
-            "ans_c": answers_scrambled[2]["i"],
-            "ans_d": answers_scrambled[3]["i"],
-            "max_img": max_img_index,
-            "message_id": "",
-            "next_question_time": -1 };
-        result = await DOBuilder_1.DO.insertAskedQuestion(aq);
-        question.setShownTotal(question.getShownTotal() + 1);
-        result = await DOBuilder_1.DO.updateQuestion(question, result);
-        let aq_sql = await DOBuilder_1.DO.getAskedQuestion(question_id, channelID);
+        let answers_scrambled;
+        if (aq_sql.length <= 0) {
+            console.log("scrambling the answers");
+            answers_scrambled = question.getAnswersScrambled();
+            // create the new question
+            let aq = { "ask_id": 0,
+                "channel_id": channelID,
+                "question_id": question_id,
+                "date": time,
+                "response_total": 0,
+                "response_correct": 0,
+                "active": 1,
+                "ans_a": answers_scrambled[0]["i"],
+                "ans_b": answers_scrambled[1]["i"],
+                "ans_c": answers_scrambled[2]["i"],
+                "ans_d": answers_scrambled[3]["i"],
+                "max_img": max_img_index,
+                "message_id": "",
+                "next_question_time": -1,
+                "show_result_time": time + duration };
+            result = await DOBuilder_1.DO.insertAskedQuestion(aq);
+            question.setShownTotal(question.getShownTotal() + 1);
+            result = await DOBuilder_1.DO.updateQuestion(question, result);
+            aq_sql = await DOBuilder_1.DO.getAskedQuestion(question_id, channelID);
+        }
+        else {
+            console.log("usingn aq sql scrambled answers");
+            answers_scrambled = aq_sql[0].getAnswersScrambled(question);
+        }
+        console.log(answers_scrambled);
         if (aq_sql.length < 1) {
             result = Errors_1.GameInteractionErr.SQLConnectionError;
         }
@@ -209,6 +225,15 @@ async function createNewQuestion(serverID, channelID, client, selected_question 
                     letter = "D";
                 description += `\n${letter}. ${answers_scrambled[i].ans}`;
                 itemsDropDown_interval.push({ "description": `${letter}. ${answers_scrambled[i].ans}`, "label": letter, "value": String(answers_scrambled[i].i) });
+            }
+            if (duration / 1000 / 60 / 60 > 1) {
+                description += `\n\nUsers have ${Math.ceil(duration / 1000 / 60 / 60)} hours to answer the question.`;
+            }
+            else if (duration / 1000 / 60 / 60 < 1) {
+                description += `\n\nUsers have less than an hour to answer the question.`;
+            }
+            else {
+                description += `\n\nUsers have an hour to answer the question.`;
             }
             embed.setDescription(description);
             const dropdown_answer = new discord_js_1.ActionRowBuilder().addComponents(new discord_js_1.StringSelectMenuBuilder().setCustomId(BCONST_1.BCONST.DROPDOWN_ANSWER).setPlaceholder('Select a response.').addOptions(itemsDropDown_interval));
@@ -267,8 +292,6 @@ async function createNewQuestion(serverID, channelID, client, selected_question 
             collector_drop.on('end', (collected) => {
                 // nothing
             });
-            // in 23 hours, display the response
-            let duration = BCONST_1.BCONST.TIME_UNTIL_ANSWER;
             setTimeout(question_cycle_1.showQuestionResult, duration, message, ask_id);
         }
     }

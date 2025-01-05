@@ -1,7 +1,7 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.connectSQL = exports.con = void 0;
-const mysql = require('mysql');
+const mysql = require('mysql2');
 const BCONST_1 = require("../../BCONST");
 class SQLConn {
     _conn;

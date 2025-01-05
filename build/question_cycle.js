@@ -35,6 +35,8 @@ async function showQuestionResult(message, ask_id) {
                 channel = channel;
                 let description = `Because nobody has responded to the trivia question, the question is being extended another 24 hours.`;
                 let new_message = await channel.send(description);
+                asked_question.setShowResultTime(asked_question.getShowResultTime() + duration);
+                result = await DOBuilder_1.DO.updateAskedQuestion(asked_question, result);
             }
             else {
                 let r;

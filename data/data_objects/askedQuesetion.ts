@@ -1,4 +1,6 @@
+import { ShuffledAnswerItem } from "../component_interfaces/shuffled_answer";
 import {AskedQuestionI} from "../data_interfaces/askedQuestion"
+import { QuestionO } from "./question";
 
 class AskedQuestionO_Changes {
     ask_id: number;
@@ -10,6 +12,7 @@ class AskedQuestionO_Changes {
     active: boolean = false;
     message_id: boolean = false;
     next_question_time: boolean = false;
+    show_result_time: boolean = false;
     
     private changes = new Array<string>();
 
@@ -47,6 +50,12 @@ class AskedQuestionO_Changes {
         this.changes.push("next_question_time");
     }
     
+    public change_show_result_time() {
+        if (this.show_result_time) return;
+        this.show_result_time = true;
+        this.changes.push("show_result_time");
+    }
+    
     public generateChanges(): Array<string> {
         return this.changes;        
     }
@@ -71,6 +80,7 @@ export class AskedQuestionO {
     private max_img: number;
     private message_id: string;
     private next_question_time: number;
+    private show_result_time: number;
 
     private changes: AskedQuestionO_Changes;
 
@@ -89,6 +99,7 @@ export class AskedQuestionO {
         this.max_img = json.max_img;
         this.message_id = json.message_id;
         this.next_question_time = json.next_question_time;
+        this.show_result_time = json.show_result_time;
 
         this.changes = new AskedQuestionO_Changes(this.ask_id);
     }
@@ -137,6 +148,15 @@ export class AskedQuestionO {
         return this.ans_d;
     }
 
+    public getAnswersScrambled(question: QuestionO): Array<ShuffledAnswerItem> {
+        let list = [{"i": this.ans_a, "ans": question.getAnswers()[this.ans_a]} as ShuffledAnswerItem, 
+            {"i": this.ans_b, "ans": question.getAnswers()[this.ans_b]} as ShuffledAnswerItem, 
+            {"i": this.ans_c, "ans": question.getAnswers()[this.ans_c]} as ShuffledAnswerItem,
+            {"i": this.ans_d, "ans": question.getAnswers()[this.ans_d]} as ShuffledAnswerItem];
+        
+        return list;
+    }
+
     public getMaxImg(): number {
         return this.max_img;
     }
@@ -147,6 +167,10 @@ export class AskedQuestionO {
 
     public getNextQuestionTime(): number {
         return this.next_question_time;
+    }
+    
+    public getShowResultTime(): number {
+        return this.show_result_time;
     }
 
     public setResponseTotal(value: number): boolean {
@@ -176,6 +200,12 @@ export class AskedQuestionO {
     public setNextQuestionTime(value: number): boolean {
         this.next_question_time = value;
         this.changes.change_next_question_time();
+        return true;
+    }
+    
+    public setShowResultTime(value: number): boolean {
+        this.show_result_time = value;
+        this.changes.change_show_result_time();
         return true;
     }
     

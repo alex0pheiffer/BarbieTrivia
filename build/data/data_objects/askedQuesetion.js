@@ -11,6 +11,7 @@ class AskedQuestionO_Changes {
     active = false;
     message_id = false;
     next_question_time = false;
+    show_result_time = false;
     changes = new Array();
     constructor(ask_id) {
         this.ask_id = ask_id;
@@ -45,6 +46,12 @@ class AskedQuestionO_Changes {
         this.next_question_time = true;
         this.changes.push("next_question_time");
     }
+    change_show_result_time() {
+        if (this.show_result_time)
+            return;
+        this.show_result_time = true;
+        this.changes.push("show_result_time");
+    }
     generateChanges() {
         return this.changes;
     }
@@ -67,6 +74,7 @@ class AskedQuestionO {
     max_img;
     message_id;
     next_question_time;
+    show_result_time;
     changes;
     constructor(json) {
         this.ask_id = json.ask_id;
@@ -83,6 +91,7 @@ class AskedQuestionO {
         this.max_img = json.max_img;
         this.message_id = json.message_id;
         this.next_question_time = json.next_question_time;
+        this.show_result_time = json.show_result_time;
         this.changes = new AskedQuestionO_Changes(this.ask_id);
     }
     getAskID() {
@@ -118,6 +127,13 @@ class AskedQuestionO {
     getAnsD() {
         return this.ans_d;
     }
+    getAnswersScrambled(question) {
+        let list = [{ "i": this.ans_a, "ans": question.getAnswers()[this.ans_a] },
+            { "i": this.ans_b, "ans": question.getAnswers()[this.ans_b] },
+            { "i": this.ans_c, "ans": question.getAnswers()[this.ans_c] },
+            { "i": this.ans_d, "ans": question.getAnswers()[this.ans_d] }];
+        return list;
+    }
     getMaxImg() {
         return this.max_img;
     }
@@ -126,6 +142,9 @@ class AskedQuestionO {
     }
     getNextQuestionTime() {
         return this.next_question_time;
+    }
+    getShowResultTime() {
+        return this.show_result_time;
     }
     setResponseTotal(value) {
         this.response_total = value;
@@ -150,6 +169,11 @@ class AskedQuestionO {
     setNextQuestionTime(value) {
         this.next_question_time = value;
         this.changes.change_next_question_time();
+        return true;
+    }
+    setShowResultTime(value) {
+        this.show_result_time = value;
+        this.changes.change_show_result_time();
         return true;
     }
     isChanges() {
