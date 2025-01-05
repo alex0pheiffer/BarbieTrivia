@@ -201,7 +201,9 @@ export async function createNewQuestion(serverID: string, channelID: string, cli
             "ans_b": answers_scrambled[1]["i"],
             "ans_c": answers_scrambled[2]["i"],
             "ans_d": answers_scrambled[3]["i"],
-            "max_img": max_img_index} as AskedQuestionI;
+            "max_img": max_img_index,
+            "message_id": "",
+            "next_question_time": -1} as AskedQuestionI;
         result = await DO.insertAskedQuestion(aq);
         question!!.setShownTotal(question!!.getShownTotal() + 1);
         result = await DO.updateQuestion(question!!, result);
@@ -239,6 +241,9 @@ export async function createNewQuestion(serverID: string, channelID: string, cli
                 new ButtonBuilder().setCustomId(BCONST.BTN_SUBMIT).setLabel("Submit").setStyle(ButtonStyle.Primary));
 
             let message = await channel!!.send({ embeds:[embed], components: [dropdown_answer, btn_go]});
+            // update the question's message_id
+            aq_sql[0].setMessageID(message.id);
+            result = await DO.updateAskedQuestion(aq_sql[0], result);
 
             const filter_btn = (inter: MessageComponentInteraction) => inter.customId === BCONST.BTN_SUBMIT;
             const filter_dropdown = (inter: MessageComponentInteraction) => inter.customId === BCONST.DROPDOWN_ANSWER;
@@ -293,9 +298,7 @@ export async function createNewQuestion(serverID: string, channelID: string, cli
             });
 
             // in 23 hours, display the response
-            // TODO replace with 23 hours
-            let duration = 60 * 60 * 23 * 1000; // 23 hours in ms
-            console.log("duration set: ", duration);
+            let duration = BCONST.TIME_UNTIL_ANSWER;
             setTimeout(showQuestionResult, duration, message, ask_id);
         }
     }

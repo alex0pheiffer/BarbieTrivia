@@ -74,20 +74,28 @@ async function createFirstModal(interaction: ChatInputCommandInteraction | Butto
                 if (filter) {
                     if (isAdminCheck) {
                         await i.deferReply({ephemeral: false});
+                        console.log("Defer Reply (1)")
                     }
                     else {
                         await i.deferReply({ephemeral: true});
+                        console.log("Defer Reply (2)")
                     }
+                }
+                else {
+                    console.log(`Did not meet filter requirements. userID: ${interaction.user.id} vs ${i.user.id}, modalID: ${BCONST.MODAL_PROMPT} vs ${i.customId}`);
                 }
                 return filter;
             },
             time: modal_timeout,
         });
+        console.log("Completed Modal Result 1")
 
         //await modal_result.editReply(modal_result.fields.getTextInputValue(BCONST.MODAL_QUESTION_INPUT));
         // update the prompt information
         let question_input = modal_result.fields.getTextInputValue(BCONST.MODAL_QUESTION_INPUT);
+        console.log("question_input recieved");
         let image_input  = modal_result.fields.getTextInputValue(BCONST.MODAL_IMAGE_INPUT);
+        console.log("image_input recieved");
         if (prompt != null) {
             prompt.setQuestion(question_input);
             if (image_input.length > 3) {
@@ -120,9 +128,11 @@ async function createFirstModal(interaction: ChatInputCommandInteraction | Butto
         // send the current version of the question for viewing
         if (!result) {
             if (isAdminCheck) {
+                console.log("entering modal_result (1)")
                 result = await adminCheckEmbed(modal_result, modal_result.client, prompt!!, false);
             }
             else {
+                console.log("entering modal_result (2)")
                 result = await createEmbedResult(modal_result, prompt!!, master_message);
             }
         }
@@ -214,20 +224,30 @@ async function createSecondModal(interaction: ChatInputCommandInteraction | Butt
                 if (filter) {
                     if (isAdminCheck) {
                         await i.deferReply({ephemeral: false});
+                        console.log("Defer Reply (3)")
                     }
                     else {
                         await i.deferReply({ephemeral: true});
+                        console.log("Defer Reply (4)")
                     }
+                }
+                else {
+                    console.log(`Did not meet filter requirements. userID: ${interaction.user.id} vs ${i.user.id}, modalID: ${BCONST.MODAL_PROMPT2} vs ${i.customId}`);
                 }
                 return filter;
             },
             time: modal_timeout,
         });
+        console.log("Completed Modal Result 2")
 
         let ansA_input = modal_result2.fields.getTextInputValue(BCONST.MODAL_ANS_A_INPUT);
+        console.log("ansA_input recieved");
         let ansB_input = modal_result2.fields.getTextInputValue(BCONST.MODAL_ANS_B_INPUT);
+        console.log("ansB_input recieved");
         let ansC_input = modal_result2.fields.getTextInputValue(BCONST.MODAL_ANS_C_INPUT);
+        console.log("ansC_input recieved");
         let ansD_input = modal_result2.fields.getTextInputValue(BCONST.MODAL_ANS_D_INPUT);
+        console.log("ansD_input recieved");
         if (prompt != null) {
             prompt.setAnsA(ansA_input);
             prompt.setAnsB(ansB_input);
@@ -242,9 +262,11 @@ async function createSecondModal(interaction: ChatInputCommandInteraction | Butt
         // send the current version of the question for viewing
         if (!result) {
             if (isAdminCheck) {
+                console.log("entering result (3)");
                 result = await adminCheckEmbed(modal_result2, modal_result2.client, prompt!!, false);
             }
             else {
+                console.log("entering result (4");
                 result = await createEmbedResult(modal_result2, prompt!!, master_message);
             }
         }
@@ -299,31 +321,40 @@ async function createThirdModal(interaction: ChatInputCommandInteraction | Butto
                 if (filter) {
                     if (isAdminCheck) {
                         await i.deferReply({ephemeral: false});
+                        console.log("Defer Reply (5)")
                     }
                     else {
                         await i.deferReply({ephemeral: true});
+                        console.log("Defer Reply (6)")
                     }
+                }
+                else {
+                    console.log(`Did not meet filter requirements. userID: ${interaction.user.id} vs ${i.user.id}, modalID: ${BCONST.MODAL_PROMPT3} vs ${i.customId}`);
                 }
                 return filter;
             },
             time: modal_timeout,
         });
+        console.log("Completed Modal Result 3")
 
         let funfact_input = modal_result3.fields.getTextInputValue(BCONST.MODAL_FUNFACT_INPUT);
-            if (prompt != null) {
-                prompt.setFunFact(funfact_input);
-                result = await DO.updateProposal(prompt, result);
-            }
-            else {
-                result = GameInteractionErr.QuestionDoesNotExist;
-            }
+        console.log("funfact_input recieved");
+        if (prompt != null) {
+            prompt.setFunFact(funfact_input);
+            result = await DO.updateProposal(prompt, result);
+        }
+        else {
+            result = GameInteractionErr.QuestionDoesNotExist;
+        }
 
         // send the current version of the question for viewing
         if (!result) {
             if (isAdminCheck) {
+                console.log("entering modal_result (5)")
                 result = await adminCheckEmbed(modal_result3, modal_result3.client, prompt!!, false);
             }
             else {
+                console.log("entering modal_result (6)")
                 result = await createEmbedResult(modal_result3, prompt!!, master_message);
             }
         }

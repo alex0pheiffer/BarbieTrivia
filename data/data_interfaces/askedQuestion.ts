@@ -25,4 +25,6 @@ export interface AskedQuestionI {
     ans_c: number;
     ans_d: number;
     max_img: number;
+    message_id: string;
+    next_question_time: number;
 }

@@ -57,6 +57,7 @@ class BCONST {
     static BTN_PROPOSAL_ACCEPT = "Proposal Accept";
     static BTN_PROPOSAL_DECLINE = "Proposal Decline";
     // Game Specific Information
+    static TIME_UNTIL_ANSWER = 23 * 60 * 60 * 1000; //ms
     static QUESTION_INTERVALS = [
         { "label": "Every Hour", "description": "", "value": 0 },
         { "label": "Every 6 Hours", "description": "", "value": 1 },
@@ -126,7 +127,9 @@ class BCONST {
         "That answer? You must have the brain of a puffball.",
         "I don't think I heard you correctly. Maybe try one of the berries so I can hear you better.",
         "Such an answer deserves banishment to the Bogs of the Hinterlands.",
-        "Lefting, leftaroo! Let's try that again."
+        "Lefting, leftaroo! Let's try that again.",
+        "I found it! The immunity berry!",
+        "You make the Carousel of Confusion look logical."
     ];
     static MAXIMUS_PHRASES_END_GOOD = [
         "I see you've been studying.",
@@ -138,7 +141,9 @@ class BCONST {
         "Not the berry!",
         "You think you can best me? I won't be defeated!",
         "Maybe we try that again before telling Her Wartiness.",
-        "Looks like it wasn't the right berry after all."
+        "Looks like it wasn't the right berry after all.",
+        "Fungus? Oh, no, no, no. These buffoons are fungus. Call me, Fungus Maximus.",
+        "Best 2 out of 3?"
     ];
 }
 exports.BCONST = BCONST;

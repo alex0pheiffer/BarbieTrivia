@@ -174,7 +174,9 @@ async function createNewQuestion(serverID, channelID, client, selected_question 
             "ans_b": answers_scrambled[1]["i"],
             "ans_c": answers_scrambled[2]["i"],
             "ans_d": answers_scrambled[3]["i"],
-            "max_img": max_img_index };
+            "max_img": max_img_index,
+            "message_id": "",
+            "next_question_time": -1 };
         result = await DOBuilder_1.DO.insertAskedQuestion(aq);
         question.setShownTotal(question.getShownTotal() + 1);
         result = await DOBuilder_1.DO.updateQuestion(question, result);
@@ -212,6 +214,9 @@ async function createNewQuestion(serverID, channelID, client, selected_question 
             const dropdown_answer = new discord_js_1.ActionRowBuilder().addComponents(new discord_js_1.StringSelectMenuBuilder().setCustomId(BCONST_1.BCONST.DROPDOWN_ANSWER).setPlaceholder('Select a response.').addOptions(itemsDropDown_interval));
             const btn_go = new discord_js_1.ActionRowBuilder().addComponents(new discord_js_1.ButtonBuilder().setCustomId(BCONST_1.BCONST.BTN_SUBMIT).setLabel("Submit").setStyle(discord_js_1.ButtonStyle.Primary));
             let message = await channel.send({ embeds: [embed], components: [dropdown_answer, btn_go] });
+            // update the question's message_id
+            aq_sql[0].setMessageID(message.id);
+            result = await DOBuilder_1.DO.updateAskedQuestion(aq_sql[0], result);
             const filter_btn = (inter) => inter.customId === BCONST_1.BCONST.BTN_SUBMIT;
             const filter_dropdown = (inter) => inter.customId === BCONST_1.BCONST.DROPDOWN_ANSWER;
             // Create a message component interaction collector
@@ -263,9 +268,7 @@ async function createNewQuestion(serverID, channelID, client, selected_question 
                 // nothing
             });
             // in 23 hours, display the response
-            // TODO replace with 23 hours
-            let duration = 60 * 60 * 23 * 1000; // 23 hours in ms
-            console.log("duration set: ", duration);
+            let duration = BCONST_1.BCONST.TIME_UNTIL_ANSWER;
             setTimeout(question_cycle_1.showQuestionResult, duration, message, ask_id);
         }
     }

@@ -149,7 +149,7 @@ class SQLDATA {
                 return resolve("");
             }
             // determine if this column exists
-            var sqlq = `SELECT * FROM proposal WHERE question = '${question}';`;
+            var sqlq = `SELECT * FROM proposal WHERE question = "${question.replaceAll('"', '""')}";`;
             StartSQL_1.con.conn.query(sqlq, function (err, result) {
                 if (err)
                     throw err;
@@ -452,7 +452,7 @@ class SQLDATA {
                         err = checkString(value, Database_Constants_1.DBC.question_length, errType.InvalidInputToSQL, p);
                         if (err)
                             return resolve(err);
-                        sql_changes += ` ${p} = '${value}',`;
+                        sql_changes += ` ${p} = "${value.replaceAll('"', '""')}",`;
                         break;
                     case "ans_a":
                     case "ans_b":
@@ -462,7 +462,7 @@ class SQLDATA {
                         err = checkString(value, Database_Constants_1.DBC.answer_length, errType.InvalidInputToSQL, p);
                         if (err)
                             return resolve(err);
-                        sql_changes += ` ${p} = '${value}',`;
+                        sql_changes += ` ${p} = "${value.replaceAll('"', '""')}",`;
                         break;
                     case "d_always_last":
                         value = proposal.getDAlwaysLast();
@@ -476,7 +476,7 @@ class SQLDATA {
                         err = checkString(value, Database_Constants_1.DBC.funfact_length, errType.InvalidInputToSQL, p);
                         if (err)
                             return resolve(err);
-                        sql_changes += ` ${p} = '${value}',`;
+                        sql_changes += ` ${p} = "${value.replaceAll('"', '""')}",`;
                         break;
                     case "correct":
                         value = proposal.getCorrect();
@@ -497,14 +497,14 @@ class SQLDATA {
                         err = checkString(value, Database_Constants_1.DBC.userID_length, errType.InvalidInputToSQL, p);
                         if (err)
                             return resolve(err);
-                        sql_changes += ` ${p} = '${value}',`;
+                        sql_changes += ` ${p} = "${value}",`;
                         break;
                     case "image":
                         value = proposal.getImage();
                         err = checkString(value, Database_Constants_1.DBC.image_length, errType.InvalidInputToSQL, p);
                         if (err)
                             return resolve(err);
-                        sql_changes += ` ${p} = '${value}',`;
+                        sql_changes += ` ${p} = "${value}",`;
                         break;
                     case "submitted":
                         value = proposal.getSubmitted();
@@ -522,7 +522,7 @@ class SQLDATA {
                 // remove the extra comma
                 sql_changes = sql_changes.slice(0, sql_changes.length - 1);
                 sql_q += sql_changes;
-                sql_q += ` WHERE proposal_id = '${proposal.getProposalID()}';`;
+                sql_q += ` WHERE proposal_id = ${proposal.getProposalID()};`;
                 let result = await this.updateTable(sql_q);
                 resolve(result);
             }
@@ -548,7 +548,7 @@ class SQLDATA {
                         err = checkString(value, Database_Constants_1.DBC.question_length, errType.InvalidInputToSQL, p);
                         if (err)
                             return resolve(err);
-                        sql_changes += ` ${p} = '${value}',`;
+                        sql_changes += ` ${p} = "${value.replaceAll('"', '""')}",`;
                         break;
                     case "ans_a":
                     case "ans_b":
@@ -558,7 +558,7 @@ class SQLDATA {
                         err = checkString(value, Database_Constants_1.DBC.answer_length, errType.InvalidInputToSQL, p);
                         if (err)
                             return resolve(err);
-                        sql_changes += ` ${p} = '${value}',`;
+                        sql_changes += ` ${p} = "${value.replaceAll('"', '""')}",`;
                         break;
                     case "d_always_last":
                         value = question.getDAlwaysLast();
@@ -572,7 +572,7 @@ class SQLDATA {
                         err = checkString(value, Database_Constants_1.DBC.funfact_length, errType.InvalidInputToSQL, p);
                         if (err)
                             return resolve(err);
-                        sql_changes += ` ${p} = '${value}',`;
+                        sql_changes += ` ${p} = "${value.replaceAll('"', '""')}",`;
                         break;
                     case "correct":
                         value = question.getCorrect();
@@ -593,14 +593,14 @@ class SQLDATA {
                         err = checkString(value, Database_Constants_1.DBC.userID_length, errType.InvalidInputToSQL, p);
                         if (err)
                             return resolve(err);
-                        sql_changes += ` ${p} = '${value}',`;
+                        sql_changes += ` ${p} = "${value}",`;
                         break;
                     case "image":
                         value = question.getImage();
                         err = checkString(value, Database_Constants_1.DBC.image_length, errType.InvalidInputToSQL, p);
                         if (err)
                             return resolve(err);
-                        sql_changes += ` ${p} = '${value}',`;
+                        sql_changes += ` ${p} = "${value}",`;
                         break;
                     case "response_total":
                         value = question.getResponseTotal();
@@ -670,6 +670,20 @@ class SQLDATA {
                     case "active":
                         value = question.getActive();
                         err = checkInt(value, errType.InvalidInputToSQL, p);
+                        if (err)
+                            return resolve(err);
+                        sql_changes += ` ${p} = ${value},`;
+                        break;
+                    case "message_id":
+                        value = question.getMessageID();
+                        err = checkString(value, Database_Constants_1.DBC.channelID_length, errType.InvalidInputToSQL, p);
+                        if (err)
+                            return resolve(err);
+                        sql_changes += ` ${p} = "${value}",`;
+                        break;
+                    case "next_question_time":
+                        value = question.getNextQuestionTime();
+                        err = checkBigInt(value, errType.InvalidInputToSQL, p);
                         if (err)
                             return resolve(err);
                         sql_changes += ` ${p} = ${value},`;
@@ -755,13 +769,6 @@ class SQLDATA {
             let sql_q = "UPDATE player SET";
             player.getChanges().forEach((p) => {
                 switch (p) {
-                    case "q_submitted":
-                        value = player.getQSubmitted();
-                        err = checkInt(value, errType.InvalidInputToSQL, p);
-                        if (err)
-                            return resolve(err);
-                        sql_changes += ` ${p} = ${value},`;
-                        break;
                     case "q_submitted":
                         value = player.getQSubmitted();
                         err = checkInt(value, errType.InvalidInputToSQL, p);
@@ -875,7 +882,7 @@ class SQLDATA {
             "${proposal.getFunFact().replaceAll('"', '""')}",\
             ${proposal.getCorrect()},\
             ${proposal.getDate()},\
-            "${proposal.getSubmitter()}",
+            "${proposal.getSubmitter()}",\
             ${proposal.getSubmitted()})`;
             var sqlq = `INSERT INTO proposal ${sql_columns} VALUES ${sql_values};`;
             StartSQL_1.con.conn.query(sqlq, function (err, result) {
@@ -967,17 +974,17 @@ class SQLDATA {
             response_total, \
             response_correct, \
             shown_total)`;
-            var sql_values = `('${question.getQuestion()}', \
-            '${question.getImage()}',\
-            '${question.getAnswer("ans_a")}',\
-            '${question.getAnswer("ans_b")}',\
-            '${question.getAnswer("ans_c")}',\
-            '${question.getAnswer("ans_d")}',\
+            var sql_values = `("${question.getQuestion().replaceAll('"', '""')}", \
+            "${question.getImage()}",\
+            "${question.getAnswer("ans_a").replaceAll('"', '""')}",\
+            "${question.getAnswer("ans_b").replaceAll('"', '""')}",\
+            "${question.getAnswer("ans_c").replaceAll('"', '""')}",\
+            "${question.getAnswer("ans_d").replaceAll('"', '""')}",\
             ${question.getDAlwaysLast()},\
-            '${question.getFunFact()}',\
+            "${question.getFunFact().replaceAll('"', '""')}",\
             ${question.getCorrect()},\
             ${question.getDate()},\
-            '${question.getSubmitter()}',\
+            "${question.getSubmitter()}",\
             ${question.getResponseTotal()},\
             ${question.getResponseCorrect()},\
             ${question.getShownTotal()})`;
@@ -1077,6 +1084,14 @@ class SQLDATA {
             err = checkInt(value, Errors_1.DataErr.InvalidInputToSQL, "max_img");
             if (err)
                 return resolve(err);
+            value = question.message_id;
+            err = checkString(value, Database_Constants_1.DBC.channelID_length, Errors_1.DataErr.InvalidInputToSQL, "message_id");
+            if (err)
+                return resolve(err);
+            value = question.next_question_time;
+            err = checkBigInt(value, Errors_1.DataErr.InvalidInputToSQL, "next_question_time");
+            if (err)
+                return resolve(err);
             var sql_columns = `(question_id, \
             date, \
             response_total, \
@@ -1087,7 +1102,9 @@ class SQLDATA {
             ans_b,
             ans_c,
             ans_d,
-            max_img)`;
+            max_img,
+            message_id,
+            next_question_time)`;
             var sql_values = `(${question.question_id}, \
             ${question.date},\
             ${question.response_total},\
@@ -1098,7 +1115,9 @@ class SQLDATA {
             ${question.ans_b},
             ${question.ans_c},
             ${question.ans_d},
-            ${question.max_img})`;
+            ${question.max_img},
+            '${question.message_id}',
+            ${question.next_question_time})`;
             var sqlq = `INSERT INTO asked_question ${sql_columns} VALUES ${sql_values};`;
             StartSQL_1.con.conn.query(sqlq, function (err, result) {
                 if (err && err.errno == 1062) {

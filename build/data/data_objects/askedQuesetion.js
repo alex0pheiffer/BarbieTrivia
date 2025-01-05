@@ -9,6 +9,8 @@ class AskedQuestionO_Changes {
     response_total = false;
     response_correct = false;
     active = false;
+    message_id = false;
+    next_question_time = false;
     changes = new Array();
     constructor(ask_id) {
         this.ask_id = ask_id;
@@ -31,6 +33,18 @@ class AskedQuestionO_Changes {
         this.active = true;
         this.changes.push("active");
     }
+    change_message_id() {
+        if (this.message_id)
+            return;
+        this.message_id = true;
+        this.changes.push("message_id");
+    }
+    change_next_question_time() {
+        if (this.next_question_time)
+            return;
+        this.next_question_time = true;
+        this.changes.push("next_question_time");
+    }
     generateChanges() {
         return this.changes;
     }
@@ -51,6 +65,8 @@ class AskedQuestionO {
     ans_c;
     ans_d;
     max_img;
+    message_id;
+    next_question_time;
     changes;
     constructor(json) {
         this.ask_id = json.ask_id;
@@ -65,6 +81,8 @@ class AskedQuestionO {
         this.ans_c = json.ans_c;
         this.ans_d = json.ans_d;
         this.max_img = json.max_img;
+        this.message_id = json.message_id;
+        this.next_question_time = json.next_question_time;
         this.changes = new AskedQuestionO_Changes(this.ask_id);
     }
     getAskID() {
@@ -103,6 +121,12 @@ class AskedQuestionO {
     getMaxImg() {
         return this.max_img;
     }
+    getMessageID() {
+        return this.message_id;
+    }
+    getNextQuestionTime() {
+        return this.next_question_time;
+    }
     setResponseTotal(value) {
         this.response_total = value;
         this.changes.change_response_total();
@@ -116,6 +140,16 @@ class AskedQuestionO {
     setActive(value) {
         this.active = value;
         this.changes.change_active();
+        return true;
+    }
+    setMessageID(value) {
+        this.message_id = value;
+        this.changes.change_message_id();
+        return true;
+    }
+    setNextQuestionTime(value) {
+        this.next_question_time = value;
+        this.changes.change_next_question_time();
         return true;
     }
     isChanges() {

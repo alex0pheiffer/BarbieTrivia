@@ -8,6 +8,8 @@ class AskedQuestionO_Changes {
     response_total: boolean = false;
     response_correct: boolean = false;
     active: boolean = false;
+    message_id: boolean = false;
+    next_question_time: boolean = false;
     
     private changes = new Array<string>();
 
@@ -33,6 +35,18 @@ class AskedQuestionO_Changes {
         this.changes.push("active");
     }
     
+    public change_message_id() {
+        if (this.message_id) return;
+        this.message_id = true;
+        this.changes.push("message_id");
+    }
+
+    public change_next_question_time() {
+        if (this.next_question_time) return;
+        this.next_question_time = true;
+        this.changes.push("next_question_time");
+    }
+    
     public generateChanges(): Array<string> {
         return this.changes;        
     }
@@ -55,6 +69,8 @@ export class AskedQuestionO {
     private ans_c: number;
     private ans_d: number;
     private max_img: number;
+    private message_id: string;
+    private next_question_time: number;
 
     private changes: AskedQuestionO_Changes;
 
@@ -71,6 +87,8 @@ export class AskedQuestionO {
         this.ans_c = json.ans_c;
         this.ans_d = json.ans_d;
         this.max_img = json.max_img;
+        this.message_id = json.message_id;
+        this.next_question_time = json.next_question_time;
 
         this.changes = new AskedQuestionO_Changes(this.ask_id);
     }
@@ -122,6 +140,14 @@ export class AskedQuestionO {
     public getMaxImg(): number {
         return this.max_img;
     }
+    
+    public getMessageID(): string {
+        return this.message_id;
+    }
+
+    public getNextQuestionTime(): number {
+        return this.next_question_time;
+    }
 
     public setResponseTotal(value: number): boolean {
         this.response_total = value;
@@ -138,6 +164,18 @@ export class AskedQuestionO {
     public setActive(value: number): boolean {
         this.active = value;
         this.changes.change_active();
+        return true;
+    }
+
+    public setMessageID(value: string): boolean {
+        this.message_id = value;
+        this.changes.change_message_id();
+        return true;
+    }
+
+    public setNextQuestionTime(value: number): boolean {
+        this.next_question_time = value;
+        this.changes.change_next_question_time();
         return true;
     }
     

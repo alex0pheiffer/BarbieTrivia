@@ -65,19 +65,27 @@ async function createFirstModal(interaction, current_prompt, master_message, isA
                 if (filter) {
                     if (isAdminCheck) {
                         await i.deferReply({ ephemeral: false });
+                        console.log("Defer Reply (1)");
                     }
                     else {
                         await i.deferReply({ ephemeral: true });
+                        console.log("Defer Reply (2)");
                     }
+                }
+                else {
+                    console.log(`Did not meet filter requirements. userID: ${interaction.user.id} vs ${i.user.id}, modalID: ${BCONST_1.BCONST.MODAL_PROMPT} vs ${i.customId}`);
                 }
                 return filter;
             },
             time: modal_timeout,
         });
+        console.log("Completed Modal Result 1");
         //await modal_result.editReply(modal_result.fields.getTextInputValue(BCONST.MODAL_QUESTION_INPUT));
         // update the prompt information
         let question_input = modal_result.fields.getTextInputValue(BCONST_1.BCONST.MODAL_QUESTION_INPUT);
+        console.log("question_input recieved");
         let image_input = modal_result.fields.getTextInputValue(BCONST_1.BCONST.MODAL_IMAGE_INPUT);
+        console.log("image_input recieved");
         if (prompt != null) {
             prompt.setQuestion(question_input);
             if (image_input.length > 3) {
@@ -109,9 +117,11 @@ async function createFirstModal(interaction, current_prompt, master_message, isA
         // send the current version of the question for viewing
         if (!result) {
             if (isAdminCheck) {
+                console.log("entering modal_result (1)");
                 result = await adminCheckEmbed(modal_result, modal_result.client, prompt, false);
             }
             else {
+                console.log("entering modal_result (2)");
                 result = await createEmbedResult(modal_result, prompt, master_message);
             }
         }
@@ -194,19 +204,29 @@ async function createSecondModal(interaction, current_prompt, master_message, is
                 if (filter) {
                     if (isAdminCheck) {
                         await i.deferReply({ ephemeral: false });
+                        console.log("Defer Reply (3)");
                     }
                     else {
                         await i.deferReply({ ephemeral: true });
+                        console.log("Defer Reply (4)");
                     }
+                }
+                else {
+                    console.log(`Did not meet filter requirements. userID: ${interaction.user.id} vs ${i.user.id}, modalID: ${BCONST_1.BCONST.MODAL_PROMPT2} vs ${i.customId}`);
                 }
                 return filter;
             },
             time: modal_timeout,
         });
+        console.log("Completed Modal Result 2");
         let ansA_input = modal_result2.fields.getTextInputValue(BCONST_1.BCONST.MODAL_ANS_A_INPUT);
+        console.log("ansA_input recieved");
         let ansB_input = modal_result2.fields.getTextInputValue(BCONST_1.BCONST.MODAL_ANS_B_INPUT);
+        console.log("ansB_input recieved");
         let ansC_input = modal_result2.fields.getTextInputValue(BCONST_1.BCONST.MODAL_ANS_C_INPUT);
+        console.log("ansC_input recieved");
         let ansD_input = modal_result2.fields.getTextInputValue(BCONST_1.BCONST.MODAL_ANS_D_INPUT);
+        console.log("ansD_input recieved");
         if (prompt != null) {
             prompt.setAnsA(ansA_input);
             prompt.setAnsB(ansB_input);
@@ -220,9 +240,11 @@ async function createSecondModal(interaction, current_prompt, master_message, is
         // send the current version of the question for viewing
         if (!result) {
             if (isAdminCheck) {
+                console.log("entering result (3)");
                 result = await adminCheckEmbed(modal_result2, modal_result2.client, prompt, false);
             }
             else {
+                console.log("entering result (4");
                 result = await createEmbedResult(modal_result2, prompt, master_message);
             }
         }
@@ -267,16 +289,23 @@ async function createThirdModal(interaction, current_prompt, master_message, isA
                 if (filter) {
                     if (isAdminCheck) {
                         await i.deferReply({ ephemeral: false });
+                        console.log("Defer Reply (5)");
                     }
                     else {
                         await i.deferReply({ ephemeral: true });
+                        console.log("Defer Reply (6)");
                     }
+                }
+                else {
+                    console.log(`Did not meet filter requirements. userID: ${interaction.user.id} vs ${i.user.id}, modalID: ${BCONST_1.BCONST.MODAL_PROMPT3} vs ${i.customId}`);
                 }
                 return filter;
             },
             time: modal_timeout,
         });
+        console.log("Completed Modal Result 3");
         let funfact_input = modal_result3.fields.getTextInputValue(BCONST_1.BCONST.MODAL_FUNFACT_INPUT);
+        console.log("funfact_input recieved");
         if (prompt != null) {
             prompt.setFunFact(funfact_input);
             result = await DOBuilder_1.DO.updateProposal(prompt, result);
@@ -287,9 +316,11 @@ async function createThirdModal(interaction, current_prompt, master_message, isA
         // send the current version of the question for viewing
         if (!result) {
             if (isAdminCheck) {
+                console.log("entering modal_result (5)");
                 result = await adminCheckEmbed(modal_result3, modal_result3.client, prompt, false);
             }
             else {
+                console.log("entering modal_result (6)");
                 result = await createEmbedResult(modal_result3, prompt, master_message);
             }
         }
@@ -606,7 +637,26 @@ async function buttonResponse(interaction, proposal_id, master_message, isAdminC
                         let user_profile = await DOBuilder_1.DO.getPlayer(interaction.user.id);
                         if (user_profile != null) {
                             user_profile.setQSubmitted(user_profile.getQSubmitted() + 1);
+                            console.log("user profile q submitted: ", user_profile.getQSubmitted());
                             result = await DOBuilder_1.DO.updatePlayer(user_profile, result);
+                            console.log("questioni submitted increment update:", result);
+                        }
+                        else {
+                            let new_player = { "player_id": 0, "user": interaction.user.id, "q_submitted": 1, "response_total": 0, "response_correct": 0 };
+                            result = await DOBuilder_1.DO.insertPlayer(new_player);
+                            console.log("User profile was null; made a new profile");
+                        }
+                    }
+                    // inform the group that a new question was submitted
+                    // get the trivia channel
+                    if (interaction.guildId) {
+                        let quest_channel = await DOBuilder_1.DO.getQuestionChannelByServer(interaction.guildId);
+                        if (quest_channel.length > 0) {
+                            let channel = await interaction.client.channels.cache.get(quest_channel[0].getChannel());
+                            if (typeof channel === 'undefined')
+                                result = Errors_1.GameInteractionErr.GuildDataUnavailable;
+                            channel = channel;
+                            let new_message = await channel.send("A new question was submitted to the database!");
                         }
                     }
                 }
@@ -628,6 +678,10 @@ async function buttonResponse(interaction, proposal_id, master_message, isAdminC
                 if (user_profile != null) {
                     user_profile.setQSubmitted(user_profile.getQSubmitted() + 1);
                     result = await DOBuilder_1.DO.updatePlayer(user_profile, result);
+                }
+                else {
+                    let new_player = { "player_id": 0, "user": interaction.user.id, "q_submitted": 1, "response_total": 0, "response_correct": 0 };
+                    result = await DOBuilder_1.DO.insertPlayer(new_player);
                 }
                 break;
             case BCONST_1.BCONST.BTN_PROPOSAL_DECLINE:

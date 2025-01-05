@@ -62,6 +62,8 @@ export class BCONST {
     static BTN_PROPOSAL_DECLINE = "Proposal Decline";
 
     // Game Specific Information
+    static TIME_UNTIL_ANSWER = 23 * 60 * 60 * 1000; //ms
+
     static QUESTION_INTERVALS = [
         {"label": "Every Hour", "description": "", "value": 0},
         {"label": "Every 6 Hours", "description": "", "value": 1},

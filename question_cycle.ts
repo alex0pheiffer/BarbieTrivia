@@ -182,6 +182,12 @@ export async function showQuestionResult(message: Message, ask_id: number): Prom
                     }
                     let duration = Math.random() * 60 * 60 * 8 * 1000; // 23 hours in ms
                     let hrs = Math.floor(duration / 1000 / 60 / 60);
+                    // update the asked_question to include this duration
+                    const d = new Date();
+                    let time = d.getTime();
+                    asked_question!!.setNextQuestionTime(time + duration);
+                    result = await DO.updateAskedQuestion(asked_question!!, result);
+
                     if (hrs > 1) {
                         second_description += `\n\nThe next question will appear in ${hrs} hours.`;
                     }
