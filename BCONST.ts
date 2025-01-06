@@ -47,9 +47,9 @@ export class BCONST {
     static BTN_SUBMIT = "Submit";
     static DROPDOWN_INTERVAL = "Time Interval Selection";
     static DROPDOWN_ANSWER = "Answer Selection";
-    static MODAL_PROMPT = "Modal Prompt";
-    static MODAL_PROMPT2 = "Modal Prompt2";
-    static MODAL_PROMPT3 = "Modal Prompt3";
+    static MODAL_PROMPT = "Modal1";
+    static MODAL_PROMPT2 = "Modal2";
+    static MODAL_PROMPT3 = "Modal3";
     static MODAL_QUESTION_INPUT = "Question Input";
     static MODAL_ANS_A_INPUT = "Answer A Input";
     static MODAL_ANS_B_INPUT = "Answer B Input";

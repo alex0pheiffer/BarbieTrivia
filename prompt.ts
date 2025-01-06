@@ -31,7 +31,7 @@ async function createFirstModal(interaction: ChatInputCommandInteraction | Butto
         }
     }
 
-    const modal = new ModalBuilder().setCustomId(BCONST.MODAL_PROMPT);
+    const modal = new ModalBuilder().setCustomId(`${BCONST.MODAL_PROMPT}_${interaction.id}`);
     modal.setTitle(`Question Input`);
     const QuestionInput = new TextInputBuilder()
 			.setCustomId(BCONST.MODAL_QUESTION_INPUT)
@@ -70,7 +70,7 @@ async function createFirstModal(interaction: ChatInputCommandInteraction | Butto
             filter: async (i) => {
                 const filter =
                     i.user.id === interaction.user.id &&
-                    i.customId === BCONST.MODAL_PROMPT;
+                    i.customId === `${BCONST.MODAL_PROMPT}_${interaction.id}`;
                 if (filter) {
                     if (isAdminCheck) {
                         await i.deferReply({ephemeral: false});
@@ -82,7 +82,7 @@ async function createFirstModal(interaction: ChatInputCommandInteraction | Butto
                     }
                 }
                 else {
-                    console.log(`Did not meet filter requirements. userID: ${interaction.user.id} vs ${i.user.id}, modalID: ${BCONST.MODAL_PROMPT} vs ${i.customId}`);
+                    console.log(`Did not meet filter requirements. userID: ${interaction.user.id} vs ${i.user.id}, modalID: ${BCONST.MODAL_PROMPT}_${interaction.id} vs ${i.customId}`);
                 }
                 return filter;
             },
@@ -157,7 +157,7 @@ async function createSecondModal(interaction: ChatInputCommandInteraction | Butt
         }
     }
 
-    const modal2 = new ModalBuilder().setCustomId(BCONST.MODAL_PROMPT2);
+    const modal2 = new ModalBuilder().setCustomId(`${BCONST.MODAL_PROMPT2}_${interaction.id}`);
     modal2.setTitle(`Answer Inputs`);
 
     const AnsAInput = new TextInputBuilder()
@@ -220,7 +220,7 @@ async function createSecondModal(interaction: ChatInputCommandInteraction | Butt
             filter: async (i) => {
                 const filter =
                     i.user.id === interaction.user.id &&
-                    i.customId === BCONST.MODAL_PROMPT2;
+                    i.customId === `${BCONST.MODAL_PROMPT2}_${interaction.id}`;
                 if (filter) {
                     if (isAdminCheck) {
                         await i.deferReply({ephemeral: false});
@@ -232,7 +232,7 @@ async function createSecondModal(interaction: ChatInputCommandInteraction | Butt
                     }
                 }
                 else {
-                    console.log(`Did not meet filter requirements. userID: ${interaction.user.id} vs ${i.user.id}, modalID: ${BCONST.MODAL_PROMPT2} vs ${i.customId}`);
+                    console.log(`Did not meet filter requirements. userID: ${interaction.user.id} vs ${i.user.id}, modalID: ${BCONST.MODAL_PROMPT2}_${interaction.id} vs ${i.customId}`);
                 }
                 return filter;
             },
@@ -291,7 +291,7 @@ async function createThirdModal(interaction: ChatInputCommandInteraction | Butto
         }
     }
 
-    const modal3 = new ModalBuilder().setCustomId(BCONST.MODAL_PROMPT3);
+    const modal3 = new ModalBuilder().setCustomId(`${BCONST.MODAL_PROMPT3}_${interaction.id}`);
     modal3.setTitle(`Fun Fact Input`);
 
     const FunFactInput = new TextInputBuilder()
@@ -317,7 +317,7 @@ async function createThirdModal(interaction: ChatInputCommandInteraction | Butto
             filter: async (i) => {
                 const filter =
                     i.user.id === interaction.user.id &&
-                    i.customId === BCONST.MODAL_PROMPT3;
+                    i.customId === `${BCONST.MODAL_PROMPT3}_${interaction.id}`;
                 if (filter) {
                     if (isAdminCheck) {
                         await i.deferReply({ephemeral: false});
@@ -329,7 +329,7 @@ async function createThirdModal(interaction: ChatInputCommandInteraction | Butto
                     }
                 }
                 else {
-                    console.log(`Did not meet filter requirements. userID: ${interaction.user.id} vs ${i.user.id}, modalID: ${BCONST.MODAL_PROMPT3} vs ${i.customId}`);
+                    console.log(`Did not meet filter requirements. userID: ${interaction.user.id} vs ${i.user.id}, modalID: ${BCONST.MODAL_PROMPT3}_${interaction.id} vs ${i.customId}`);
                 }
                 return filter;
             },
