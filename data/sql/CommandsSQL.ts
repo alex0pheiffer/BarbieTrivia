@@ -42,9 +42,17 @@ export class SQLDATA {
                 return resolve("");
             }
             // determine if this column exists
-            var sqlq = `SELECT * FROM admin WHERE user = '${userid}';`;
-            con.conn.query(sqlq, function (err: any, result: Array<string>) {
-                if (err) throw err;
+            // use a prepared statement
+            const sqlq = `SELECT * FROM admin WHERE user = ?;`;
+            // store the values in an array
+            let arr = [userid];
+
+            // execute the prepared statement
+            con.conn.execute(sqlq, arr, (err: any, result: Array<string>) => {
+                if (err) {
+                    con.conn.rollback();
+                    throw err;
+                }
 
                 if (BCONST.SQL_DEBUG) {
                     console.log("Obtained Data: ");
@@ -56,9 +64,10 @@ export class SQLDATA {
                     resolve("");
                     return;
                 }
+                con.conn.unprepare(sqlq);
 
                 return resolve(JSON.stringify(result[0]));
-            }); 
+            });
         });
     }
 
@@ -71,7 +80,8 @@ export class SQLDATA {
                 return resolve([]);
             }
             // determine if this column already exists
-            var sqlq = `SELECT * FROM asked_question WHERE question_id = ${question_id} AND channel_id = '${channel_id}';`;
+            var sqlq = `SELECT * FROM asked_question WHERE question_id = ? AND channel_id = ?;`;
+            let arr = [question_id, channel_id]
             con.conn.query(sqlq, function (err: any, result: Array<string>) {
                 if (err) throw err;
 

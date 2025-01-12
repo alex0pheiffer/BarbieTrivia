@@ -25,7 +25,7 @@ async function createFirstModal(interaction, current_prompt, master_message, isA
             result = Errors_1.GameInteractionErr.QuestionDoesNotExist;
         }
     }
-    const modal = new discord_js_1.ModalBuilder().setCustomId(BCONST_1.BCONST.MODAL_PROMPT);
+    const modal = new discord_js_1.ModalBuilder().setCustomId(`${BCONST_1.BCONST.MODAL_PROMPT}_${interaction.id}`);
     modal.setTitle(`Question Input`);
     const QuestionInput = new discord_js_1.TextInputBuilder()
         .setCustomId(BCONST_1.BCONST.MODAL_QUESTION_INPUT)
@@ -61,7 +61,7 @@ async function createFirstModal(interaction, current_prompt, master_message, isA
         const modal_result = await interaction.awaitModalSubmit({
             filter: async (i) => {
                 const filter = i.user.id === interaction.user.id &&
-                    i.customId === BCONST_1.BCONST.MODAL_PROMPT;
+                    i.customId === `${BCONST_1.BCONST.MODAL_PROMPT}_${interaction.id}`;
                 if (filter) {
                     if (isAdminCheck) {
                         await i.deferReply({ ephemeral: false });
@@ -73,7 +73,7 @@ async function createFirstModal(interaction, current_prompt, master_message, isA
                     }
                 }
                 else {
-                    console.log(`Did not meet filter requirements. userID: ${interaction.user.id} vs ${i.user.id}, modalID: ${BCONST_1.BCONST.MODAL_PROMPT} vs ${i.customId}`);
+                    console.log(`Did not meet filter requirements. userID: ${interaction.user.id} vs ${i.user.id}, modalID: ${BCONST_1.BCONST.MODAL_PROMPT}_${interaction.id} vs ${i.customId}`);
                 }
                 return filter;
             },
@@ -142,7 +142,7 @@ async function createSecondModal(interaction, current_prompt, master_message, is
             result = Errors_1.GameInteractionErr.QuestionDoesNotExist;
         }
     }
-    const modal2 = new discord_js_1.ModalBuilder().setCustomId(BCONST_1.BCONST.MODAL_PROMPT2);
+    const modal2 = new discord_js_1.ModalBuilder().setCustomId(`${BCONST_1.BCONST.MODAL_PROMPT2}_${interaction.id}`);
     modal2.setTitle(`Answer Inputs`);
     const AnsAInput = new discord_js_1.TextInputBuilder()
         .setCustomId("Answer A Input")
@@ -200,7 +200,7 @@ async function createSecondModal(interaction, current_prompt, master_message, is
         const modal_result2 = await interaction.awaitModalSubmit({
             filter: async (i) => {
                 const filter = i.user.id === interaction.user.id &&
-                    i.customId === BCONST_1.BCONST.MODAL_PROMPT2;
+                    i.customId === `${BCONST_1.BCONST.MODAL_PROMPT2}_${interaction.id}`;
                 if (filter) {
                     if (isAdminCheck) {
                         await i.deferReply({ ephemeral: false });
@@ -212,7 +212,7 @@ async function createSecondModal(interaction, current_prompt, master_message, is
                     }
                 }
                 else {
-                    console.log(`Did not meet filter requirements. userID: ${interaction.user.id} vs ${i.user.id}, modalID: ${BCONST_1.BCONST.MODAL_PROMPT2} vs ${i.customId}`);
+                    console.log(`Did not meet filter requirements. userID: ${interaction.user.id} vs ${i.user.id}, modalID: ${BCONST_1.BCONST.MODAL_PROMPT2}_${interaction.id} vs ${i.customId}`);
                 }
                 return filter;
             },
@@ -265,7 +265,7 @@ async function createThirdModal(interaction, current_prompt, master_message, isA
             result = Errors_1.GameInteractionErr.QuestionDoesNotExist;
         }
     }
-    const modal3 = new discord_js_1.ModalBuilder().setCustomId(BCONST_1.BCONST.MODAL_PROMPT3);
+    const modal3 = new discord_js_1.ModalBuilder().setCustomId(`${BCONST_1.BCONST.MODAL_PROMPT3}_${interaction.id}`);
     modal3.setTitle(`Fun Fact Input`);
     const FunFactInput = new discord_js_1.TextInputBuilder()
         .setCustomId(BCONST_1.BCONST.MODAL_FUNFACT_INPUT)
@@ -285,7 +285,7 @@ async function createThirdModal(interaction, current_prompt, master_message, isA
         const modal_result3 = await interaction.awaitModalSubmit({
             filter: async (i) => {
                 const filter = i.user.id === interaction.user.id &&
-                    i.customId === BCONST_1.BCONST.MODAL_PROMPT3;
+                    i.customId === `${BCONST_1.BCONST.MODAL_PROMPT3}_${interaction.id}`;
                 if (filter) {
                     if (isAdminCheck) {
                         await i.deferReply({ ephemeral: false });
@@ -297,7 +297,7 @@ async function createThirdModal(interaction, current_prompt, master_message, isA
                     }
                 }
                 else {
-                    console.log(`Did not meet filter requirements. userID: ${interaction.user.id} vs ${i.user.id}, modalID: ${BCONST_1.BCONST.MODAL_PROMPT3} vs ${i.customId}`);
+                    console.log(`Did not meet filter requirements. userID: ${interaction.user.id} vs ${i.user.id}, modalID: ${BCONST_1.BCONST.MODAL_PROMPT3}_${interaction.id} vs ${i.customId}`);
                 }
                 return filter;
             },

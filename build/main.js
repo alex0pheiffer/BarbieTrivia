@@ -307,7 +307,7 @@ client.on(discord_js_1.Events.InteractionCreate, async (interaction) => {
     }
     */
 });
-client.on('ready', () => {
+client.on('ready', async () => {
     // ## SLASH COMMANDS
     for (const file of commandFiles) {
         const filePath = path.join(commandsPath, file);
@@ -321,7 +321,13 @@ client.on('ready', () => {
     }
     console.log(`${client.user?.username} Online -- Version: ${BCONST_1.BCONST.VERSION}`);
     // on start up, make sure that all the question_channels are running.
-    (0, startup_1.startAllQuestionChannels)(client);
+    if (!BCONST_1.BCONST.USE_DEV) {
+        (0, startup_1.startAllQuestionChannels)(client);
+    }
+    else {
+        let value = await DOBuilder_1.DO.getAdmin("415315191547559936");
+        console.log("value: ", value);
+    }
 });
 /*
 client.on("guildCreate", guild => {

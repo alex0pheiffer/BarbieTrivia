@@ -292,7 +292,7 @@ client.on(Events.InteractionCreate, async (interaction: Interaction<CacheType>) 
     */
 });
 
-client.on('ready', () => {
+client.on('ready', async () => {
     // ## SLASH COMMANDS
     for (const file of commandFiles) {
         const filePath = path.join(commandsPath, file);
@@ -306,7 +306,14 @@ client.on('ready', () => {
     console.log(`${client.user?.username} Online -- Version: ${BCONST.VERSION}`);
 
     // on start up, make sure that all the question_channels are running.
-    startAllQuestionChannels(client);
+    if (!BCONST.USE_DEV) {
+        startAllQuestionChannels(client);
+    }
+    else {
+        let value = await DO.getAdmin("415315191547559936");
+        console.log("value: ", value);
+    }
+    
     
 });
 /*

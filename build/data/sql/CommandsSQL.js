@@ -29,10 +29,20 @@ class SQLDATA {
                 return resolve("");
             }
             // determine if this column exists
-            var sqlq = `SELECT * FROM admin WHERE user = '${userid}';`;
-            StartSQL_1.con.conn.query(sqlq, function (err, result) {
-                if (err)
+            // use a prepared statement
+            const sqlq = `SELECT * FROM admin WHERE user = ?;`;
+            // con.conn.beginTransaction((err: any) => {
+            //     if (err) {
+            //         console.log("An error occured executing the getAdminSQL statement. ", err.message);
+            //     }
+            // store the values in an array
+            let arr = [userid];
+            // execute the prepared statement
+            StartSQL_1.con.conn.execute(sqlq, arr, (err, result) => {
+                if (err) {
+                    StartSQL_1.con.conn.rollback();
                     throw err;
+                }
                 if (BCONST_1.BCONST.SQL_DEBUG) {
                     console.log("Obtained Data: ");
                     console.log(result);
@@ -44,6 +54,9 @@ class SQLDATA {
                 }
                 return resolve(JSON.stringify(result[0]));
             });
+            //});
+            // todo still need to do this
+            //con.conn.unprepare(sqlq);
         });
     }
     static async getAskedQuestionSQL(question_id, channel_id) {
