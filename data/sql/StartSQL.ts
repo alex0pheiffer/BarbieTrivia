@@ -83,7 +83,7 @@ export async function connectSQL() {
     console.log("lkoading=true")
 
     con.pool.query("show tables", function na() { });
-    con.pool.on('connection', async function (connection: any) {
+    con.pool.on('connection', function (connection: any) {
         console.log('DB Connection established');
         connection.on('error', function (err: any) {
             console.error(new Date(), 'MySQL error', err.code);
