@@ -46,11 +46,9 @@ export let con = new SQLConn();
 // creates a connection to the SQL database
 export async function connectSQL() {
 
-    console.log("etner connect")
-
     const {networkInterfaces}= require('os');
     const nets = networkInterfaces();
-    var results: {[k: string]:any} = {};    
+    var results: {[k: string]:any} = {};
     for (const name of Object.keys(nets)) {
 	for (const net of nets[name]) {
             // Skip over non-IPv4 and internal (i.e. 127.0.0.1) addresses
@@ -71,18 +69,16 @@ export async function connectSQL() {
         console.log(`password: ${BCONST.SQL_PASS}`);
     }
 
-    con.pool = mysql.createPool({
-        connectionLimit: 10,
-        host: BCONST.SQL_HOST,
-        user: BCONST.SQL_USER,
-        password: BCONST.SQL_PASS,
-        database: BCONST.SQL_DB
-    });
-    
-    con.loading = true;
-    console.log("lkoading=true")
+    if (!con.loading) {
+        con.pool = mysql.createPool({
+            connectionLimit: 10,
+            host: BCONST.SQL_HOST,
+            user: BCONST.SQL_USER,
+            password: BCONST.SQL_PASS,
+            database: BCONST.SQL_DB
+        });
+    }
 
-    con.pool.query("show tables", function na() { });
     con.pool.on('connection', function (connection: any) {
         console.log('DB Connection established');
         connection.on('error', function (err: any) {
@@ -91,8 +87,19 @@ export async function connectSQL() {
         connection.on('close', function (err: any) {
             console.error(new Date(), 'MySQL close', err);
         });
-        con.conn = connection;
-        console.log("con.conn : ", con.conn);
-        con.connected = true;
+    });
+
+    con.conn = await getConnection(con.pool);
+    con.connected = true;
+}
+
+async function getConnection(pool: any): Promise<any> {
+    return new Promise((resolve, reject) => {
+        pool.getConnection((err: any, connection: any) => {
+            if (err) {
+                return reject(err);
+            }
+            resolve(connection);
+        });
     });
 }

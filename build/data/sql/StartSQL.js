@@ -36,7 +36,6 @@ class SQLConn {
 exports.con = new SQLConn();
 // creates a connection to the SQL database
 async function connectSQL() {
-    console.log("etner connect");
     const { networkInterfaces } = require('os');
     const nets = networkInterfaces();
     var results = {};
@@ -59,16 +58,15 @@ async function connectSQL() {
         console.log(`username: ${BCONST_1.BCONST.SQL_USER}`);
         console.log(`password: ${BCONST_1.BCONST.SQL_PASS}`);
     }
-    exports.con.pool = mysql.createPool({
-        connectionLimit: 10,
-        host: BCONST_1.BCONST.SQL_HOST,
-        user: BCONST_1.BCONST.SQL_USER,
-        password: BCONST_1.BCONST.SQL_PASS,
-        database: BCONST_1.BCONST.SQL_DB
-    });
-    exports.con.loading = true;
-    console.log("lkoading=true");
-    exports.con.pool.query("show tables", function na() { });
+    if (!exports.con.loading) {
+        exports.con.pool = mysql.createPool({
+            connectionLimit: 10,
+            host: BCONST_1.BCONST.SQL_HOST,
+            user: BCONST_1.BCONST.SQL_USER,
+            password: BCONST_1.BCONST.SQL_PASS,
+            database: BCONST_1.BCONST.SQL_DB
+        });
+    }
     exports.con.pool.on('connection', function (connection) {
         console.log('DB Connection established');
         connection.on('error', function (err) {
@@ -77,9 +75,18 @@ async function connectSQL() {
         connection.on('close', function (err) {
             console.error(new Date(), 'MySQL close', err);
         });
-        exports.con.conn = connection;
-        console.log("con.conn : ", exports.con.conn);
-        exports.con.connected = true;
     });
+    exports.con.conn = await getConnection(exports.con.pool);
+    exports.con.connected = true;
 }
 exports.connectSQL = connectSQL;
+async function getConnection(pool) {
+    return new Promise((resolve, reject) => {
+        pool.getConnection((err, connection) => {
+            if (err) {
+                return reject(err);
+            }
+            resolve(connection);
+        });
+    });
+}
