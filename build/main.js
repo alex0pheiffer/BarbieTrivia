@@ -127,8 +127,8 @@ client.on(discord_js_1.Events.InteractionCreate, async (interaction) => {
                 }
                 const embed = new discord_js_1.EmbedBuilder().setFooter({ text: 'Barbie Trivia', iconURL: BCONST_1.BCONST.LOGO });
                 embed.setTitle(`**${user.username}'s Profile**`);
-                let description = `\nTotal Responses: \`${user_profile.getResponseTotal()}\`\n \
-                Correct Responses: \`${user_profile.getResponseCorrect()}\`\n \
+                let description = `\nTotal Responses: \`${user_profile.getResponseTotal()}\`\n\
+                Correct Responses: \`${user_profile.getResponseCorrect()}\`\n\
                 Submitted Questions: \`${user_profile.getQSubmitted()}\``;
                 embed.setDescription(description);
                 let message = await interaction.reply({ embeds: [embed] });
@@ -325,8 +325,9 @@ client.on('ready', async () => {
         (0, startup_1.startAllQuestionChannels)(client);
     }
     else {
-        let value = await DOBuilder_1.DO.getAdmin("415315191547559936");
-        console.log("value: ", value);
+        //let value = await DO.getAdmin("415315191547559936");
+        //console.log("value: ", value);
+        await (0, new_1.createNewQuestion)("1266960173533237268", "1323745530991611975", client, 370);
     }
 });
 /*

@@ -66,7 +66,8 @@ async function showQuestionResult(message, ask_id) {
                         result = await DOBuilder_1.DO.updatePlayer(player_profile, result);
                     }
                     // delete the player response
-                    result = await DOBuilder_1.DO.deletePlayerAnswer(r.getAnswerID());
+                    // TODO ADD THIS BACK LATER
+                    //result = await DO.deletePlayerAnswer(r.getAnswerID());
                 }
                 let total = responses.length;
                 let ratio = count[question.getCorrect()] / total;

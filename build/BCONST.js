@@ -33,7 +33,7 @@ class BCONST {
     static SQL_USER = (this.USE_LOCAL_SQL) ? this.SQL_LOCAL_USER : ((this.USE_DEV) ? this.SQL_REMOTE_DEV_USER : this.SQL_REMOTE_USER);
     static SQL_PASS = (this.USE_LOCAL_SQL) ? this.SQL_LOCAL_PASS : ((this.USE_DEV) ? this.SQL_REMOTE_DEV_PASS : this.SQL_REMOTE_PASS);
     static SQL_HOST = (this.USE_LOCAL_SQL) ? this.SQL_LOCAL_HOST : ((this.USE_DEV) ? this.SQL_REMOTE_DEV_HOST : this.SQL_REMOTE_HOST);
-    static SQL_DEBUG = false;
+    static SQL_DEBUG = true;
     // Master Channel
     static MASTER_QUESTION_SERVER = process.env["MASTER_SERVER"];
     static MASTER_PROMPT_CHANNEL = process.env["PROMPT_CHANNEL"];

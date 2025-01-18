@@ -307,7 +307,9 @@ export async function createNewQuestion(serverID: string, channelID: string, cli
                 // nothing 
             });
             collector_drop.on('collect', async (inter: StringSelectMenuInteraction) => {
-                await inter.deferUpdate();
+                //if (inter.type < 6) {
+                    await inter.deferUpdate();
+                //}
                 let result = 0;
                 let user_answer = await DO.getPlayerAnswer(inter.user.id, ask_id);
                 if (user_answer.length > 0) {

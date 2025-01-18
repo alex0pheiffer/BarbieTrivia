@@ -4,24 +4,40 @@ import {BCONST} from "../../BCONST";
 //////////////// Connection and Set Up ////////////////////////////////////////////////////////////////
 interface ISQLConn {
     conn: any,
-    connected: Boolean
+    connected: Boolean,
+    pool: any,
+    loading: Boolean
 }
 class SQLConn implements ISQLConn {
     private _conn: any;
+    private _pool: any;
     private _connected: Boolean = false;
+    private _loading: Boolean = false;
     
     public get conn() {
         return this._conn;
     }
+    public get pool() {
+        return this._pool;
+    }
     public get connected() {
         return this._connected;
+    }
+    public get loading() {
+        return this._loading;
     }
     
     public set conn(value: any) {
         this._conn = value;
     }
+    public set pool(value: any) {
+        this._pool = value;
+    }
     public set connected(value: Boolean) {
         this._connected = value;
+    }
+    public set loading(value: Boolean) {
+        this._loading = value;
     }
 }
 
@@ -30,9 +46,11 @@ export let con = new SQLConn();
 // creates a connection to the SQL database
 export async function connectSQL() {
 
+    console.log("etner connect")
+
     const {networkInterfaces}= require('os');
     const nets = networkInterfaces();
-    var results: {[k: string]:any} = {};
+    var results: {[k: string]:any} = {};    
     for (const name of Object.keys(nets)) {
 	for (const net of nets[name]) {
             // Skip over non-IPv4 and internal (i.e. 127.0.0.1) addresses
@@ -53,24 +71,28 @@ export async function connectSQL() {
         console.log(`password: ${BCONST.SQL_PASS}`);
     }
 
-    con.conn = mysql.createPool({
+    con.pool = mysql.createPool({
         connectionLimit: 10,
         host: BCONST.SQL_HOST,
         user: BCONST.SQL_USER,
         password: BCONST.SQL_PASS,
         database: BCONST.SQL_DB
     });
+    
+    con.loading = true;
+    console.log("lkoading=true")
 
-    con.conn.query("show tables", function na() { });
-    con.conn.on('connection', function (connection: any) {
+    con.pool.query("show tables", function na() { });
+    con.pool.on('connection', async function (connection: any) {
         console.log('DB Connection established');
-        con.connected = true;
         connection.on('error', function (err: any) {
             console.error(new Date(), 'MySQL error', err.code);
         });
         connection.on('close', function (err: any) {
             console.error(new Date(), 'MySQL close', err);
         });
-
+        con.conn = connection;
+        console.log("con.conn : ", con.conn);
+        con.connected = true;
     });
 }

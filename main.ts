@@ -4,7 +4,7 @@ const path = require('node:path');
 import { BCONST }    from "./BCONST";
 import { Command, SlashCommand } from "./data/types";
 import { DO } from "./data/DOBuilder";
-import { canInitiateNewGame, createNewGame } from "./new";
+import { canInitiateNewGame, createNewGame, createNewQuestion } from "./new";
 import { GameInteractionErr } from "./Errors";
 import { addPrompt } from "./prompt";
 import { PlayerI } from "./data/data_interfaces/player";
@@ -110,8 +110,8 @@ client.on(Events.InteractionCreate, async (interaction: Interaction<CacheType>) 
 
                 const embed = new EmbedBuilder().setFooter({text: 'Barbie Trivia', iconURL: BCONST.LOGO});
                 embed.setTitle(`**${user.username}'s Profile**`);
-                let description = `\nTotal Responses: \`${user_profile!!.getResponseTotal()}\`\n \
-                Correct Responses: \`${user_profile!!.getResponseCorrect()}\`\n \
+                let description = `\nTotal Responses: \`${user_profile!!.getResponseTotal()}\`\n\
+                Correct Responses: \`${user_profile!!.getResponseCorrect()}\`\n\
                 Submitted Questions: \`${user_profile!!.getQSubmitted()}\``;
 
                 embed.setDescription(description);
@@ -310,8 +310,9 @@ client.on('ready', async () => {
         startAllQuestionChannels(client);
     }
     else {
-        let value = await DO.getAdmin("415315191547559936");
-        console.log("value: ", value);
+        //let value = await DO.getAdmin("415315191547559936");
+        //console.log("value: ", value);
+        await createNewQuestion("1266960173533237268", "1323745530991611975", client, 370);
     }
     
     

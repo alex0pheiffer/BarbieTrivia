@@ -64,7 +64,10 @@ export class SQLDATA {
                     resolve("");
                     return;
                 }
-                con.conn.unprepare(sqlq);
+                else {
+                    con.conn.unprepare(sqlq);
+                }
+
 
                 return resolve(JSON.stringify(result[0]));
             });
@@ -80,10 +83,13 @@ export class SQLDATA {
                 return resolve([]);
             }
             // determine if this column already exists
-            var sqlq = `SELECT * FROM asked_question WHERE question_id = ? AND channel_id = ?;`;
+            const sqlq = `SELECT * FROM asked_question WHERE question_id = ? AND channel_id = ?;`;
             let arr = [question_id, channel_id]
-            con.conn.query(sqlq, function (err: any, result: Array<string>) {
-                if (err) throw err;
+            con.conn.execute(sqlq, arr, (err: any, result: Array<string>) => {
+                if (err) {
+                    con.conn.rollback();
+                    throw err;
+                }
 
                 if (BCONST.SQL_DEBUG) {
                     console.log("Obtained Data: ");
@@ -95,6 +101,7 @@ export class SQLDATA {
                     resolve([]);
                     return;
                 }
+                con.conn.unprepare(sqlq);
 
                 return resolve(JSON.parse(JSON.stringify(result)));
             }); 
@@ -106,9 +113,13 @@ export class SQLDATA {
         return new Promise((resolve, reject) => {
             
             // determine if this column already exists
-            var sqlq = `SELECT * FROM asked_question WHERE ask_id = ${ask_id};`;
-            con.conn.query(sqlq, function (err: any, result: Array<string>) {
-                if (err) throw err;
+            const sqlq = `SELECT * FROM asked_question WHERE ask_id = ?;`;
+            let arr = [ask_id];
+            con.conn.execute(sqlq, arr, (err: any, result: Array<string>) => {
+                if (err) { 
+                    con.conn.rollback();
+                    throw err;
+                }
 
                 if (BCONST.SQL_DEBUG) {
                     console.log("Obtained Data: ");
@@ -120,6 +131,7 @@ export class SQLDATA {
                     resolve([]);
                     return;
                 }
+                con.conn.unprepare(sqlq);
 
                 return resolve(JSON.parse(JSON.stringify(result)));
             }); 
@@ -135,9 +147,13 @@ export class SQLDATA {
                 return resolve([]);
             }
             // determine if this column already exists
-            var sqlq = `SELECT * FROM asked_question WHERE (date) IN (SELECT MAX(date) from asked_question where channel_id='${channel_id}');`;
-            con.conn.query(sqlq, function (err: any, result: Array<string>) {
-                if (err) throw err;
+            const sqlq = `SELECT * FROM asked_question WHERE (date) IN (SELECT MAX(date) from asked_question where channel_id = ?);`;
+            let arr = [channel_id];
+            con.conn.execute(sqlq, arr, (err: any, result: Array<string>) => {
+                if (err) {
+                    con.conn.rollback();
+                    throw err;
+                }
 
                 if (BCONST.SQL_DEBUG) {
                     console.log("Obtained Data: ");
@@ -149,6 +165,7 @@ export class SQLDATA {
                     resolve([]);
                     return;
                 }
+                con.conn.unprepare(sqlq);
 
                 return resolve(JSON.parse(JSON.stringify(result)));
             }); 
@@ -159,9 +176,13 @@ export class SQLDATA {
         await checkConnection();
         return new Promise((resolve, reject) => {
             // determine if this column exists
-            var sqlq = `SELECT * FROM proposal WHERE proposal_id = ${proposal_id};`;
-            con.conn.query(sqlq, function (err: any, result: Array<string>) {
-                if (err) throw err;
+            const sqlq = `SELECT * FROM proposal WHERE proposal_id = ?;`;
+            let arr = [proposal_id];
+            con.conn.execute(sqlq, arr, (err: any, result: Array<string>) => {
+                if (err) {
+                    con.conn.rollback();
+                    throw err;
+                }
 
                 if (BCONST.SQL_DEBUG) {
                     console.log("Obtained Data: ");
@@ -173,6 +194,7 @@ export class SQLDATA {
                     resolve("");
                     return;
                 }
+                con.conn.unprepare(sqlq);
 
                 return resolve(JSON.stringify(result[0]));
             }); 
@@ -189,9 +211,13 @@ export class SQLDATA {
             }
 
             // determine if this column exists
-            var sqlq = `SELECT * FROM proposal WHERE question = "${question.replaceAll('"', '""')}";`;
-            con.conn.query(sqlq, function (err: any, result: Array<string>) {
-                if (err) throw err;
+            const sqlq = `SELECT * FROM proposal WHERE question = ?;`;
+            let arr = [question.replaceAll('"', '""')];
+            con.conn.execute(sqlq, arr, (err: any, result: Array<string>) => {
+                if (err) {
+                    con.conn.rollback();
+                    throw err;
+                }
 
                 if (BCONST.SQL_DEBUG) {
                     console.log("Obtained Data: ");
@@ -203,6 +229,7 @@ export class SQLDATA {
                     resolve("");
                     return;
                 }
+                con.conn.unprepare(sqlq);
 
                 return resolve(JSON.stringify(result[0]));
             }); 
@@ -213,9 +240,12 @@ export class SQLDATA {
         await checkConnection();
         return new Promise((resolve, reject) => {
             // determine if this column already exists
-            var sqlq = `SELECT * FROM proposal;`;
-            con.conn.query(sqlq, function (err: any, result: Array<string>) {
-                if (err) throw err;
+            const sqlq = `SELECT * FROM proposal;`;
+            con.conn.execute(sqlq, [], (err: any, result: Array<string>) => {
+                if (err) {
+                    con.conn.rollback();
+                    throw err;
+                }
 
                 if (BCONST.SQL_DEBUG) {
                     console.log("Obtained Data: ");
@@ -227,6 +257,7 @@ export class SQLDATA {
                     resolve([]);
                     return;
                 }
+                con.conn.unprepare(sqlq);
 
                 return resolve(JSON.parse(JSON.stringify(result)));
             }); 
@@ -237,9 +268,13 @@ export class SQLDATA {
         await checkConnection();
         return new Promise((resolve, reject) => {
             // determine if this column exists
-            var sqlq = `SELECT * FROM question WHERE question_id = ${question_id};`;
-            con.conn.query(sqlq, function (err: any, result: Array<string>) {
-                if (err) throw err;
+            const sqlq = `SELECT * FROM question WHERE question_id = ?;`;
+            let arr = [question_id];
+            con.conn.execute(sqlq, arr, (err: any, result: Array<string>) => {
+                if (err) {
+                    con.conn.rollback();
+                    throw err;
+                }
 
                 if (BCONST.SQL_DEBUG) {
                     console.log("Obtained Data: ");
@@ -251,6 +286,7 @@ export class SQLDATA {
                     resolve("");
                     return;
                 }
+                con.conn.unprepare(sqlq);
 
                 return resolve(JSON.stringify(result[0]));
             }); 
@@ -261,9 +297,13 @@ export class SQLDATA {
         await checkConnection();
         return new Promise((resolve, reject) => {
             // determine if this column already exists
-            var sqlq = `SELECT * FROM question;`;
-            con.conn.query(sqlq, function (err: any, result: Array<string>) {
-                if (err) throw err;
+            const sqlq = `SELECT * FROM question;`;
+            let arr: any = [];
+            con.conn.execute(sqlq, arr, (err: any, result: Array<string>) => {
+                if (err) {
+                    con.conn.rollback();
+                    throw err;
+                }
 
                 if (BCONST.SQL_DEBUG) {
                     console.log("Obtained Data: ");
@@ -275,6 +315,7 @@ export class SQLDATA {
                     resolve([]);
                     return;
                 }
+                con.conn.unprepare(sqlq);
 
                 return resolve(JSON.parse(JSON.stringify(result)));
             }); 
@@ -285,9 +326,13 @@ export class SQLDATA {
         await checkConnection();
         return new Promise((resolve, reject) => {
             // determine if this column already exists
-            var sqlq = `SELECT * FROM question WHERE shown_total < 1;`;
-            con.conn.query(sqlq, function (err: any, result: Array<string>) {
-                if (err) throw err;
+            const sqlq = `SELECT * FROM question WHERE shown_total < 1;`;
+            let arr:any = [];
+            con.conn.execute(sqlq, arr, (err: any, result: Array<string>) => {
+                if (err) {
+                    con.conn.rollback();
+                    throw err;
+                }
 
                 if (BCONST.SQL_DEBUG) {
                     console.log("Obtained Data: ");
@@ -299,6 +344,7 @@ export class SQLDATA {
                     resolve([]);
                     return;
                 }
+                con.conn.unprepare(sqlq);
 
                 return resolve(JSON.parse(JSON.stringify(result)));
             }); 
@@ -309,9 +355,13 @@ export class SQLDATA {
         await checkConnection();
         return new Promise((resolve, reject) => {
             // determine if this column already exists
-            var sqlq = `SELECT * FROM question WHERE shown_total > 0;`;
-            con.conn.query(sqlq, function (err: any, result: Array<string>) {
-                if (err) throw err;
+            const sqlq = `SELECT * FROM question WHERE shown_total > 0;`;
+            let arr: any = [];
+            con.conn.execute(sqlq, arr, (err: any, result: Array<string>) => {
+                if (err) {
+                    con.conn.rollback();
+                    throw err;
+                }
 
                 if (BCONST.SQL_DEBUG) {
                     console.log("Obtained Data: ");
@@ -323,6 +373,7 @@ export class SQLDATA {
                     resolve([]);
                     return;
                 }
+                con.conn.unprepare(sqlq);
 
                 return resolve(JSON.parse(JSON.stringify(result)));
             }); 
@@ -338,9 +389,13 @@ export class SQLDATA {
                 return resolve([]);
             }
             // determine if this column already exists
-            var sqlq = `SELECT * FROM question_channel WHERE channel='${channelID}';`;
-            con.conn.query(sqlq, function (err: any, result: Array<string>) {
-                if (err) throw err;
+            const sqlq = `SELECT * FROM question_channel WHERE channel=?;`;
+            let arr = [channelID];
+            con.conn.execute(sqlq, arr, (err: any, result: Array<string>) => {
+                if (err) {
+                    con.conn.rollback();
+                    throw err;
+                }
 
                 if (BCONST.SQL_DEBUG) {
                     console.log("Obtained Data: ");
@@ -352,6 +407,7 @@ export class SQLDATA {
                     resolve([]);
                     return;
                 }
+                con.conn.unprepare(sqlq);
 
                 return resolve(JSON.parse(JSON.stringify(result)));
             }); 
@@ -367,9 +423,13 @@ export class SQLDATA {
                 return resolve([]);
             }
             // determine if this column already exists
-            var sqlq = `SELECT * FROM question_channel WHERE server='${serverID}';`;
-            con.conn.query(sqlq, function (err: any, result: Array<string>) {
-                if (err) throw err;
+            const sqlq = `SELECT * FROM question_channel WHERE server=?;`;
+            let arr = [serverID];
+            con.conn.execute(sqlq, arr, (err: any, result: Array<string>) => {
+                if (err) {
+                    con.conn.rollback();
+                    throw err;
+                }
 
                 if (BCONST.SQL_DEBUG) {
                     console.log("Obtained Data: ");
@@ -381,6 +441,7 @@ export class SQLDATA {
                     resolve([]);
                     return;
                 }
+                con.conn.unprepare(sqlq);
 
                 return resolve(JSON.parse(JSON.stringify(result)));
             }); 
@@ -391,9 +452,14 @@ export class SQLDATA {
         await checkConnection();
         return new Promise((resolve, reject) => {
             // determine if this column already exists
-            var sqlq = `SELECT * FROM question_channel;`;
-            con.conn.query(sqlq, function (err: any, result: Array<string>) {
-                if (err) throw err;
+            const sqlq = `SELECT * FROM question_channel;`;
+        
+            con.conn.execute(sqlq, [], (err: any, result: Array<string>) => {
+                if (err) {
+                    con.conn.rollback()
+                    throw err;
+                }
+                    
 
                 if (BCONST.SQL_DEBUG) {
                     console.log("Obtained Data: ");
@@ -405,6 +471,7 @@ export class SQLDATA {
                     resolve([]);
                     return;
                 }
+                con.conn.unprepare(sqlq);
 
                 return resolve(JSON.parse(JSON.stringify(result)));
             }); 
@@ -420,9 +487,13 @@ export class SQLDATA {
                 return resolve([]);
             }
             // determine if this column already exists
-            var sqlq = `SELECT * FROM player_answer WHERE user='${user}' and ask_id=${ask_id};`;
-            con.conn.query(sqlq, function (err: any, result: Array<string>) {
-                if (err) throw err;
+            const sqlq = `SELECT * FROM player_answer WHERE user=? and ask_id=?;`;
+            let arr = [user, ask_id];
+            con.conn.execute(sqlq, arr, (err: any, result: Array<string>) => {
+                if (err) {
+                    con.conn.rollback();
+                    throw err;
+                }
 
                 if (BCONST.SQL_DEBUG) {
                     console.log("Obtained Data: ");
@@ -434,6 +505,7 @@ export class SQLDATA {
                     resolve([]);
                     return;
                 }
+                con.conn.unprepare(sqlq);
 
                 return resolve(JSON.parse(JSON.stringify(result)));
             }); 
@@ -445,9 +517,13 @@ export class SQLDATA {
         return new Promise((resolve, reject) => {
 
             // determine if this column already exists
-            var sqlq = `SELECT * FROM player_answer WHERE ask_id=${ask_id};`;
-            con.conn.query(sqlq, function (err: any, result: Array<string>) {
-                if (err) throw err;
+            const sqlq = `SELECT * FROM player_answer WHERE ask_id=?;`;
+            let arr = [ask_id];
+            con.conn.execute(sqlq, arr, (err: any, result: Array<string>) => {
+                if (err) {
+                    con.conn.rollback();
+                    throw err;
+                }
 
                 if (BCONST.SQL_DEBUG) {
                     console.log("Obtained Data: ");
@@ -459,6 +535,7 @@ export class SQLDATA {
                     resolve([]);
                     return;
                 }
+                con.conn.unprepare(sqlq);
 
                 return resolve(JSON.parse(JSON.stringify(result)));
             }); 
@@ -474,9 +551,13 @@ export class SQLDATA {
                 return resolve("");
             }
             // determine if this column exists
-            var sqlq = `SELECT * FROM player WHERE user = '${userid}';`;
-            con.conn.query(sqlq, function (err: any, result: Array<string>) {
-                if (err) throw err;
+            const sqlq = `SELECT * FROM player WHERE user = ?;`;
+            let arr = [userid];
+            con.conn.execute(sqlq, arr, (err: any, result: Array<string>) => {
+                if (err) {
+                    con.conn.rollback();
+                    throw err;
+                }
 
                 if (BCONST.SQL_DEBUG) {
                     console.log("Obtained Data: ");
@@ -488,6 +569,7 @@ export class SQLDATA {
                     resolve("");
                     return;
                 }
+                con.conn.unprepare(sqlq);
 
                 return resolve(JSON.stringify(result[0]));
             }); 
@@ -498,14 +580,18 @@ export class SQLDATA {
     //  Update Functions
     
     // general update table function for all upadate functions
-    private static async updateTable(sql_q: string): Promise<number> {
+    private static async updateTable(sql_q: string, arr: any): Promise<number> {
         return new Promise((resolve, reject) => {
-            con.conn.query(sql_q, function (err: any, result: any) {
-                if (err) throw err;
+            con.conn.execute(sql_q, arr, (err: any, result: any) => {
+                if (err) {
+                    con.conn.rollback();
+                    throw err;
+                }
                 
                 if (BCONST.SQL_DEBUG) {
                     console.log(result.message + " AffectedRows: " + result.affectedRows);
                 }
+                con.conn.unprepare(sql_q);
                 return resolve(0);
             });
         });
@@ -526,14 +612,19 @@ export class SQLDATA {
             
             let sql_changes = "";
             let sql_q = "UPDATE proposal SET";
+            let arr: any = [];
             
             proposal.getChanges().forEach((p) => {
                 switch (p) {
                     case "question":
                         value = proposal.getQuestion();
                         err = checkString(value, DBC.question_length, errType.InvalidInputToSQL, p);
-                        if (err) return resolve(err);
-                        sql_changes += ` ${p} = "${value.replaceAll('"', '""')}",`;
+                        if (err) {
+                            con.conn.rollback();
+                            return resolve(err);
+                        }
+                        sql_changes += ` ${p} = ?,`;
+                        arr.push(value.replaceAll('"', '""'));
                         break;
                     case "ans_a":
                     case "ans_b":
@@ -541,50 +632,82 @@ export class SQLDATA {
                     case "ans_d":
                         value = proposal.getAnswer(p);
                         err = checkString(value, DBC.answer_length, errType.InvalidInputToSQL, p);
-                        if (err) return resolve(err);
-                        sql_changes += ` ${p} = "${value.replaceAll('"', '""')}",`;
+                        if (err) {
+                            con.conn.rollback();
+                            return resolve(err);
+                        }
+                        sql_changes += ` ${p} = ?,`;
+                        arr.push(value.replaceAll('"', '""'));
                         break;
                     case "d_always_last":
                         value = proposal.getDAlwaysLast();
                         err = checkInt(value, errType.InvalidInputToSQL, p);
-                        if (err) return resolve(err);
-                        sql_changes += ` ${p} = ${value},`;
+                        if (err) {
+                            con.conn.rollback();
+                            return resolve(err);
+                        }
+                        sql_changes += ` ${p} = ?,`;
+                        arr.push(value);
                         break;
                     case "fun_fact":
                         value = proposal.getFunFact();
                         err = checkString(value, DBC.funfact_length, errType.InvalidInputToSQL, p);
-                        if (err) return resolve(err);
-                        sql_changes += ` ${p} = "${value.replaceAll('"', '""')}",`;
+                        if (err) {
+                            con.conn.rollback();
+                            return resolve(err);
+                        }
+                        sql_changes += ` ${p} = ?,`;
+                        arr.push(value.replaceAll('"', '""'));
                         break;
                     case "correct":
                         value = proposal.getCorrect();
                         err = checkInt(value, errType.InvalidInputToSQL, p);
-                        if (err) return resolve(err);
-                        sql_changes += ` ${p} = ${value},`;
+                        if (err) {
+                            con.conn.rollback();
+                            return resolve(err);
+                        }
+                        sql_changes += ` ${p} = ?,`;
+                        arr.push(value);
                         break;
                     case "date":
                         value = proposal.getDate();
                         err = checkBigInt(value, errType.InvalidInputToSQL, p);
-                        if (err) return resolve(err);
-                        sql_changes += ` ${p} = ${value},`;
+                        if (err) {
+                            con.conn.rollback();
+                            return resolve(err);
+                        }
+                        sql_changes += ` ${p} = ?,`;
+                        arr.push(value);
                         break;
                     case "submitter":
                         value = proposal.getSubmitter();
                         err = checkString(value, DBC.userID_length, errType.InvalidInputToSQL, p);
-                        if (err) return resolve(err);
-                        sql_changes += ` ${p} = "${value}",`;
+                        if (err) {
+                            con.conn.rollback();
+                            return resolve(err);
+                        }
+                        sql_changes += ` ${p} = ?,`;
+                        arr.push(value);
                         break;
                     case "image":
                         value = proposal.getImage();
                         err = checkString(value, DBC.image_length, errType.InvalidInputToSQL, p);
-                        if (err) return resolve(err);
-                        sql_changes += ` ${p} = "${value}",`;
+                        if (err) {
+                            con.conn.rollback();
+                            return resolve(err);
+                        }
+                        sql_changes += ` ${p} = ?,`;
+                        arr.push(value);
                         break;
                     case "submitted":
                         value = proposal.getSubmitted();
                         err = checkInt(value, errType.InvalidInputToSQL, p);
-                        if (err) return resolve(err);
-                        sql_changes += ` ${p} = ${value},`;
+                        if (err) {
+                            con.conn.rollback();
+                            return resolve(err);
+                        }
+                        sql_changes += ` ${p} = ?,`;
+                        arr.push(value);
                         break;
                     default:
                         console.log("Error: the property "+p+" is not supported by updateProposal.");
@@ -596,9 +719,10 @@ export class SQLDATA {
                 // remove the extra comma
                 sql_changes = sql_changes.slice(0, sql_changes.length - 1);
                 sql_q  += sql_changes;
-                sql_q += ` WHERE proposal_id = ${proposal.getProposalID()};`;
+                sql_q += ` WHERE proposal_id = ?;`;
+                arr.push(proposal.getProposalID());
         
-                let result = await this.updateTable(sql_q);
+                let result = await this.updateTable(sql_q, arr);
                 resolve(result);
             }
         });
@@ -619,14 +743,19 @@ export class SQLDATA {
             
             let sql_changes = "";
             let sql_q = "UPDATE question SET";
+            let arr: any = [];
             
             question.getChanges().forEach((p) => {
                 switch (p) {
                     case "question":
                         value = question.getQuestion();
                         err = checkString(value, DBC.question_length, errType.InvalidInputToSQL, p);
-                        if (err) return resolve(err);
-                        sql_changes += ` ${p} = "${value.replaceAll('"', '""')}",`;
+                        if (err) {
+                            con.conn.rollback();
+                            return resolve(err);
+                        }
+                        sql_changes += ` ${p} = ?,`;
+                        arr.push(value.replaceAll('"', '""'));
                         break;
                     case "ans_a":
                     case "ans_b":
@@ -634,62 +763,102 @@ export class SQLDATA {
                     case "ans_d":
                         value = question.getAnswer(p);
                         err = checkString(value, DBC.answer_length, errType.InvalidInputToSQL, p);
-                        if (err) return resolve(err);
-                        sql_changes += ` ${p} = "${value.replaceAll('"', '""')}",`;
+                        if (err) {
+                            con.conn.rollback();
+                            return resolve(err);
+                        }
+                        sql_changes += ` ${p} = ?,`;
+                        arr.push(value.replaceAll('"', '""'));
                         break;
                     case "d_always_last":
                         value = question.getDAlwaysLast();
                         err = checkInt(value, errType.InvalidInputToSQL, p);
-                        if (err) return resolve(err);
-                        sql_changes += ` ${p} = ${value},`;
+                        if (err) {
+                            con.conn.rollback();
+                            return resolve(err);
+                        }
+                        sql_changes += ` ${p} = ?,`;
+                        arr.push(value);
                         break;
                     case "fun_fact":
                         value = question.getFunFact();
                         err = checkString(value, DBC.funfact_length, errType.InvalidInputToSQL, p);
-                        if (err) return resolve(err);
-                        sql_changes += ` ${p} = "${value.replaceAll('"', '""')}",`;
+                        if (err) {
+                            con.conn.rollback();
+                            return resolve(err);
+                        }
+                        sql_changes += ` ${p} = ?,`;
+                        arr.push(value.replaceAll('"', '""'));
                         break;
                     case "correct":
                         value = question.getCorrect();
                         err = checkInt(value, errType.InvalidInputToSQL, p);
-                        if (err) return resolve(err);
-                        sql_changes += ` ${p} = ${value},`;
+                        if (err) {
+                            con.conn.rollback();
+                            return resolve(err);
+                        }
+                        sql_changes += ` ${p} = ?,`;
+                        arr.push(value);
                         break;
                     case "date":
                         value = question.getDate();
                         err = checkBigInt(value, errType.InvalidInputToSQL, p);
-                        if (err) return resolve(err);
-                        sql_changes += ` ${p} = ${value},`;
+                        if (err) {
+                            con.conn.rollback();
+                            return resolve(err);
+                        }
+                        sql_changes += ` ${p} = ?,`;
+                        arr.push(value);
                         break;
                     case "submitter":
                         value = question.getSubmitter();
                         err = checkString(value, DBC.userID_length, errType.InvalidInputToSQL, p);
-                        if (err) return resolve(err);
-                        sql_changes += ` ${p} = "${value}",`;
+                        if (err) {
+                            con.conn.rollback();
+                            return resolve(err);
+                        }
+                        sql_changes += ` ${p} = ?,`;
+                        arr.push(value);
                         break;
                     case "image":
                         value = question.getImage();
                         err = checkString(value, DBC.image_length, errType.InvalidInputToSQL, p);
-                        if (err) return resolve(err);
-                        sql_changes += ` ${p} = "${value}",`;
+                        if (err) {
+                            con.conn.rollback();
+                            return resolve(err);
+                        }
+                        sql_changes += ` ${p} = ?,`;
+                        arr.push(value);
                         break;
                     case "response_total":
                         value = question.getResponseTotal();
                         err = checkInt(value, errType.InvalidInputToSQL, p);
-                        if (err) return resolve(err);
-                        sql_changes += ` ${p} = ${value},`;
+                        if (err) {
+                            con.conn.rollback();
+                            return resolve(err);
+                        }
+                        sql_changes += ` ${p} = ?,`;
+                        arr.push(value);
                         break;
                     case "response_correct":
                         value = question.getResponseCorrect();
                         err = checkInt(value, errType.InvalidInputToSQL, p);
-                        if (err) return resolve(err);
-                        sql_changes += ` ${p} = ${value},`;
+                        if (err) {
+                            con.conn.rollback();
+                            return resolve(err);
+                        }
+                        sql_changes += ` ${p} = ?,`;
+                        arr.push(value);
                         break;
                     case "shown_total":
                         value = question.getShownTotal();
                         err = checkInt(value, errType.InvalidInputToSQL, p);
-                        if (err) return resolve(err);
-                        sql_changes += ` ${p} = ${value},`;
+                        if (err) {
+                            con.conn.rollback();
+                            return resolve(err);
+                        }
+                        sql_changes += ` ${p} = ?,`;
+                        arr.push(value);
                         break;
                     default:
                         console.log("Error: the property "+p+" is not supported by updateQuestion.");
@@ -701,9 +870,10 @@ export class SQLDATA {
                 // remove the extra comma
                 sql_changes = sql_changes.slice(0, sql_changes.length - 1);
                 sql_q  += sql_changes;
-                sql_q += ` WHERE question_id = '${question.getQuestionID()}';`;
+                sql_q += ` WHERE question_id = ?;`;
+                arr.push(question.getQuestionID());
         
-                let result = await this.updateTable(sql_q);
+                let result = await this.updateTable(sql_q, arr);
                 resolve(result);
             }
         });
@@ -724,44 +894,69 @@ export class SQLDATA {
             
             let sql_changes = "";
             let sql_q = "UPDATE asked_question SET";
+            let arr:any = [];
             
             question.getChanges().forEach((p) => {
                 switch (p) {
                     case "response_total":
                         value = question.getResponseTotal();
                         err = checkInt(value, errType.InvalidInputToSQL, p);
-                        if (err) return resolve(err);
-                        sql_changes += ` ${p} = ${value},`;
+                        if (err) {
+                            con.conn.rollback();
+                            return resolve(err);
+                        }
+                        sql_changes += ` ${p} = ?,`;
+                        arr.push(value);
                         break;
                     case "response_correct":
                         value = question.getResponseCorrect();
                         err = checkInt(value, errType.InvalidInputToSQL, p);
-                        if (err) return resolve(err);
-                        sql_changes += ` ${p} = ${value},`;
+                        if (err) {
+                            con.conn.rollback();
+                            return resolve(err);
+                        }
+                        sql_changes += ` ${p} = ?,`;
+                        arr.push(value);
                         break;
                     case "active":
                         value = question.getActive();
                         err = checkInt(value, errType.InvalidInputToSQL, p);
-                        if (err) return resolve(err);
-                        sql_changes += ` ${p} = ${value},`;
+                        if (err) {
+                            con.conn.rollback();
+                            return resolve(err);
+                        }
+                        sql_changes += ` ${p} = ?,`;
+                        arr.push(value);
                         break;
                     case "message_id":
                         value = question.getMessageID();
                         err = checkString(value, DBC.channelID_length, errType.InvalidInputToSQL, p);
-                        if (err) return resolve(err);
-                        sql_changes += ` ${p} = "${value}",`;
+                        if (err){
+                            con.conn.rollback();
+                            return resolve(err);
+                        }
+                        sql_changes += ` ${p} = ?,`;
+                        arr.push(value);
                         break;
                     case "next_question_time":
                         value = question.getNextQuestionTime();
                         err = checkBigInt(value, errType.InvalidInputToSQL, p);
-                        if (err) return resolve(err);
-                        sql_changes += ` ${p} = ${value},`;
+                        if (err){
+                            con.conn.rollback();
+                            return resolve(err);
+                        }
+                        sql_changes += ` ${p} = ?,`;
+                        arr.push(value);
                         break;
                     case "show_result_time":
                         value = question.getShowResultTime();
                         err = checkBigInt(value, errType.InvalidInputToSQL, p);
-                        if (err) return resolve(err);
-                        sql_changes += ` ${p} = ${value},`;
+                        if (err){
+                            con.conn.rollback();
+                            return resolve(err);
+                        }
+                        sql_changes += ` ${p} = ?,`;
+                        arr.push(value);
                         break;
                     default:
                         console.log("Error: the property "+p+" is not supported by updateAskedQuestion.");
@@ -773,9 +968,10 @@ export class SQLDATA {
                 // remove the extra comma
                 sql_changes = sql_changes.slice(0, sql_changes.length - 1);
                 sql_q  += sql_changes;
-                sql_q += ` WHERE ask_id = '${question.getAskID()}';`;
+                sql_q += ` WHERE ask_id = ?;`;
+                arr.push(question.getAskID());
         
-                let result = await this.updateTable(sql_q);
+                let result = await this.updateTable(sql_q, arr);
                 resolve(result);
             }
         });
@@ -796,26 +992,39 @@ export class SQLDATA {
             
             let sql_changes = "";
             let sql_q = "UPDATE player_answer SET";
+            let arr: any = [];
             
             answer.getChanges().forEach((p: any) => {
                 switch (p) {
                     case "ask_id":
                         value = answer.getAskID();
                         err = checkInt(value, errType.InvalidInputToSQL, p);
-                        if (err) return resolve(err);
-                        sql_changes += ` ${p} = ${value},`;
+                        if (err) {
+                            con.conn.rollback();
+                            return resolve(err);
+                        }
+                        sql_changes += ` ${p} = ?,`;
+                        arr.push(value);
                         break;
                     case "response":
                         value = answer.getResponse();
                         err = checkInt(value, errType.InvalidInputToSQL, p);
-                        if (err) return resolve(err);
-                        sql_changes += ` ${p} = ${value},`;
+                        if (err) {
+                            con.conn.rollback();
+                            return resolve(err);
+                        }
+                        sql_changes += ` ${p} = ?,`;
+                        arr.push(value);
                         break;
                     case "submitted":
                         value = answer.getSubmtitted();
                         err = checkInt(value, errType.InvalidInputToSQL, p);
-                        if (err) return resolve(err);
-                        sql_changes += ` ${p} = ${value},`;
+                        if (err) {
+                            con.conn.rollback();
+                            return resolve(err);
+                        }
+                        sql_changes += ` ${p} = ?,`;
+                        arr.push(value);
                         break;
                     default:
                         console.log("Error: the property "+p+" is not supported by updatePlayerAnswer.");
@@ -827,9 +1036,10 @@ export class SQLDATA {
                 // remove the extra comma
                 sql_changes = sql_changes.slice(0, sql_changes.length - 1);
                 sql_q  += sql_changes;
-                sql_q += ` WHERE answer_id = '${answer.getAnswerID()}';`;
+                sql_q += ` WHERE answer_id = ?;`;
+                arr.push(answer.getAnswerID());
         
-                let result = await this.updateTable(sql_q);
+                let result = await this.updateTable(sql_q, arr);
                 resolve(result);
             }
         });
@@ -850,26 +1060,39 @@ export class SQLDATA {
             
             let sql_changes = "";
             let sql_q = "UPDATE player SET";
+            let arr: any = [];
             
             player.getChanges().forEach((p) => {
                 switch (p) {
                     case "q_submitted":
                         value = player.getQSubmitted();
                         err = checkInt(value, errType.InvalidInputToSQL, p);
-                        if (err) return resolve(err);
-                        sql_changes += ` ${p} = ${value},`;
+                        if (err) {
+                            con.conn.rollback();
+                            return resolve(err);
+                        }
+                        sql_changes += ` ${p} = ?,`;
+                        arr.push(value);
                         break;
                     case "response_total":
                         value = player.getResponseTotal();
                         err = checkInt(value, errType.InvalidInputToSQL, p);
-                        if (err) return resolve(err);
-                        sql_changes += ` ${p} = ${value},`;
+                        if (err) {
+                            con.conn.rollback();
+                            return resolve(err);
+                        }
+                        sql_changes += ` ${p} = ?,`;
+                        arr.push(value);
                         break;
                     case "response_correct":
                         value = player.getResponseCorrect();
                         err = checkInt(value, errType.InvalidInputToSQL, p);
-                        if (err) return resolve(err);
-                        sql_changes += ` ${p} = ${value},`;
+                        if (err) {
+                            con.conn.rollback();
+                            return resolve(err);
+                        }
+                        sql_changes += ` ${p} = ?,`;
+                        arr.push(value);
                         break;
                     default:
                         console.log("Error: the property "+p+" is not supported by updatePlayer.");
@@ -881,9 +1104,10 @@ export class SQLDATA {
                 // remove the extra comma
                 sql_changes = sql_changes.slice(0, sql_changes.length - 1);
                 sql_q  += sql_changes;
-                sql_q += ` WHERE user = '${player.getPlayer()}';`;
+                sql_q += ` WHERE user = ?;`;
+                arr.push(player.getPlayer());
         
-                let result = await this.updateTable(sql_q);
+                let result = await this.updateTable(sql_q, arr);
                 resolve(result);
             }
         });
@@ -1446,7 +1670,18 @@ export class SQLDATA {
 }
 
 async function checkConnection() {
-    if (!con.connected) await connectSQL();
+    console.log("checking connection");
+    while (!con.connected) {
+        // TODO add a counter
+        if (!con.loading) {
+            console.log("attempt to connect");
+            await connectSQL();
+        }
+        else {
+            //console.log("waiting to load...");
+        }
+    }
+    console.log(con.connected);
 }
 
 function checkInt(value: number, err: number, fieldName: string): number {

@@ -277,7 +277,9 @@ async function createNewQuestion(serverID, channelID, client, selected_question 
                 // nothing 
             });
             collector_drop.on('collect', async (inter) => {
+                //if (inter.type < 6) {
                 await inter.deferUpdate();
+                //}
                 let result = 0;
                 let user_answer = await DOBuilder_1.DO.getPlayerAnswer(inter.user.id, ask_id);
                 if (user_answer.length > 0) {
