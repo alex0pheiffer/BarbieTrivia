@@ -213,7 +213,7 @@ export async function createNewQuestion(serverID: string, channelID: string, cli
                 "max_img": max_img_index,
                 "message_id": "",
                 "next_question_time": -1,
-                "show_result_time": time + duration} as AskedQuestionI;
+                "show_result_time": time + duration} as AskedQuestionI; 
             result = await DO.insertAskedQuestion(aq);
             question!!.setShownTotal(question!!.getShownTotal() + 1);
             result = await DO.updateQuestion(question!!, result);   

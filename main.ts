@@ -9,6 +9,9 @@ import { GameInteractionErr } from "./Errors";
 import { addPrompt } from "./prompt";
 import { PlayerI } from "./data/data_interfaces/player";
 import { startAllQuestionChannels } from "./startup";
+import { PlayerAnswerI } from "./data/data_interfaces/playerAnswer";
+import { AskedQuestionI } from "./data/data_interfaces/askedQuestion";
+import { QuestionChannelI } from "./data/data_interfaces/questionChannel";
 
 const client = new Client({  
     intents: [GatewayIntentBits.MessageContent, GatewayIntentBits.Guilds, GatewayIntentBits.GuildMessages, GatewayIntentBits.GuildMembers, GatewayIntentBits.GuildMessageReactions] 
@@ -310,9 +313,11 @@ client.on('ready', async () => {
         startAllQuestionChannels(client);
     }
     else {
-        //let value = await DO.getAdmin("415315191547559936");
-        //console.log("value: ", value);
-        await createNewQuestion("1266960173533237268", "1323745530991611975", client, 370);
+        
+        let q = await DO.getQuestion(457);
+        
+        console.log(q?.getQuestion());
+        //await createNewQuestion("1266960173533237268", "1323745530991611975", client, 370);
     }
     
     

@@ -325,9 +325,9 @@ client.on('ready', async () => {
         (0, startup_1.startAllQuestionChannels)(client);
     }
     else {
-        //let value = await DO.getAdmin("415315191547559936");
-        //console.log("value: ", value);
-        await (0, new_1.createNewQuestion)("1266960173533237268", "1323745530991611975", client, 370);
+        let q = await DOBuilder_1.DO.getQuestion(457);
+        console.log(q?.getQuestion());
+        //await createNewQuestion("1266960173533237268", "1323745530991611975", client, 370);
     }
 });
 /*

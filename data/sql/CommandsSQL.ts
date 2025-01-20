@@ -212,7 +212,7 @@ export class SQLDATA {
 
             // determine if this column exists
             const sqlq = `SELECT * FROM proposal WHERE question = ?;`;
-            let arr = [question.replaceAll('"', '""')];
+            let arr = [question];
             con.conn.execute(sqlq, arr, (err: any, result: Array<string>) => {
                 if (err) {
                     con.conn.rollback();
@@ -624,7 +624,7 @@ export class SQLDATA {
                             return resolve(err);
                         }
                         sql_changes += ` ${p} = ?,`;
-                        arr.push(value.replaceAll('"', '""'));
+                        arr.push(value);
                         break;
                     case "ans_a":
                     case "ans_b":
@@ -637,7 +637,7 @@ export class SQLDATA {
                             return resolve(err);
                         }
                         sql_changes += ` ${p} = ?,`;
-                        arr.push(value.replaceAll('"', '""'));
+                        arr.push(value);
                         break;
                     case "d_always_last":
                         value = proposal.getDAlwaysLast();
@@ -657,7 +657,7 @@ export class SQLDATA {
                             return resolve(err);
                         }
                         sql_changes += ` ${p} = ?,`;
-                        arr.push(value.replaceAll('"', '""'));
+                        arr.push(value);
                         break;
                     case "correct":
                         value = proposal.getCorrect();
@@ -755,7 +755,7 @@ export class SQLDATA {
                             return resolve(err);
                         }
                         sql_changes += ` ${p} = ?,`;
-                        arr.push(value.replaceAll('"', '""'));
+                        arr.push(value);
                         break;
                     case "ans_a":
                     case "ans_b":
@@ -768,7 +768,7 @@ export class SQLDATA {
                             return resolve(err);
                         }
                         sql_changes += ` ${p} = ?,`;
-                        arr.push(value.replaceAll('"', '""'));
+                        arr.push(value);
                         break;
                     case "d_always_last":
                         value = question.getDAlwaysLast();
@@ -788,7 +788,7 @@ export class SQLDATA {
                             return resolve(err);
                         }
                         sql_changes += ` ${p} = ?,`;
-                        arr.push(value.replaceAll('"', '""'));
+                        arr.push(value);
                         break;
                     case "correct":
                         value = question.getCorrect();
@@ -1159,7 +1159,7 @@ export class SQLDATA {
             err = checkInt(value, DataErr.InvalidInputToSQL, "submitted");
             if (err) return resolve(err);
 
-            var sql_columns = `(question, \
+            const sql_columns = `(question, \
             image, \
             ans_a, \
             ans_b, \
@@ -1172,31 +1172,49 @@ export class SQLDATA {
             submitter, \
             submitted)`;
 
-            var sql_values = `("${proposal.getQuestion().replaceAll('"', '""')}", \
-            "${proposal.getImage()}",\
-            "${proposal.getAnswer("ans_a").replaceAll('"', '""')}",\
-            "${proposal.getAnswer("ans_b").replaceAll('"', '""')}",\
-            "${proposal.getAnswer("ans_c").replaceAll('"', '""')}",\
-            "${proposal.getAnswer("ans_d").replaceAll('"', '""')}",\
-            ${proposal.getDAlwaysLast()},\
-            "${proposal.getFunFact().replaceAll('"', '""')}",\
-            ${proposal.getCorrect()},\
-            ${proposal.getDate()},\
-            "${proposal.getSubmitter()}",\
-            ${proposal.getSubmitted()})`;
+            const sql_values = "(?,?,?,?,?,?,?,?,?,?,?,?)";
+            let arr = [proposal.getQuestion(),
+                proposal.getImage(),
+                proposal.getAnswer("ans_a"),
+                proposal.getAnswer("ans_b"),
+                proposal.getAnswer("ans_c"),
+                proposal.getAnswer("ans_d"),
+                proposal.getDAlwaysLast(),
+                proposal.getFunFact(),
+                proposal.getCorrect(),
+                proposal.getDate(),
+                proposal.getSubmitter(),
+                proposal.getSubmitted()
+            ];
 
-            var sqlq = `INSERT INTO proposal ${sql_columns} VALUES ${sql_values};`;
-            con.conn.query(sqlq, function (err: any, result: any) {
+            // var sql_values = `("${proposal.getQuestion().replaceAll('"', '""')}", \
+            // "${proposal.getImage()}",\
+            // "${proposal.getAnswer("ans_a").replaceAll('"', '""')}",\
+            // "${proposal.getAnswer("ans_b").replaceAll('"', '""')}",\
+            // "${proposal.getAnswer("ans_c").replaceAll('"', '""')}",\
+            // "${proposal.getAnswer("ans_d").replaceAll('"', '""')}",\
+            // ${proposal.getDAlwaysLast()},\
+            // "${proposal.getFunFact().replaceAll('"', '""')}",\
+            // ${proposal.getCorrect()},\
+            // ${proposal.getDate()},\
+            // "${proposal.getSubmitter()}",\
+            // ${proposal.getSubmitted()})`;
+
+            const sqlq = `INSERT INTO proposal ${sql_columns} VALUES ${sql_values};`;
+            con.conn.execute(sqlq, arr, (err: any, result: any) => {
                 if (err && err.errno == 1062) {
+                    con.conn.rollback();
                     return resolve(DataErr.IDAlreadyExists);
                 }
                 else if (err) {
+                    con.conn.rollback();
                     throw err;
                 }
 
                 if (BCONST.SQL_DEBUG) {
                     console.log(`1 recored inserted: ${result.insertId}`);                    
                 }
+                con.conn.unprepare(sqlq);
                 return resolve(0);
             }); 
         });
@@ -1252,7 +1270,7 @@ export class SQLDATA {
             err = checkInt(value, DataErr.InvalidInputToSQL, "shown_total");
             if (err) return resolve(err);   
 
-            var sql_columns = `(question, \
+            const sql_columns = `(question, \
             image, \
             ans_a, \
             ans_b, \
@@ -1267,33 +1285,53 @@ export class SQLDATA {
             response_correct, \
             shown_total)`;
 
-            var sql_values = `("${question.getQuestion().replaceAll('"', '""')}", \
-            "${question.getImage()}",\
-            "${question.getAnswer("ans_a").replaceAll('"', '""')}",\
-            "${question.getAnswer("ans_b").replaceAll('"', '""')}",\
-            "${question.getAnswer("ans_c").replaceAll('"', '""')}",\
-            "${question.getAnswer("ans_d").replaceAll('"', '""')}",\
-            ${question.getDAlwaysLast()},\
-            "${question.getFunFact().replaceAll('"', '""')}",\
-            ${question.getCorrect()},\
-            ${question.getDate()},\
-            "${question.getSubmitter()}",\
-            ${question.getResponseTotal()},\
-            ${question.getResponseCorrect()},\
-            ${question.getShownTotal()})`;
+            const sql_values = "(?,?,?,?,?,?,?,?,?,?,?,?,?,?)"
+            let arr = [question.getQuestion(),
+                question.getImage(),
+                question.getAnswer("ans_a"),
+                question.getAnswer("ans_b"),
+                question.getAnswer("ans_c"),
+                question.getAnswer("ans_d"),
+                question.getDAlwaysLast(),
+                question.getFunFact(),
+                question.getCorrect(),
+                question.getDate(),
+                question.getSubmitter(),
+                question.getResponseTotal(),
+                question.getResponseCorrect(),
+                question.getShownTotal()
+            ];
 
-            var sqlq = `INSERT INTO question ${sql_columns} VALUES ${sql_values};`;
-            con.conn.query(sqlq, function (err: any, result: any) {
+            // var sql_values = `("${question.getQuestion().replaceAll('"', '""')}", \
+            // "${question.getImage()}",\
+            // "${question.getAnswer("ans_a").replaceAll('"', '""')}",\
+            // "${question.getAnswer("ans_b").replaceAll('"', '""')}",\
+            // "${question.getAnswer("ans_c").replaceAll('"', '""')}",\
+            // "${question.getAnswer("ans_d").replaceAll('"', '""')}",\
+            // ${question.getDAlwaysLast()},\
+            // "${question.getFunFact().replaceAll('"', '""')}",\
+            // ${question.getCorrect()},\
+            // ${question.getDate()},\
+            // "${question.getSubmitter()}",\
+            // ${question.getResponseTotal()},\
+            // ${question.getResponseCorrect()},\
+            // ${question.getShownTotal()})`;
+
+            const sqlq = `INSERT INTO question ${sql_columns} VALUES ${sql_values};`;
+            con.conn.execute(sqlq, arr, (err: any, result: any) => {
                 if (err && err.errno == 1062) {
+                    con.conn.rollback();
                     return resolve(DataErr.IDAlreadyExists);
                 }
                 else if (err) {
+                    con.conn.rollback();
                     throw err;
                 }
 
                 if (BCONST.SQL_DEBUG) {
                     console.log(`1 recored inserted: ${result.insertId}`);                    
                 }
+                con.conn.unprepare(sqlq);
                 return resolve(0);
             }); 
         });
@@ -1313,24 +1351,29 @@ export class SQLDATA {
             err = checkString(value, DBC.userID_length, DataErr.InvalidInputToSQL, "granter");
             if (err) return resolve(err);
             
-            var sql_columns = `(user, \
+            const sql_columns = `(user, \
             granter)`;
 
-            var sql_values = `('${admin.user}', \
-            '${admin.granter}')`;
+            const sql_values = "(?,?)";
+            let arr = [admin.user, admin.granter];
+            // var sql_values = `('${admin.user}', \
+            // '${admin.granter}')`;
 
-            var sqlq = `INSERT INTO admin ${sql_columns} VALUES ${sql_values};`;
-            con.conn.query(sqlq, function (err: any, result: any) {
+            const sqlq = `INSERT INTO admin ${sql_columns} VALUES ${sql_values};`;
+            con.conn.execute(sqlq, arr, (err: any, result: any) => {
                 if (err && err.errno == 1062) {
+                    con.conn.rollback();
                     return resolve(DataErr.IDAlreadyExists);
                 }
                 else if (err) {
+                    con.conn.rollback();
                     throw err;
                 }
 
                 if (BCONST.SQL_DEBUG) {
                     console.log(`1 recored inserted: ${result.insertId}`);                    
                 }
+                con.conn.unprepare(sqlq);
                 return resolve(0);
             }); 
         });
@@ -1386,7 +1429,7 @@ export class SQLDATA {
             err = checkBigInt(value, DataErr.InvalidInputToSQL, "show_result_time");
             if (err) return resolve(err);      
 
-            var sql_columns = `(question_id, \
+            const sql_columns = `(question_id, \
             date, \
             response_total, \
             response_correct, \
@@ -1401,33 +1444,53 @@ export class SQLDATA {
             next_question_time,
             show_result_time)`;
 
-            var sql_values = `(${question.question_id}, \
-            ${question.date},\
-            ${question.response_total},\
-            ${question.response_correct},\
-            '${question.channel_id}', \
-            ${question.active},
-            ${question.ans_a},
-            ${question.ans_b},
-            ${question.ans_c},
-            ${question.ans_d},
-            ${question.max_img},
-            '${question.message_id}',
-            ${question.next_question_time},
-            ${question.show_result_time})`;
+            const sql_values = "(?,?,?,?,?,?,?,?,?,?,?,?,?,?)"
+            let arr = [question.question_id, 
+                question.date,
+                question.response_total,
+                question.response_correct,
+                question.channel_id, 
+                question.active,
+                question.ans_a,
+                question.ans_b,
+                question.ans_c,
+                question.ans_d,
+                question.max_img,
+                question.message_id,
+                question.next_question_time,
+                question.show_result_time
+            ];
 
-            var sqlq = `INSERT INTO asked_question ${sql_columns} VALUES ${sql_values};`;
-            con.conn.query(sqlq, function (err: any, result: any) {
+            // var sql_values = `(${question.question_id}, \
+            // ${question.date},\
+            // ${question.response_total},\
+            // ${question.response_correct},\
+            // '${question.channel_id}', \
+            // ${question.active},
+            // ${question.ans_a},
+            // ${question.ans_b},
+            // ${question.ans_c},
+            // ${question.ans_d},
+            // ${question.max_img},
+            // '${question.message_id}',
+            // ${question.next_question_time},
+            // ${question.show_result_time})`;
+
+            const sqlq = `INSERT INTO asked_question ${sql_columns} VALUES ${sql_values};`;
+            con.conn.execute(sqlq, arr, (err: any, result: any) => {
                 if (err && err.errno == 1062) {
+                    con.conn.rollback();
                     return resolve(DataErr.IDAlreadyExists);
                 }
                 else if (err) {
+                    con.conn.rollback();
                     throw err;
                 }
 
                 if (BCONST.SQL_DEBUG) {
                     console.log(`1 recored inserted: ${result.insertId}`);                    
                 }
+                con.conn.unprepare(sqlq);
                 return resolve(0);
             }); 
         });
@@ -1456,30 +1519,39 @@ export class SQLDATA {
             err = checkInt(value, DataErr.InvalidInputToSQL, "question");
             if (err) return resolve(err);
             
-            var sql_columns = `(server, \
+            const sql_columns = `(server, \
             channel, \
             owner, \
             date, \
             question)`;
+            const sql_values = "(?,?,?,?,?)";
+            let arr = [channel.server, 
+                channel.channel,
+                channel.owner,
+                channel.date,
+                channel.question];
 
-            var sql_values = `('${channel.server}', \
-            '${channel.channel}',\
-            '${channel.owner}',\
-            ${channel.date},\
-            ${channel.question})`;
+            // var sql_values = `('${channel.server}', \
+            // '${channel.channel}',\
+            // '${channel.owner}',\
+            // ${channel.date},\
+            // ${channel.question})`;
 
-            var sqlq = `INSERT INTO question_channel ${sql_columns} VALUES ${sql_values};`;
-            con.conn.query(sqlq, function (err: any, result: any) {
+            const sqlq = `INSERT INTO question_channel ${sql_columns} VALUES ${sql_values};`;
+            con.conn.execute(sqlq, arr, (err: any, result: any) => {
                 if (err && err.errno == 1062) {
+                    con.conn.rollback();
                     return resolve(DataErr.IDAlreadyExists);
                 }
                 else if (err) {
+                    con.conn.rollback();
                     throw err;
                 }
 
                 if (BCONST.SQL_DEBUG) {
                     console.log(`1 recored inserted: ${result.insertId}`);                    
                 }
+                con.conn.unprepare(sqlq);
                 return resolve(0);
             }); 
         });
@@ -1505,28 +1577,36 @@ export class SQLDATA {
             err = checkInt(value, DataErr.InvalidInputToSQL, "submitted");
             if (err) return resolve(err);   
             
-            var sql_columns = `(user, \
+            const sql_columns = `(user, \
             ask_id, \
             response, \
             submitted)`;
+            const sql_values = "(?,?,?,?)";
+            let arr = [answer.user, 
+                answer.ask_id,
+                answer.response,
+                answer.submitted];
 
-            var sql_values = `('${answer.user}', \
-            ${answer.ask_id},\
-            ${answer.response},\
-            ${answer.submitted})`;
+            // var sql_values = `('${answer.user}', \
+            // ${answer.ask_id},\
+            // ${answer.response},\
+            // ${answer.submitted})`;
 
             var sqlq = `INSERT INTO player_answer ${sql_columns} VALUES ${sql_values};`;
-            con.conn.query(sqlq, function (err: any, result: any) {
+            con.conn.execute(sqlq, arr, (err: any, result: any) => {
                 if (err && err.errno == 1062) {
+                    con.conn.rollback();
                     return resolve(DataErr.IDAlreadyExists);
                 }
                 else if (err) {
+                    con.conn.rollback();
                     throw err;
                 }
 
                 if (BCONST.SQL_DEBUG) {
                     console.log(`1 recored inserted: ${result.insertId}`);                    
                 }
+                con.conn.unprepare(sqlq);
                 return resolve(0);
             }); 
         });
@@ -1552,28 +1632,36 @@ export class SQLDATA {
             err = checkInt(value, DataErr.InvalidInputToSQL, "q_submitted");
             if (err) return resolve(err);   
 
-            var sql_columns = `(user, \
+            const sql_columns = `(user, \
             q_submitted, \
             response_total, \
             response_correct)`;
+            const sql_values = "(?,?,?,?)";
+            let arr = [player.user, 
+                player.q_submitted,
+                player.response_total,
+                player.response_correct];
 
-            var sql_values = `('${player.user}', \
-            ${player.q_submitted},\
-            ${player.response_total},\
-            ${player.response_correct})`;
+            // var sql_values = `('${player.user}', \
+            // ${player.q_submitted},\
+            // ${player.response_total},\
+            // ${player.response_correct})`;
 
-            var sqlq = `INSERT INTO player ${sql_columns} VALUES ${sql_values};`;
-            con.conn.query(sqlq, function (err: any, result: any) {
+            const sqlq = `INSERT INTO player ${sql_columns} VALUES ${sql_values};`;
+            con.conn.execute(sqlq, arr, (err: any, result: any) => {
                 if (err && err.errno == 1062) {
+                    con.conn.rollback();
                     return resolve(DataErr.IDAlreadyExists);
                 }
                 else if (err) {
+                    con.conn.rollback();
                     throw err;
                 }
 
                 if (BCONST.SQL_DEBUG) {
                     console.log(`1 recored inserted: ${result.insertId}`);                    
                 }
+                con.conn.unprepare(sqlq);
                 return resolve(0);
             }); 
         });
@@ -1590,18 +1678,22 @@ export class SQLDATA {
                 return resolve(DataErr.InvalidInputToSQL);
             }
 
-            let sqlq = `DELETE FROM admin WHERE user='${userID}';`;
-            con.conn.query(sqlq, function (err: any, result: any) {
+            const sqlq = `DELETE FROM admin WHERE user=?;`;
+            let arr = [userID];
+            con.conn.execute(sqlq, arr, (err: any, result: any) => {
                 if (err && err.errno == 1062) {
+                    con.conn.rollback();
                     return resolve(DataErr.IDDoesNotExist);
                 }
                 else if (err) {
+                    con.conn.rollback();
                     throw err;
                 }
 
                 if (BCONST.SQL_DEBUG) {
                     console.log(`1 recored deleted.`);                    
                 }
+                con.conn.unprepare(sqlq);
                 return resolve(0);
             }); 
         });
@@ -1610,18 +1702,22 @@ export class SQLDATA {
     static async deleteProposal(proposal: number): Promise<number> {
         await checkConnection();
         return new Promise((resolve, reject) => {
-            let sqlq = `DELETE FROM proposal WHERE proposal_id=${proposal};`;
-            con.conn.query(sqlq, function (err: any, result: any) {
+            const sqlq = `DELETE FROM proposal WHERE proposal_id=?;`;
+            let arr = [proposal];
+            con.conn.execute(sqlq, arr, (err: any, result: any) => {
                 if (err && err.errno == 1062) {
+                    con.conn.rollback();
                     return resolve(DataErr.IDDoesNotExist);
                 }
                 else if (err) {
+                    con.conn.rolback();
                     throw err;
                 }
 
                 if (BCONST.SQL_DEBUG) {
                     console.log(`1 recored deleted.`);                    
                 }
+                con.conn.unprepare(sqlq);
                 return resolve(0);
             }); 
         });
@@ -1630,18 +1726,22 @@ export class SQLDATA {
     static async deleteQuestionChannel(channel: string): Promise<number> {
         await checkConnection();
         return new Promise((resolve, reject) => {
-            let sqlq = `DELETE FROM question_channel WHERE channel=${channel};`;
-            con.conn.query(sqlq, function (err: any, result: any) {
+            const sqlq = `DELETE FROM question_channel WHERE channel=?;`;
+            let arr = [channel];
+            con.conn.execute(sqlq, arr, (err: any, result: any) =>{
                 if (err && err.errno == 1062) {
+                    con.conn.rollback();
                     return resolve(DataErr.IDDoesNotExist);
                 }
                 else if (err) {
+                    con.conn.rolback();
                     throw err;
                 }
 
                 if (BCONST.SQL_DEBUG) {
                     console.log(`1 recored deleted.`);                    
                 }
+                con.conn.unprepare(sqlq);
                 return resolve(0);
             }); 
         });
@@ -1650,18 +1750,22 @@ export class SQLDATA {
     static async deletePlayerAnswer(answer_id: number): Promise<number> {
         await checkConnection();
         return new Promise((resolve, reject) => {
-            let sqlq = `DELETE FROM player_answer WHERE answer_id=${answer_id};`;
-            con.conn.query(sqlq, function (err: any, result: any) {
+            const sqlq = `DELETE FROM player_answer WHERE answer_id=?;`;
+            let arr = [answer_id];
+            con.conn.execute(sqlq, arr, (err: any, result: any) => {
                 if (err && err.errno == 1062) {
+                    con.conn.rollback();
                     return resolve(DataErr.IDDoesNotExist);
                 }
                 else if (err) {
+                    con.conn.rollback();
                     throw err;
                 }
 
                 if (BCONST.SQL_DEBUG) {
                     console.log(`1 recored deleted.`);                    
                 }
+                con.conn.unprepare(sqlq);
                 return resolve(0);
             }); 
         });
