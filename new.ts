@@ -262,7 +262,11 @@ export async function createNewQuestion(serverID: string, channelID: string, cli
             }
             
             embed.setDescription(description);
-            const dropdown_answer: any = new ActionRowBuilder().addComponents( new StringSelectMenuBuilder().setCustomId(BCONST.DROPDOWN_ANSWER).setPlaceholder('Select a response.').addOptions(itemsDropDown_interval));
+            const dropdown_answer: any = new ActionRowBuilder()
+                .addComponents( new StringSelectMenuBuilder()
+                    .setCustomId(BCONST.DROPDOWN_ANSWER)
+                    .setPlaceholder('Select a response.')
+                    .addOptions(itemsDropDown_interval));
             const btn_go: any = new ActionRowBuilder().addComponents(
                 new ButtonBuilder().setCustomId(BCONST.BTN_SUBMIT).setLabel("Submit").setStyle(ButtonStyle.Primary));
 

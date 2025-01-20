@@ -314,10 +314,7 @@ client.on('ready', async () => {
     }
     else {
         
-        let q = await DO.getQuestion(457);
         
-        console.log(q?.getQuestion());
-        //await createNewQuestion("1266960173533237268", "1323745530991611975", client, 370);
     }
     
     

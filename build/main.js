@@ -325,8 +325,11 @@ client.on('ready', async () => {
         (0, startup_1.startAllQuestionChannels)(client);
     }
     else {
-        let q = await DOBuilder_1.DO.getQuestion(457);
-        console.log(q?.getQuestion());
+        let q = await DOBuilder_1.DO.getQuestion(456);
+        q?.setQuestion("This\"is\" another one of my `tests`. isn't it fun.:}\\");
+        let result = await DOBuilder_1.DO.insertQuestion(q);
+        let q2 = await DOBuilder_1.DO.getQuestion(458);
+        console.log(q2?.getQuestion());
         //await createNewQuestion("1266960173533237268", "1323745530991611975", client, 370);
     }
 });

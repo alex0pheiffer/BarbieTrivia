@@ -175,7 +175,7 @@ class SQLDATA {
             }
             // determine if this column exists
             const sqlq = `SELECT * FROM proposal WHERE question = ?;`;
-            let arr = [question.replaceAll('"', '""')];
+            let arr = [question];
             StartSQL_1.con.conn.execute(sqlq, arr, (err, result) => {
                 if (err) {
                     StartSQL_1.con.conn.rollback();
@@ -530,7 +530,7 @@ class SQLDATA {
                             return resolve(err);
                         }
                         sql_changes += ` ${p} = ?,`;
-                        arr.push(value.replaceAll('"', '""'));
+                        arr.push(value);
                         break;
                     case "ans_a":
                     case "ans_b":
@@ -543,7 +543,7 @@ class SQLDATA {
                             return resolve(err);
                         }
                         sql_changes += ` ${p} = ?,`;
-                        arr.push(value.replaceAll('"', '""'));
+                        arr.push(value);
                         break;
                     case "d_always_last":
                         value = proposal.getDAlwaysLast();
@@ -563,7 +563,7 @@ class SQLDATA {
                             return resolve(err);
                         }
                         sql_changes += ` ${p} = ?,`;
-                        arr.push(value.replaceAll('"', '""'));
+                        arr.push(value);
                         break;
                     case "correct":
                         value = proposal.getCorrect();
@@ -655,7 +655,7 @@ class SQLDATA {
                             return resolve(err);
                         }
                         sql_changes += ` ${p} = ?,`;
-                        arr.push(value.replaceAll('"', '""'));
+                        arr.push(value);
                         break;
                     case "ans_a":
                     case "ans_b":
@@ -668,7 +668,7 @@ class SQLDATA {
                             return resolve(err);
                         }
                         sql_changes += ` ${p} = ?,`;
-                        arr.push(value.replaceAll('"', '""'));
+                        arr.push(value);
                         break;
                     case "d_always_last":
                         value = question.getDAlwaysLast();
@@ -688,7 +688,7 @@ class SQLDATA {
                             return resolve(err);
                         }
                         sql_changes += ` ${p} = ?,`;
-                        arr.push(value.replaceAll('"', '""'));
+                        arr.push(value);
                         break;
                     case "correct":
                         value = question.getCorrect();
@@ -1060,14 +1060,14 @@ class SQLDATA {
             submitter, \
             submitted)`;
             const sql_values = "(?,?,?,?,?,?,?,?,?,?,?,?)";
-            let arr = [proposal.getQuestion().replaceAll('"', '""'),
+            let arr = [proposal.getQuestion(),
                 proposal.getImage(),
-                proposal.getAnswer("ans_a").replaceAll('"', '""'),
-                proposal.getAnswer("ans_b").replaceAll('"', '""'),
-                proposal.getAnswer("ans_c").replaceAll('"', '""'),
-                proposal.getAnswer("ans_d").replaceAll('"', '""'),
+                proposal.getAnswer("ans_a"),
+                proposal.getAnswer("ans_b"),
+                proposal.getAnswer("ans_c"),
+                proposal.getAnswer("ans_d"),
                 proposal.getDAlwaysLast(),
-                proposal.getFunFact().replaceAll('"', '""'),
+                proposal.getFunFact(),
                 proposal.getCorrect(),
                 proposal.getDate(),
                 proposal.getSubmitter(),
@@ -1179,14 +1179,14 @@ class SQLDATA {
             response_correct, \
             shown_total)`;
             const sql_values = "(?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
-            let arr = [question.getQuestion().replaceAll('"', '""'),
+            let arr = [question.getQuestion(),
                 question.getImage(),
-                question.getAnswer("ans_a").replaceAll('"', '""'),
-                question.getAnswer("ans_b").replaceAll('"', '""'),
-                question.getAnswer("ans_c").replaceAll('"', '""'),
-                question.getAnswer("ans_d").replaceAll('"', '""'),
+                question.getAnswer("ans_a"),
+                question.getAnswer("ans_b"),
+                question.getAnswer("ans_c"),
+                question.getAnswer("ans_d"),
                 question.getDAlwaysLast(),
-                question.getFunFact().replaceAll('"', '""'),
+                question.getFunFact(),
                 question.getCorrect(),
                 question.getDate(),
                 question.getSubmitter(),
