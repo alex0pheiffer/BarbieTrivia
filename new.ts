@@ -190,6 +190,10 @@ export async function createNewQuestion(serverID: string, channelID: string, cli
         let day = d.getDate();
         let month = d.getMonth() + 1;
         let year = d.getFullYear();
+        let q_ch = await DO.getQuestionChannel(channelID);
+        if (q_ch.length < 1) {
+            result = GameInteractionErr.QuestionChannelDoesNotExist;
+        }
         // check if the question already exists
         let aq_sql: AskedQuestionO[];
         aq_sql  = await DO.getAskedQuestion(question_id!!, channelID);
@@ -233,7 +237,7 @@ export async function createNewQuestion(serverID: string, channelID: string, cli
             // display the new question
             let thumbnail = BCONST.MAXIMUS_IMAGES[max_img_index].url;
             const embed = new EmbedBuilder().setTimestamp().setThumbnail(thumbnail).setFooter({text: 'Barbie Trivia', iconURL: BCONST.LOGO});
-            embed.setTitle(`**Question (${month}/${day}/${year})**`);
+            embed.setTitle(`**Question ${(result<1) ? q_ch[0].getQuestionsAsked()+1 : "???"}**`);
             let description = "_" + BCONST.MAXIMUS_PHRASES_START[Math.floor(Math.random()*BCONST.MAXIMUS_PHRASES_START.length)] + "_\n\n";
             description += "**" + question!!.getQuestion() + '**\n';
 

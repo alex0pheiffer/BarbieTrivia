@@ -1113,6 +1113,89 @@ export class SQLDATA {
         });
     }  
 
+    static async updateQuestionChannel(qch: QuestionChannelO, errType: any): Promise<number> {
+        if (!qch.isChanges()) return 0;
+        
+        await checkConnection();
+        return new Promise(async (resolve, reject) => {
+            
+            let value: any;
+            let err: number;
+            let sql_changes = "";
+            let sql_q = "UPDATE question_channel SET";
+            let arr: any = [];
+            
+            qch.getChanges().forEach((p) => {
+                switch (p) {
+                    case "channel":
+                        value = qch.getChannel();
+                        err = err = checkString(value, DBC.channelID_length, DataErr.InvalidInputToSQL, p);
+                        if (err) {
+                            con.conn.rollback();
+                            return resolve(err);
+                        }
+                        sql_changes += ` ${p} = ?,`;
+                        arr.push(value);
+                        break;
+                    case "owner":
+                        value = qch.getOwner();
+                        err = checkString(value, DBC.userID_length, DataErr.InvalidInputToSQL, p);
+                        if (err) {
+                            con.conn.rollback();
+                            return resolve(err);
+                        }
+                        sql_changes += ` ${p} = ?,`;
+                        arr.push(value);
+                        break;
+                    case "server":
+                        value = qch.getServer();
+                        err = checkString(value, DBC.serverID_length, DataErr.InvalidInputToSQL, p);
+                        if (err) {
+                            con.conn.rollback();
+                            return resolve(err);
+                        }
+                        sql_changes += ` ${p} = ?,`;
+                        arr.push(value);
+                        break;
+                    case "date":
+                        value = qch.getDate();
+                        err = checkBigInt(value, DataErr.InvalidInputToSQL, p);
+                        if (err) {
+                            con.conn.rollback();
+                            return resolve(err);
+                        }
+                        sql_changes += ` ${p} = ?,`;
+                        arr.push(value);
+                        break;
+                    case "question":
+                        value = qch.getQuestionsAsked();
+                        err = checkInt(value, errType.InvalidInputToSQL, p);
+                        if (err) {
+                            con.conn.rollback();
+                            return resolve(err);
+                        }
+                        sql_changes += ` ${p} = ?,`;
+                        arr.push(value);
+                        break;
+                    default:
+                        console.log("Error: the property "+p+" is not supported by updatePlayer.");
+                        break;
+                }
+            });
+
+            if (sql_changes != "") {
+                // remove the extra comma
+                sql_changes = sql_changes.slice(0, sql_changes.length - 1);
+                sql_q  += sql_changes;
+                sql_q += ` WHERE qch_id = ?;`;
+                arr.push(qch.getQuestionChannelID());
+        
+                let result = await this.updateTable(sql_q, arr);
+                resolve(result);
+            }
+        });
+    }  
+
     //
     //  Insert Functions
     static async insertProposal(proposal: ProposalO): Promise<number> {
@@ -1186,19 +1269,6 @@ export class SQLDATA {
                 proposal.getSubmitter(),
                 proposal.getSubmitted()
             ];
-
-            // var sql_values = `("${proposal.getQuestion().replaceAll('"', '""')}", \
-            // "${proposal.getImage()}",\
-            // "${proposal.getAnswer("ans_a").replaceAll('"', '""')}",\
-            // "${proposal.getAnswer("ans_b").replaceAll('"', '""')}",\
-            // "${proposal.getAnswer("ans_c").replaceAll('"', '""')}",\
-            // "${proposal.getAnswer("ans_d").replaceAll('"', '""')}",\
-            // ${proposal.getDAlwaysLast()},\
-            // "${proposal.getFunFact().replaceAll('"', '""')}",\
-            // ${proposal.getCorrect()},\
-            // ${proposal.getDate()},\
-            // "${proposal.getSubmitter()}",\
-            // ${proposal.getSubmitted()})`;
 
             const sqlq = `INSERT INTO proposal ${sql_columns} VALUES ${sql_values};`;
             con.conn.execute(sqlq, arr, (err: any, result: any) => {
@@ -1301,21 +1371,6 @@ export class SQLDATA {
                 question.getResponseCorrect(),
                 question.getShownTotal()
             ];
-
-            // var sql_values = `("${question.getQuestion().replaceAll('"', '""')}", \
-            // "${question.getImage()}",\
-            // "${question.getAnswer("ans_a").replaceAll('"', '""')}",\
-            // "${question.getAnswer("ans_b").replaceAll('"', '""')}",\
-            // "${question.getAnswer("ans_c").replaceAll('"', '""')}",\
-            // "${question.getAnswer("ans_d").replaceAll('"', '""')}",\
-            // ${question.getDAlwaysLast()},\
-            // "${question.getFunFact().replaceAll('"', '""')}",\
-            // ${question.getCorrect()},\
-            // ${question.getDate()},\
-            // "${question.getSubmitter()}",\
-            // ${question.getResponseTotal()},\
-            // ${question.getResponseCorrect()},\
-            // ${question.getShownTotal()})`;
 
             const sqlq = `INSERT INTO question ${sql_columns} VALUES ${sql_values};`;
             con.conn.execute(sqlq, arr, (err: any, result: any) => {
@@ -1785,7 +1840,7 @@ async function checkConnection() {
             //console.log("waiting to load...");
         }
     }
-    console.log(con.connected);
+    await con.regenerate_connection();
 }
 
 function checkInt(value: number, err: number, fieldName: string): number {

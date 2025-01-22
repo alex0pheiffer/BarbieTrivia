@@ -76,12 +76,16 @@ async function showQuestionResult(message, ask_id) {
                 let month = date.getMonth() + 1;
                 let day = date.getDate();
                 let year = date.getFullYear();
+                let q_ch = await DOBuilder_1.DO.getQuestionChannel(message.channelId);
+                if (q_ch.length < 1) {
+                    result = Errors_1.GameInteractionErr.QuestionChannelDoesNotExist;
+                }
                 let thumbnail = BCONST_1.BCONST.MAXIMUS_IMAGES[asked_question.getMaxImg()].url;
                 const embed = new discord_js_1.EmbedBuilder().setTimestamp().setThumbnail(thumbnail).setFooter({ text: 'Barbie Trivia', iconURL: BCONST_1.BCONST.LOGO });
-                embed.setTitle(`**Question (${month}/${day}/${year})**`);
+                embed.setTitle(`**Question ${(result < 1) ? q_ch[0].getQuestionsAsked() + 1 : "???"}**`);
                 let description;
                 let second_description;
-                if (ratio > 0.3) {
+                if (ratio >= 0.5) {
                     description = "_" + BCONST_1.BCONST.MAXIMUS_PHRASES_END_GOOD[Math.floor(Math.random() * BCONST_1.BCONST.MAXIMUS_PHRASES_END_GOOD.length)] + "_\n\n";
                 }
                 else {
@@ -144,6 +148,14 @@ async function showQuestionResult(message, ask_id) {
                 question.setResponseTotal(question.getResponseTotal() + total);
                 question.setResponseCorrect(question.getResponseCorrect() + count[question.getCorrect()]);
                 result = await DOBuilder_1.DO.updateQuestion(question, result);
+                // update the question_channel to increment the number of questions asked
+                if (q_ch.length > 0) {
+                    q_ch[0].setQuestionsAsked(q_ch[0].getQuestionsAsked() + 1);
+                }
+                else {
+                    console.log("ERROR: could not update the question channel question count.");
+                    result = Errors_1.GameInteractionErr.SQLConnectionError;
+                }
                 console.log(`End of the updates. Going to send next question. ${result}`);
                 if (!result) {
                     // add an extra ping to notify the users

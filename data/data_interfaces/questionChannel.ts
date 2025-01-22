@@ -4,7 +4,7 @@
 // channel          :   20char str
 // owner            :   20char str
 // date             :   bigint (time in ms)
-// question         :   int (question id)
+// question         :   int (number of questions asked)
 
 export interface QuestionChannelI {
     qch_id: number;

@@ -15,7 +15,19 @@ class QuestionChannelO_Changes {
         this.qch_id = qch_id;
     }
 
-    // TODO add the change functions
+    public change_asked_questions() {
+        if (this.question) return;
+        this.question= true;
+        this.changes.push("question");
+    }
+    
+    public generateChanges(): Array<string> {
+        return this.changes;        
+    }
+
+    public isChanges(): boolean {
+        return !!(this.changes.length);
+    }
 }
 
 export class QuestionChannelO {
@@ -39,6 +51,10 @@ export class QuestionChannelO {
         this.changes = new QuestionChannelO_Changes(this.qch_id);
     }
 
+    public getQuestionChannelID(): number {
+        return this.qch_id;
+    }
+
     public getServer(): string | null {
         return this.server;
     }
@@ -51,12 +67,26 @@ export class QuestionChannelO {
         return this.owner;
     }
 
-    public getQuestionID(): number {
+    public getQuestionsAsked(): number {
         return this.question;
+    }
+
+    public setQuestionsAsked(value: number): boolean {
+        this.question = value;
+        this.changes.change_asked_questions();
+        return true;
     }
 
     public getDate(): number {
         return this.date;
+    }
+    
+    public isChanges(): boolean {
+        return this.changes.isChanges();
+    }
+
+    public getChanges(): Array<string> {
+        return this.changes.generateChanges();
     }
 
 }

@@ -4,6 +4,7 @@ import { PlayerO } from "../data_objects/player";
 import { PlayerAnswerO } from "../data_objects/playerAnswer";
 import { ProposalO } from "../data_objects/proposal";
 import { QuestionO } from "../data_objects/question";
+import { QuestionChannelO } from "../data_objects/questionChannel";
 import {SQLDATA} from "./CommandsSQL";
 
 /* 
@@ -34,6 +35,11 @@ export class UpdateData {
 
     static async updatePlayer(player: PlayerO, errType: any): Promise<number> {
         let result = await SQLDATA.updatePlayer(player, errType);
+        return result;
+    }
+
+    static async updateQuestionChannel(qch: QuestionChannelO, errType: any): Promise<number> {
+        let result = await SQLDATA.updateQuestionChannel(qch, errType);
         return result;
     }
 }

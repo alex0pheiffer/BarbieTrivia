@@ -79,12 +79,16 @@ export async function showQuestionResult(message: Message, ask_id: number): Prom
                 let month = date.getMonth() + 1;
                 let day = date.getDate();
                 let year = date.getFullYear();
+                let q_ch = await DO.getQuestionChannel(message.channelId);
+                if (q_ch.length < 1) {
+                    result = GameInteractionErr.QuestionChannelDoesNotExist;
+                }
                 let thumbnail = BCONST.MAXIMUS_IMAGES[asked_question!!.getMaxImg()].url;
                 const embed = new EmbedBuilder().setTimestamp().setThumbnail(thumbnail).setFooter({text: 'Barbie Trivia', iconURL: BCONST.LOGO});
-                embed.setTitle(`**Question (${month}/${day}/${year})**`);    
+                embed.setTitle(`**Question ${(result<1) ? q_ch[0].getQuestionsAsked()+1 : "???"}**`);    
                 let description: string;
                 let second_description: string;
-                if (ratio > 0.3) {
+                if (ratio >= 0.5) {
                     description = "_" + BCONST.MAXIMUS_PHRASES_END_GOOD[Math.floor(Math.random()*BCONST.MAXIMUS_PHRASES_END_GOOD.length)] + "_\n\n";
                 }
                 else {
@@ -152,6 +156,15 @@ export async function showQuestionResult(message: Message, ask_id: number): Prom
                 question.setResponseTotal(question.getResponseTotal() + total);
                 question.setResponseCorrect(question.getResponseCorrect() + count[question.getCorrect()]);
                 result = await DO.updateQuestion(question, result);
+                // update the question_channel to increment the number of questions asked
+                if (q_ch.length > 0) {
+                    q_ch[0].setQuestionsAsked(q_ch[0].getQuestionsAsked()+1);
+                }
+                else {
+                    console.log("ERROR: could not update the question channel question count.");
+                    result = GameInteractionErr.SQLConnectionError;
+                }
+
 
                 console.log(`End of the updates. Going to send next question. ${result}`);
 

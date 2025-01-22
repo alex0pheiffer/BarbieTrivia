@@ -279,6 +279,10 @@ export class DO {
     static async updatePlayer(player: PlayerO, errType: any): Promise<number> {
         return await UpdateData.updatePlayer(player, errType);
     }
+    
+    static async updateQuestionChannel(qch: QuestionChannelO, errType: any): Promise<number> {
+        return await UpdateData.updateQuestionChannel(qch, errType);
+    }
 
     /*
      *  Insert Functions

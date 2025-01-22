@@ -992,6 +992,84 @@ class SQLDATA {
             }
         });
     }
+    static async updateQuestionChannel(qch, errType) {
+        if (!qch.isChanges())
+            return 0;
+        await checkConnection();
+        return new Promise(async (resolve, reject) => {
+            let value;
+            let err;
+            let sql_changes = "";
+            let sql_q = "UPDATE question_channel SET";
+            let arr = [];
+            qch.getChanges().forEach((p) => {
+                switch (p) {
+                    case "channel":
+                        value = qch.getChannel();
+                        err = err = checkString(value, Database_Constants_1.DBC.channelID_length, Errors_1.DataErr.InvalidInputToSQL, p);
+                        if (err) {
+                            StartSQL_1.con.conn.rollback();
+                            return resolve(err);
+                        }
+                        sql_changes += ` ${p} = ?,`;
+                        arr.push(value);
+                        break;
+                    case "owner":
+                        value = qch.getOwner();
+                        err = checkString(value, Database_Constants_1.DBC.userID_length, Errors_1.DataErr.InvalidInputToSQL, p);
+                        if (err) {
+                            StartSQL_1.con.conn.rollback();
+                            return resolve(err);
+                        }
+                        sql_changes += ` ${p} = ?,`;
+                        arr.push(value);
+                        break;
+                    case "server":
+                        value = qch.getServer();
+                        err = checkString(value, Database_Constants_1.DBC.serverID_length, Errors_1.DataErr.InvalidInputToSQL, p);
+                        if (err) {
+                            StartSQL_1.con.conn.rollback();
+                            return resolve(err);
+                        }
+                        sql_changes += ` ${p} = ?,`;
+                        arr.push(value);
+                        break;
+                    case "date":
+                        value = qch.getDate();
+                        err = checkBigInt(value, Errors_1.DataErr.InvalidInputToSQL, p);
+                        if (err) {
+                            StartSQL_1.con.conn.rollback();
+                            return resolve(err);
+                        }
+                        sql_changes += ` ${p} = ?,`;
+                        arr.push(value);
+                        break;
+                    case "question":
+                        value = qch.getQuestionsAsked();
+                        err = checkInt(value, errType.InvalidInputToSQL, p);
+                        if (err) {
+                            StartSQL_1.con.conn.rollback();
+                            return resolve(err);
+                        }
+                        sql_changes += ` ${p} = ?,`;
+                        arr.push(value);
+                        break;
+                    default:
+                        console.log("Error: the property " + p + " is not supported by updatePlayer.");
+                        break;
+                }
+            });
+            if (sql_changes != "") {
+                // remove the extra comma
+                sql_changes = sql_changes.slice(0, sql_changes.length - 1);
+                sql_q += sql_changes;
+                sql_q += ` WHERE qch_id = ?;`;
+                arr.push(qch.getQuestionChannelID());
+                let result = await this.updateTable(sql_q, arr);
+                resolve(result);
+            }
+        });
+    }
     //
     //  Insert Functions
     static async insertProposal(proposal) {
@@ -1073,18 +1151,6 @@ class SQLDATA {
                 proposal.getSubmitter(),
                 proposal.getSubmitted()
             ];
-            // var sql_values = `("${proposal.getQuestion().replaceAll('"', '""')}", \
-            // "${proposal.getImage()}",\
-            // "${proposal.getAnswer("ans_a").replaceAll('"', '""')}",\
-            // "${proposal.getAnswer("ans_b").replaceAll('"', '""')}",\
-            // "${proposal.getAnswer("ans_c").replaceAll('"', '""')}",\
-            // "${proposal.getAnswer("ans_d").replaceAll('"', '""')}",\
-            // ${proposal.getDAlwaysLast()},\
-            // "${proposal.getFunFact().replaceAll('"', '""')}",\
-            // ${proposal.getCorrect()},\
-            // ${proposal.getDate()},\
-            // "${proposal.getSubmitter()}",\
-            // ${proposal.getSubmitted()})`;
             const sqlq = `INSERT INTO proposal ${sql_columns} VALUES ${sql_values};`;
             StartSQL_1.con.conn.execute(sqlq, arr, (err, result) => {
                 if (err && err.errno == 1062) {
@@ -1194,20 +1260,6 @@ class SQLDATA {
                 question.getResponseCorrect(),
                 question.getShownTotal()
             ];
-            // var sql_values = `("${question.getQuestion().replaceAll('"', '""')}", \
-            // "${question.getImage()}",\
-            // "${question.getAnswer("ans_a").replaceAll('"', '""')}",\
-            // "${question.getAnswer("ans_b").replaceAll('"', '""')}",\
-            // "${question.getAnswer("ans_c").replaceAll('"', '""')}",\
-            // "${question.getAnswer("ans_d").replaceAll('"', '""')}",\
-            // ${question.getDAlwaysLast()},\
-            // "${question.getFunFact().replaceAll('"', '""')}",\
-            // ${question.getCorrect()},\
-            // ${question.getDate()},\
-            // "${question.getSubmitter()}",\
-            // ${question.getResponseTotal()},\
-            // ${question.getResponseCorrect()},\
-            // ${question.getShownTotal()})`;
             const sqlq = `INSERT INTO question ${sql_columns} VALUES ${sql_values};`;
             StartSQL_1.con.conn.execute(sqlq, arr, (err, result) => {
                 if (err && err.errno == 1062) {
@@ -1657,7 +1709,7 @@ async function checkConnection() {
             //console.log("waiting to load...");
         }
     }
-    console.log(StartSQL_1.con.connected);
+    console.log(StartSQL_1.con.conn);
 }
 function checkInt(value, err, fieldName) {
     if (value < -1 || value > MAX_INT) {

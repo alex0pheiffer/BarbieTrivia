@@ -163,6 +163,10 @@ async function createNewQuestion(serverID, channelID, client, selected_question 
         let day = d.getDate();
         let month = d.getMonth() + 1;
         let year = d.getFullYear();
+        let q_ch = await DOBuilder_1.DO.getQuestionChannel(channelID);
+        if (q_ch.length < 1) {
+            result = Errors_1.GameInteractionErr.QuestionChannelDoesNotExist;
+        }
         // check if the question already exists
         let aq_sql;
         aq_sql = await DOBuilder_1.DO.getAskedQuestion(question_id, channelID);
@@ -206,7 +210,7 @@ async function createNewQuestion(serverID, channelID, client, selected_question 
             // display the new question
             let thumbnail = BCONST_1.BCONST.MAXIMUS_IMAGES[max_img_index].url;
             const embed = new discord_js_1.EmbedBuilder().setTimestamp().setThumbnail(thumbnail).setFooter({ text: 'Barbie Trivia', iconURL: BCONST_1.BCONST.LOGO });
-            embed.setTitle(`**Question (${month}/${day}/${year})**`);
+            embed.setTitle(`**Question ${(result < 1) ? q_ch[0].getQuestionsAsked() + 1 : "???"}**`);
             let description = "_" + BCONST_1.BCONST.MAXIMUS_PHRASES_START[Math.floor(Math.random() * BCONST_1.BCONST.MAXIMUS_PHRASES_START.length)] + "_\n\n";
             description += "**" + question.getQuestion() + '**\n';
             if (question.getImage().length > 3) {
@@ -236,7 +240,11 @@ async function createNewQuestion(serverID, channelID, client, selected_question 
                 description += `\n\nUsers have an hour to answer the question.`;
             }
             embed.setDescription(description);
-            const dropdown_answer = new discord_js_1.ActionRowBuilder().addComponents(new discord_js_1.StringSelectMenuBuilder().setCustomId(BCONST_1.BCONST.DROPDOWN_ANSWER).setPlaceholder('Select a response.').addOptions(itemsDropDown_interval));
+            const dropdown_answer = new discord_js_1.ActionRowBuilder()
+                .addComponents(new discord_js_1.StringSelectMenuBuilder()
+                .setCustomId(BCONST_1.BCONST.DROPDOWN_ANSWER)
+                .setPlaceholder('Select a response.')
+                .addOptions(itemsDropDown_interval));
             const btn_go = new discord_js_1.ActionRowBuilder().addComponents(new discord_js_1.ButtonBuilder().setCustomId(BCONST_1.BCONST.BTN_SUBMIT).setLabel("Submit").setStyle(discord_js_1.ButtonStyle.Primary));
             let message = await channel.send({ embeds: [embed], components: [dropdown_answer, btn_go] });
             // update the question's message_id

@@ -12,6 +12,18 @@ class QuestionChannelO_Changes {
     constructor(qch_id) {
         this.qch_id = qch_id;
     }
+    change_asked_questions() {
+        if (this.question)
+            return;
+        this.question = true;
+        this.changes.push("question");
+    }
+    generateChanges() {
+        return this.changes;
+    }
+    isChanges() {
+        return !!(this.changes.length);
+    }
 }
 class QuestionChannelO {
     qch_id;
@@ -30,6 +42,9 @@ class QuestionChannelO {
         this.question = json.question;
         this.changes = new QuestionChannelO_Changes(this.qch_id);
     }
+    getQuestionChannelID() {
+        return this.qch_id;
+    }
     getServer() {
         return this.server;
     }
@@ -39,11 +54,22 @@ class QuestionChannelO {
     getOwner() {
         return this.owner;
     }
-    getQuestionID() {
+    getQuestionsAsked() {
         return this.question;
+    }
+    setQuestionsAsked(value) {
+        this.question = value;
+        this.changes.change_asked_questions();
+        return true;
     }
     getDate() {
         return this.date;
+    }
+    isChanges() {
+        return this.changes.isChanges();
+    }
+    getChanges() {
+        return this.changes.generateChanges();
     }
 }
 exports.QuestionChannelO = QuestionChannelO;

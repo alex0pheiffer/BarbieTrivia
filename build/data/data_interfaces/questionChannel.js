@@ -5,5 +5,5 @@
 // channel          :   20char str
 // owner            :   20char str
 // date             :   bigint (time in ms)
-// question         :   int (question id)
+// question         :   int (number of questions asked)
 Object.defineProperty(exports, "__esModule", { value: true });

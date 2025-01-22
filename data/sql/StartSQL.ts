@@ -39,6 +39,10 @@ class SQLConn implements ISQLConn {
     public set loading(value: Boolean) {
         this._loading = value;
     }
+
+    public async regenerate_connection() {
+        con.conn = await getConnection(con.pool);
+    }
 }
 
 export let con = new SQLConn();
@@ -88,8 +92,6 @@ export async function connectSQL() {
             console.error(new Date(), 'MySQL close', err);
         });
     });
-
-    con.conn = await getConnection(con.pool);
     con.connected = true;
 }
 
