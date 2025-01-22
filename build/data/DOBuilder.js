@@ -227,6 +227,9 @@ class DO {
     static async updatePlayer(player, errType) {
         return await UpdateData_1.UpdateData.updatePlayer(player, errType);
     }
+    static async updateQuestionChannel(qch, errType) {
+        return await UpdateData_1.UpdateData.updateQuestionChannel(qch, errType);
+    }
     /*
      *  Insert Functions
      *

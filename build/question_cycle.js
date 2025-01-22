@@ -7,25 +7,30 @@ const DOBuilder_1 = require("./data/DOBuilder");
 const Errors_1 = require("./Errors");
 const new_1 = require("./new");
 async function showQuestionResult(message, ask_id) {
+    console.log("etnering show question result");
     let result = 0;
     // question
     let asked_questions = await DOBuilder_1.DO.getAskedQuestionByAskID(ask_id);
     let asked_question;
     let users_correct_list = [];
     if (asked_questions.length < 1) {
+        console.log("asked question doesn't exist");
         result = Errors_1.GameInteractionErr.QuestionDoesNotExist;
     }
     else {
         asked_question = asked_questions[0];
+        console.log("asked question =", asked_question);
     }
     if (!result) {
         let question = await DOBuilder_1.DO.getQuestion(asked_question.getQuestionID());
         if (question == null) {
+            console.log("quesetion does not exist");
             result = Errors_1.GameInteractionErr.QuestionDoesNotExist;
         }
         else {
             // collect the responses to this question
             let responses = await DOBuilder_1.DO.getPlayerAnswers(ask_id);
+            console.log("responses: ", responses);
             if (responses.length < 2) {
                 let duration = 60 * 60 * 23 * 1000; // 23 hours in ms
                 setTimeout(showQuestionResult, duration, message, ask_id);
@@ -43,6 +48,7 @@ async function showQuestionResult(message, ask_id) {
                 // these are the REAL VALUES (not the shuffled values)
                 let count = [0, 0, 0, 0];
                 for (let i = 0; i < responses.length; i++) {
+                    console.log("looking into response #", i);
                     r = responses[i];
                     if (r.getSubmtitted()) {
                         count[r.getResponse()]++;
@@ -55,15 +61,19 @@ async function showQuestionResult(message, ask_id) {
                         users_correct_list.push(r.getUser());
                     }
                     if (player_profile == null) {
+                        console.log("new profile");
                         let new_player = { "player_id": 0, "user": r.getUser(), "q_submitted": 0, "response_total": 1, "response_correct": correct };
                         result = await DOBuilder_1.DO.insertPlayer(new_player);
+                        console.log("insert payer");
                     }
                     else {
+                        console.log("existing profile");
                         player_profile.setResponseTotal(player_profile.getResponseTotal() + 1);
                         if (correct) {
                             player_profile.setResponseCorrect(player_profile.getResponseCorrect() + 1);
                         }
                         result = await DOBuilder_1.DO.updatePlayer(player_profile, result);
+                        console.log("update profile");
                     }
                     // delete the player response
                     // TODO ADD THIS BACK LATER
@@ -77,6 +87,7 @@ async function showQuestionResult(message, ask_id) {
                 let day = date.getDate();
                 let year = date.getFullYear();
                 let q_ch = await DOBuilder_1.DO.getQuestionChannel(message.channelId);
+                console.log(q_ch);
                 if (q_ch.length < 1) {
                     result = Errors_1.GameInteractionErr.QuestionChannelDoesNotExist;
                 }

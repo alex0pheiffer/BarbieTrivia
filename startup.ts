@@ -37,10 +37,13 @@ export async function startAllQuestionChannels(client: Client) {
                 // get the message id
                 // TODO check if channel is undefined; this can happen if the bot isn't in the server
                 if (time - latest_question[0].getShowResultTime() >= 0) {
+                    console.log("Time to show the result");
                     let message = await channel.messages.fetch(latest_question[0].getMessageID());
+                    console.log(message);
                     showQuestionResult(message, latest_question[0].getAskID());
                 }
                 else {
+                    console.log("restart the same question");
                     let thumbnail = BCONST.MAXIMUS_IMAGES[Math.floor(Math.random()*BCONST.MAXIMUS_IMAGES.length)].url;
                     const embed = new EmbedBuilder().setTimestamp().setThumbnail(thumbnail).setFooter({text: 'Barbie Trivia', iconURL: BCONST.LOGO});
                     embed.setTitle('**Restart Error**');

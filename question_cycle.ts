@@ -8,6 +8,7 @@ import { PlayerI } from "./data/data_interfaces/player";
 import { createNewQuestion } from "./new";
 
 export async function showQuestionResult(message: Message, ask_id: number): Promise<Number> {
+    console.log("etnering show question result")
     let result = 0;
 
     // question
@@ -15,19 +16,23 @@ export async function showQuestionResult(message: Message, ask_id: number): Prom
     let asked_question: AskedQuestionO;
     let users_correct_list: string[] = [];
     if (asked_questions.length < 1) {
+        console.log("asked question doesn't exist")
         result = GameInteractionErr.QuestionDoesNotExist;
     }
     else {
         asked_question = asked_questions[0];
+        console.log("asked question =", asked_question)
     }
     if (!result) {
         let question = await DO.getQuestion(asked_question!!.getQuestionID())
         if (question == null) {
+            console.log("quesetion does not exist")
             result = GameInteractionErr.QuestionDoesNotExist;
         }
         else {
             // collect the responses to this question
             let responses = await DO.getPlayerAnswers(ask_id);
+            console.log("responses: ", responses)
             if (responses.length < 2) {
                 let duration = 60 * 60 * 23 * 1000; // 23 hours in ms
                 setTimeout(showQuestionResult, duration, message, ask_id);
@@ -44,6 +49,7 @@ export async function showQuestionResult(message: Message, ask_id: number): Prom
                 // these are the REAL VALUES (not the shuffled values)
                 let count = [0,0,0,0];
                 for (let i=0; i < responses.length; i++) {
+                    console.log("looking into response #", i)
                     r = responses[i];
                     if (r.getSubmtitted()) {
                         count[r.getResponse()]++;
@@ -57,15 +63,19 @@ export async function showQuestionResult(message: Message, ask_id: number): Prom
                         users_correct_list.push(r.getUser());
                     }
                     if (player_profile == null) {
+                        console.log("new profile")
                         let new_player = {"player_id": 0, "user": r.getUser(), "q_submitted": 0, "response_total": 1, "response_correct": correct} as PlayerI;
                         result = await DO.insertPlayer(new_player);
+                        console.log("insert payer")
                     }
                     else {
+                        console.log("existing profile")
                         player_profile.setResponseTotal(player_profile.getResponseTotal() + 1);
                         if (correct) {
                             player_profile.setResponseCorrect(player_profile.getResponseCorrect() + 1);
                         }
                         result = await DO.updatePlayer(player_profile, result);
+                        console.log("update profile")
                     }
                     // delete the player response
                     // TODO ADD THIS BACK LATER
@@ -80,6 +90,7 @@ export async function showQuestionResult(message: Message, ask_id: number): Prom
                 let day = date.getDate();
                 let year = date.getFullYear();
                 let q_ch = await DO.getQuestionChannel(message.channelId);
+                console.log(q_ch);
                 if (q_ch.length < 1) {
                     result = GameInteractionErr.QuestionChannelDoesNotExist;
                 }

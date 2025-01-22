@@ -32,6 +32,9 @@ class SQLConn {
     set loading(value) {
         this._loading = value;
     }
+    async regenerate_connection() {
+        exports.con.conn = await getConnection(exports.con.pool);
+    }
 }
 exports.con = new SQLConn();
 // creates a connection to the SQL database
@@ -76,7 +79,6 @@ async function connectSQL() {
             console.error(new Date(), 'MySQL close', err);
         });
     });
-    exports.con.conn = await getConnection(exports.con.pool);
     exports.con.connected = true;
 }
 exports.connectSQL = connectSQL;

@@ -50,6 +50,7 @@ class SQLDATA {
                 }
                 else {
                     StartSQL_1.con.conn.unprepare(sqlq);
+                    StartSQL_1.con.conn.release();
                 }
                 return resolve(JSON.stringify(result[0]));
             });
@@ -81,6 +82,7 @@ class SQLDATA {
                     return;
                 }
                 StartSQL_1.con.conn.unprepare(sqlq);
+                StartSQL_1.con.conn.release();
                 return resolve(JSON.parse(JSON.stringify(result)));
             });
         });
@@ -106,6 +108,7 @@ class SQLDATA {
                     return;
                 }
                 StartSQL_1.con.conn.unprepare(sqlq);
+                StartSQL_1.con.conn.release();
                 return resolve(JSON.parse(JSON.stringify(result)));
             });
         });
@@ -136,6 +139,7 @@ class SQLDATA {
                     return;
                 }
                 StartSQL_1.con.conn.unprepare(sqlq);
+                StartSQL_1.con.conn.release();
                 return resolve(JSON.parse(JSON.stringify(result)));
             });
         });
@@ -161,6 +165,7 @@ class SQLDATA {
                     return;
                 }
                 StartSQL_1.con.conn.unprepare(sqlq);
+                StartSQL_1.con.conn.release();
                 return resolve(JSON.stringify(result[0]));
             });
         });
@@ -191,6 +196,7 @@ class SQLDATA {
                     return;
                 }
                 StartSQL_1.con.conn.unprepare(sqlq);
+                StartSQL_1.con.conn.release();
                 return resolve(JSON.stringify(result[0]));
             });
         });
@@ -215,6 +221,7 @@ class SQLDATA {
                     return;
                 }
                 StartSQL_1.con.conn.unprepare(sqlq);
+                StartSQL_1.con.conn.release();
                 return resolve(JSON.parse(JSON.stringify(result)));
             });
         });
@@ -240,6 +247,7 @@ class SQLDATA {
                     return;
                 }
                 StartSQL_1.con.conn.unprepare(sqlq);
+                StartSQL_1.con.conn.release();
                 return resolve(JSON.stringify(result[0]));
             });
         });
@@ -265,6 +273,7 @@ class SQLDATA {
                     return;
                 }
                 StartSQL_1.con.conn.unprepare(sqlq);
+                StartSQL_1.con.conn.release();
                 return resolve(JSON.parse(JSON.stringify(result)));
             });
         });
@@ -290,6 +299,7 @@ class SQLDATA {
                     return;
                 }
                 StartSQL_1.con.conn.unprepare(sqlq);
+                StartSQL_1.con.conn.release();
                 return resolve(JSON.parse(JSON.stringify(result)));
             });
         });
@@ -315,6 +325,7 @@ class SQLDATA {
                     return;
                 }
                 StartSQL_1.con.conn.unprepare(sqlq);
+                StartSQL_1.con.conn.release();
                 return resolve(JSON.parse(JSON.stringify(result)));
             });
         });
@@ -345,6 +356,7 @@ class SQLDATA {
                     return;
                 }
                 StartSQL_1.con.conn.unprepare(sqlq);
+                StartSQL_1.con.conn.release();
                 return resolve(JSON.parse(JSON.stringify(result)));
             });
         });
@@ -375,6 +387,7 @@ class SQLDATA {
                     return;
                 }
                 StartSQL_1.con.conn.unprepare(sqlq);
+                StartSQL_1.con.conn.release();
                 return resolve(JSON.parse(JSON.stringify(result)));
             });
         });
@@ -399,6 +412,7 @@ class SQLDATA {
                     return;
                 }
                 StartSQL_1.con.conn.unprepare(sqlq);
+                StartSQL_1.con.conn.release();
                 return resolve(JSON.parse(JSON.stringify(result)));
             });
         });
@@ -429,6 +443,7 @@ class SQLDATA {
                     return;
                 }
                 StartSQL_1.con.conn.unprepare(sqlq);
+                StartSQL_1.con.conn.release();
                 return resolve(JSON.parse(JSON.stringify(result)));
             });
         });
@@ -454,6 +469,7 @@ class SQLDATA {
                     return;
                 }
                 StartSQL_1.con.conn.unprepare(sqlq);
+                StartSQL_1.con.conn.release();
                 return resolve(JSON.parse(JSON.stringify(result)));
             });
         });
@@ -484,6 +500,7 @@ class SQLDATA {
                     return;
                 }
                 StartSQL_1.con.conn.unprepare(sqlq);
+                StartSQL_1.con.conn.release();
                 return resolve(JSON.stringify(result[0]));
             });
         });
@@ -1165,6 +1182,7 @@ class SQLDATA {
                     console.log(`1 recored inserted: ${result.insertId}`);
                 }
                 StartSQL_1.con.conn.unprepare(sqlq);
+                StartSQL_1.con.conn.release();
                 return resolve(0);
             });
         });
@@ -1274,6 +1292,7 @@ class SQLDATA {
                     console.log(`1 recored inserted: ${result.insertId}`);
                 }
                 StartSQL_1.con.conn.unprepare(sqlq);
+                StartSQL_1.con.conn.release();
                 return resolve(0);
             });
         });
@@ -1311,6 +1330,7 @@ class SQLDATA {
                     console.log(`1 recored inserted: ${result.insertId}`);
                 }
                 StartSQL_1.con.conn.unprepare(sqlq);
+                StartSQL_1.con.conn.release();
                 return resolve(0);
             });
         });
@@ -1434,6 +1454,7 @@ class SQLDATA {
                     console.log(`1 recored inserted: ${result.insertId}`);
                 }
                 StartSQL_1.con.conn.unprepare(sqlq);
+                StartSQL_1.con.conn.release();
                 return resolve(0);
             });
         });
@@ -1493,6 +1514,7 @@ class SQLDATA {
                     console.log(`1 recored inserted: ${result.insertId}`);
                 }
                 StartSQL_1.con.conn.unprepare(sqlq);
+                StartSQL_1.con.conn.release();
                 return resolve(0);
             });
         });
@@ -1545,6 +1567,7 @@ class SQLDATA {
                     console.log(`1 recored inserted: ${result.insertId}`);
                 }
                 StartSQL_1.con.conn.unprepare(sqlq);
+                StartSQL_1.con.conn.release();
                 return resolve(0);
             });
         });
@@ -1597,6 +1620,7 @@ class SQLDATA {
                     console.log(`1 recored inserted: ${result.insertId}`);
                 }
                 StartSQL_1.con.conn.unprepare(sqlq);
+                StartSQL_1.con.conn.release();
                 return resolve(0);
             });
         });
@@ -1625,6 +1649,7 @@ class SQLDATA {
                     console.log(`1 recored deleted.`);
                 }
                 StartSQL_1.con.conn.unprepare(sqlq);
+                StartSQL_1.con.conn.release();
                 return resolve(0);
             });
         });
@@ -1647,6 +1672,7 @@ class SQLDATA {
                     console.log(`1 recored deleted.`);
                 }
                 StartSQL_1.con.conn.unprepare(sqlq);
+                StartSQL_1.con.conn.release();
                 return resolve(0);
             });
         });
@@ -1669,6 +1695,7 @@ class SQLDATA {
                     console.log(`1 recored deleted.`);
                 }
                 StartSQL_1.con.conn.unprepare(sqlq);
+                StartSQL_1.con.conn.release();
                 return resolve(0);
             });
         });
@@ -1691,6 +1718,7 @@ class SQLDATA {
                     console.log(`1 recored deleted.`);
                 }
                 StartSQL_1.con.conn.unprepare(sqlq);
+                StartSQL_1.con.conn.release();
                 return resolve(0);
             });
         });
@@ -1709,7 +1737,7 @@ async function checkConnection() {
             //console.log("waiting to load...");
         }
     }
-    console.log(StartSQL_1.con.conn);
+    await StartSQL_1.con.regenerate_connection();
 }
 function checkInt(value, err, fieldName) {
     if (value < -1 || value > MAX_INT) {

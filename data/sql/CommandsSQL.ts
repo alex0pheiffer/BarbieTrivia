@@ -66,6 +66,7 @@ export class SQLDATA {
                 }
                 else {
                     con.conn.unprepare(sqlq);
+                    con.conn.release();
                 }
 
 
@@ -102,6 +103,7 @@ export class SQLDATA {
                     return;
                 }
                 con.conn.unprepare(sqlq);
+                con.conn.release();
 
                 return resolve(JSON.parse(JSON.stringify(result)));
             }); 
@@ -132,6 +134,7 @@ export class SQLDATA {
                     return;
                 }
                 con.conn.unprepare(sqlq);
+                con.conn.release();
 
                 return resolve(JSON.parse(JSON.stringify(result)));
             }); 
@@ -166,6 +169,7 @@ export class SQLDATA {
                     return;
                 }
                 con.conn.unprepare(sqlq);
+                con.conn.release();
 
                 return resolve(JSON.parse(JSON.stringify(result)));
             }); 
@@ -195,6 +199,7 @@ export class SQLDATA {
                     return;
                 }
                 con.conn.unprepare(sqlq);
+                con.conn.release();
 
                 return resolve(JSON.stringify(result[0]));
             }); 
@@ -230,6 +235,7 @@ export class SQLDATA {
                     return;
                 }
                 con.conn.unprepare(sqlq);
+                con.conn.release();
 
                 return resolve(JSON.stringify(result[0]));
             }); 
@@ -258,6 +264,7 @@ export class SQLDATA {
                     return;
                 }
                 con.conn.unprepare(sqlq);
+                con.conn.release();
 
                 return resolve(JSON.parse(JSON.stringify(result)));
             }); 
@@ -287,6 +294,7 @@ export class SQLDATA {
                     return;
                 }
                 con.conn.unprepare(sqlq);
+                con.conn.release();
 
                 return resolve(JSON.stringify(result[0]));
             }); 
@@ -316,6 +324,7 @@ export class SQLDATA {
                     return;
                 }
                 con.conn.unprepare(sqlq);
+                con.conn.release();
 
                 return resolve(JSON.parse(JSON.stringify(result)));
             }); 
@@ -345,6 +354,7 @@ export class SQLDATA {
                     return;
                 }
                 con.conn.unprepare(sqlq);
+                con.conn.release();
 
                 return resolve(JSON.parse(JSON.stringify(result)));
             }); 
@@ -374,6 +384,7 @@ export class SQLDATA {
                     return;
                 }
                 con.conn.unprepare(sqlq);
+                con.conn.release();
 
                 return resolve(JSON.parse(JSON.stringify(result)));
             }); 
@@ -408,6 +419,7 @@ export class SQLDATA {
                     return;
                 }
                 con.conn.unprepare(sqlq);
+                con.conn.release();
 
                 return resolve(JSON.parse(JSON.stringify(result)));
             }); 
@@ -442,6 +454,7 @@ export class SQLDATA {
                     return;
                 }
                 con.conn.unprepare(sqlq);
+                con.conn.release();
 
                 return resolve(JSON.parse(JSON.stringify(result)));
             }); 
@@ -472,6 +485,7 @@ export class SQLDATA {
                     return;
                 }
                 con.conn.unprepare(sqlq);
+                con.conn.release();
 
                 return resolve(JSON.parse(JSON.stringify(result)));
             }); 
@@ -506,6 +520,7 @@ export class SQLDATA {
                     return;
                 }
                 con.conn.unprepare(sqlq);
+                con.conn.release();
 
                 return resolve(JSON.parse(JSON.stringify(result)));
             }); 
@@ -536,6 +551,7 @@ export class SQLDATA {
                     return;
                 }
                 con.conn.unprepare(sqlq);
+                con.conn.release();
 
                 return resolve(JSON.parse(JSON.stringify(result)));
             }); 
@@ -570,6 +586,7 @@ export class SQLDATA {
                     return;
                 }
                 con.conn.unprepare(sqlq);
+                con.conn.release();
 
                 return resolve(JSON.stringify(result[0]));
             }); 
@@ -1285,6 +1302,7 @@ export class SQLDATA {
                     console.log(`1 recored inserted: ${result.insertId}`);                    
                 }
                 con.conn.unprepare(sqlq);
+                con.conn.release();
                 return resolve(0);
             }); 
         });
@@ -1387,6 +1405,7 @@ export class SQLDATA {
                     console.log(`1 recored inserted: ${result.insertId}`);                    
                 }
                 con.conn.unprepare(sqlq);
+                con.conn.release();
                 return resolve(0);
             }); 
         });
@@ -1429,6 +1448,7 @@ export class SQLDATA {
                     console.log(`1 recored inserted: ${result.insertId}`);                    
                 }
                 con.conn.unprepare(sqlq);
+                con.conn.release();
                 return resolve(0);
             }); 
         });
@@ -1546,6 +1566,7 @@ export class SQLDATA {
                     console.log(`1 recored inserted: ${result.insertId}`);                    
                 }
                 con.conn.unprepare(sqlq);
+                con.conn.release();
                 return resolve(0);
             }); 
         });
@@ -1607,6 +1628,7 @@ export class SQLDATA {
                     console.log(`1 recored inserted: ${result.insertId}`);                    
                 }
                 con.conn.unprepare(sqlq);
+                con.conn.release();
                 return resolve(0);
             }); 
         });
@@ -1662,6 +1684,7 @@ export class SQLDATA {
                     console.log(`1 recored inserted: ${result.insertId}`);                    
                 }
                 con.conn.unprepare(sqlq);
+                con.conn.release();
                 return resolve(0);
             }); 
         });
@@ -1717,6 +1740,7 @@ export class SQLDATA {
                     console.log(`1 recored inserted: ${result.insertId}`);                    
                 }
                 con.conn.unprepare(sqlq);
+                con.conn.release();
                 return resolve(0);
             }); 
         });
@@ -1749,6 +1773,7 @@ export class SQLDATA {
                     console.log(`1 recored deleted.`);                    
                 }
                 con.conn.unprepare(sqlq);
+                con.conn.release();
                 return resolve(0);
             }); 
         });
@@ -1773,6 +1798,7 @@ export class SQLDATA {
                     console.log(`1 recored deleted.`);                    
                 }
                 con.conn.unprepare(sqlq);
+                con.conn.release();
                 return resolve(0);
             }); 
         });
@@ -1797,6 +1823,7 @@ export class SQLDATA {
                     console.log(`1 recored deleted.`);                    
                 }
                 con.conn.unprepare(sqlq);
+                con.conn.release();
                 return resolve(0);
             }); 
         });
@@ -1821,6 +1848,8 @@ export class SQLDATA {
                     console.log(`1 recored deleted.`);                    
                 }
                 con.conn.unprepare(sqlq);
+                con.conn.release();
+                
                 return resolve(0);
             }); 
         });
@@ -1829,6 +1858,8 @@ export class SQLDATA {
 }
 
 async function checkConnection() {
+    // this is kinda important
+    // https://github.com/sidorares/node-mysql2/issues/959
     console.log("checking connection");
     while (!con.connected) {
         // TODO add a counter
