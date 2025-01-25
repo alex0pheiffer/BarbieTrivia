@@ -20,6 +20,18 @@ class QuestionChannelO_Changes {
         this.question= true;
         this.changes.push("question");
     }
+
+    public change_owner() {
+        if (this.owner) return;
+        this.owner = true;
+        this.changes.push("owner");
+    }
+
+    public change_channel() {
+        if (this.channel) return;
+        this.channel = true;
+        this.changes.push("channel");
+    }
     
     public generateChanges(): Array<string> {
         return this.changes;        
@@ -71,14 +83,26 @@ export class QuestionChannelO {
         return this.question;
     }
 
+    public getDate(): number {
+        return this.date;
+    }
+
     public setQuestionsAsked(value: number): boolean {
         this.question = value;
         this.changes.change_asked_questions();
         return true;
     }
 
-    public getDate(): number {
-        return this.date;
+    public setOwner(value: string): boolean {
+        this.owner = value;
+        this.changes.change_owner();
+        return true;
+    }
+
+    public setChannel(value: string): boolean {
+        this.channel = value;
+        this.changes.change_channel();
+        return true;
     }
     
     public isChanges(): boolean {

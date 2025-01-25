@@ -12,6 +12,7 @@ import { startAllQuestionChannels } from "./startup";
 import { PlayerAnswerI } from "./data/data_interfaces/playerAnswer";
 import { AskedQuestionI } from "./data/data_interfaces/askedQuestion";
 import { QuestionChannelI } from "./data/data_interfaces/questionChannel";
+import { getGameInQuestionToEnd, hasPermissionToEnd } from "./end";
 
 const client = new Client({  
     intents: [GatewayIntentBits.MessageContent, GatewayIntentBits.Guilds, GatewayIntentBits.GuildMessages, GatewayIntentBits.GuildMembers, GatewayIntentBits.GuildMessageReactions] 
@@ -66,7 +67,7 @@ client.on(Events.InteractionCreate, async (interaction: Interaction<CacheType>) 
             //parse cmd name
             let cmd = interaction.commandName;
 
-            if (cmd == 'new') {
+            if (cmd == 'new_trivia') {
                 // defer must be command-specific in order to determine if its ephemeral
                 await interaction.deferReply({ephemeral: false});
                 switch(await canInitiateNewGame(interaction)) {
@@ -77,17 +78,40 @@ client.on(Events.InteractionCreate, async (interaction: Interaction<CacheType>) 
                                 break;
                             case GameInteractionErr.GameAlreadyExists:
                             case GameInteractionErr.GameAlreadyExistsInServer:
-                                interaction.editReply({content: `A game already exists in this channel.`});
+                                interaction.editReply({content: `A game already exists in this server.`});
                             default:
                                 interaction.editReply({content:"Something went wrong."});
                         }
                         break;
                     case GameInteractionErr.GameAlreadyExists:
                     case GameInteractionErr.GameAlreadyExistsInServer:
-                        interaction.editReply({content: `A game already exists in this channel.`});
+                        interaction.editReply({content: `A game already exists in this server.`});
                         break;
                     default:
                         interaction.editReply({content:"Something went wrong."});
+                }
+            }
+            else if (cmd == 'end_trivia') {
+                await interaction.deferReply({ephemeral: false});
+                let result = 0;
+                let q_ch = await getGameInQuestionToEnd(interaction);
+                result = q_ch[1];
+                if (q_ch[0] && !result) {
+                    let can_end = await hasPermissionToEnd(interaction.user.id, q_ch[0], interaction.client);
+                    if (can_end) {
+                        // do not delete the question_channel
+                        // insteady, deactivate it
+                        // a channel is de-active if it has no owner
+                        q_ch[0].setOwner("");
+                        result = await DO.updateQuestionChannel(q_ch[0], result);
+                        interaction.editReply({content: `The Barbie Trivia Game has been terminated. Use the /new_trivia command to continue the game.`})
+                    }
+                    else {
+                        interaction.editReply({content: `You must be the owner or a trivia admin to end a game. Please ask the owner <@${q_ch[0].getOwner()}> to end the game instead..`});
+                    }
+                }
+                else {
+                    interaction.editReply({content: 'Cannot terminate trivia game because no game exists.'});
                 }
             }
             else if (cmd == 'add') {
@@ -126,12 +150,13 @@ client.on(Events.InteractionCreate, async (interaction: Interaction<CacheType>) 
                 const embed = new EmbedBuilder().setTimestamp().setThumbnail(thumbnail).setFooter({text: 'Barbie Trivia', iconURL: BCONST.LOGO});
                 embed.setTitle(`**Help Page**`);
                 let description = `**General Information**\n \
-                Welcome to the Barbie Trivia Bot. Every 24-48 hours, a question is sent for responses, and 23 hours later, the answer will be given. The focus of these questions is the core 2000 Barbie movies as well as Barbie Life in the Dreamhouse.\n\n
+                Welcome to the Barbie Trivia Bot. Every 24-48 hours, a question is sent for responses, and 23 hours later, the answer will be given. The focus of these questions is the core 2000s-2010s Barbie movies as well as Barbie Life in the Dreamhouse.\n\n
                 **Commands**:\n \
-                \`/new\` Starts a new trivia game. There can only be one per server.\n \
+                \`/new_trivia\` Starts a new trivia game. There can only be one per server.\n \
+                \`/end_trivia\` End an existing trivia game. It can be continued later with \`/new_trivia\`.\n \
                 \`/add\` Add new trivia to the database!\n \
                 \`/profile\` See stats of yourself and friends!\n \
-                There is currently no "stop" functionality. I apologize for the inconvinence.\n\n \
+                \n \
                 **Bot Invite URL**\n \
                 ${BCONST.DISCORD_URL}`;
 

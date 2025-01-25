@@ -5,14 +5,12 @@ import {BCONST} from "../../BCONST";
 interface ISQLConn {
     conn: any,
     connected: Boolean,
-    pool: any,
-    loading: Boolean
+    pool: any
 }
 class SQLConn implements ISQLConn {
     private _conn: any;
     private _pool: any;
     private _connected: Boolean = false;
-    private _loading: Boolean = false;
     
     public get conn() {
         return this._conn;
@@ -23,9 +21,6 @@ class SQLConn implements ISQLConn {
     public get connected() {
         return this._connected;
     }
-    public get loading() {
-        return this._loading;
-    }
     
     public set conn(value: any) {
         this._conn = value;
@@ -35,9 +30,6 @@ class SQLConn implements ISQLConn {
     }
     public set connected(value: Boolean) {
         this._connected = value;
-    }
-    public set loading(value: Boolean) {
-        this._loading = value;
     }
 
     public async regenerate_connection() {
@@ -73,15 +65,22 @@ export async function connectSQL() {
         console.log(`password: ${BCONST.SQL_PASS}`);
     }
 
-    if (!con.loading) {
-        con.pool = mysql.createPool({
-            connectionLimit: 10,
-            host: BCONST.SQL_HOST,
-            user: BCONST.SQL_USER,
-            password: BCONST.SQL_PASS,
-            database: BCONST.SQL_DB
-        });
-    }
+    console.log("creating another pool....")
+    con.pool = mysql.createPool({
+        connectionLimit: 10,
+        host: BCONST.SQL_HOST,
+        user: BCONST.SQL_USER,
+        password: BCONST.SQL_PASS,
+        database: BCONST.SQL_DB,
+        waitForConnections: true,
+        maxIdle: 10, // max idle connections, the default value is the same as `connectionLimit`
+        idleTimeout: 60000, // idle connections timeout, in milliseconds, the default value 60000
+        queueLimit: 0,
+        enableKeepAlive: true,
+        keepAliveInitialDelay: 0,
+        decimalNumbers: true
+    });
+
 
     con.pool.on('connection', function (connection: any) {
         console.log('DB Connection established');

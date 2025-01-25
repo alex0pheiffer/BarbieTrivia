@@ -66,7 +66,7 @@ export class SQLDATA {
                 }
                 else {
                     con.conn.unprepare(sqlq);
-                    con.conn.release();
+                    if (con.conn) con.conn.release();
                 }
 
 
@@ -103,7 +103,7 @@ export class SQLDATA {
                     return;
                 }
                 con.conn.unprepare(sqlq);
-                con.conn.release();
+                if (con.conn) con.conn.release();
 
                 return resolve(JSON.parse(JSON.stringify(result)));
             }); 
@@ -134,7 +134,7 @@ export class SQLDATA {
                     return;
                 }
                 con.conn.unprepare(sqlq);
-                con.conn.release();
+                if (con.conn) con.conn.release();
 
                 return resolve(JSON.parse(JSON.stringify(result)));
             }); 
@@ -169,7 +169,7 @@ export class SQLDATA {
                     return;
                 }
                 con.conn.unprepare(sqlq);
-                con.conn.release();
+                if (con.conn) con.conn.release();
 
                 return resolve(JSON.parse(JSON.stringify(result)));
             }); 
@@ -199,7 +199,7 @@ export class SQLDATA {
                     return;
                 }
                 con.conn.unprepare(sqlq);
-                con.conn.release();
+                if (con.conn) con.conn.release();
 
                 return resolve(JSON.stringify(result[0]));
             }); 
@@ -235,7 +235,7 @@ export class SQLDATA {
                     return;
                 }
                 con.conn.unprepare(sqlq);
-                con.conn.release();
+                if (con.conn) con.conn.release();
 
                 return resolve(JSON.stringify(result[0]));
             }); 
@@ -264,7 +264,7 @@ export class SQLDATA {
                     return;
                 }
                 con.conn.unprepare(sqlq);
-                con.conn.release();
+                if (con.conn) con.conn.release();
 
                 return resolve(JSON.parse(JSON.stringify(result)));
             }); 
@@ -294,7 +294,7 @@ export class SQLDATA {
                     return;
                 }
                 con.conn.unprepare(sqlq);
-                con.conn.release();
+                if (con.conn) con.conn.release();
 
                 return resolve(JSON.stringify(result[0]));
             }); 
@@ -324,7 +324,7 @@ export class SQLDATA {
                     return;
                 }
                 con.conn.unprepare(sqlq);
-                con.conn.release();
+                if (con.conn) con.conn.release();
 
                 return resolve(JSON.parse(JSON.stringify(result)));
             }); 
@@ -354,7 +354,7 @@ export class SQLDATA {
                     return;
                 }
                 con.conn.unprepare(sqlq);
-                con.conn.release();
+                if (con.conn) con.conn.release();
 
                 return resolve(JSON.parse(JSON.stringify(result)));
             }); 
@@ -384,7 +384,7 @@ export class SQLDATA {
                     return;
                 }
                 con.conn.unprepare(sqlq);
-                con.conn.release();
+                if (con.conn) con.conn.release();
 
                 return resolve(JSON.parse(JSON.stringify(result)));
             }); 
@@ -419,7 +419,7 @@ export class SQLDATA {
                     return;
                 }
                 con.conn.unprepare(sqlq);
-                con.conn.release();
+                if (con.conn) con.conn.release();
 
                 return resolve(JSON.parse(JSON.stringify(result)));
             }); 
@@ -454,7 +454,7 @@ export class SQLDATA {
                     return;
                 }
                 con.conn.unprepare(sqlq);
-                con.conn.release();
+                if (con.conn) con.conn.release();
 
                 return resolve(JSON.parse(JSON.stringify(result)));
             }); 
@@ -485,7 +485,7 @@ export class SQLDATA {
                     return;
                 }
                 con.conn.unprepare(sqlq);
-                con.conn.release();
+                if (con.conn) con.conn.release();
 
                 return resolve(JSON.parse(JSON.stringify(result)));
             }); 
@@ -520,7 +520,7 @@ export class SQLDATA {
                     return;
                 }
                 con.conn.unprepare(sqlq);
-                con.conn.release();
+                if (con.conn) con.conn.release();
 
                 return resolve(JSON.parse(JSON.stringify(result)));
             }); 
@@ -551,7 +551,7 @@ export class SQLDATA {
                     return;
                 }
                 con.conn.unprepare(sqlq);
-                con.conn.release();
+                if (con.conn) con.conn.release();
 
                 return resolve(JSON.parse(JSON.stringify(result)));
             }); 
@@ -586,7 +586,7 @@ export class SQLDATA {
                     return;
                 }
                 con.conn.unprepare(sqlq);
-                con.conn.release();
+                if (con.conn) con.conn.release();
 
                 return resolve(JSON.stringify(result[0]));
             }); 
@@ -609,6 +609,8 @@ export class SQLDATA {
                     console.log(result.message + " AffectedRows: " + result.affectedRows);
                 }
                 con.conn.unprepare(sql_q);
+                if (con.conn) con.conn.release();
+
                 return resolve(0);
             });
         });
@@ -1302,7 +1304,7 @@ export class SQLDATA {
                     console.log(`1 recored inserted: ${result.insertId}`);                    
                 }
                 con.conn.unprepare(sqlq);
-                con.conn.release();
+                if (con.conn) con.conn.release();
                 return resolve(0);
             }); 
         });
@@ -1405,7 +1407,7 @@ export class SQLDATA {
                     console.log(`1 recored inserted: ${result.insertId}`);                    
                 }
                 con.conn.unprepare(sqlq);
-                con.conn.release();
+                if (con.conn) con.conn.release();
                 return resolve(0);
             }); 
         });
@@ -1448,7 +1450,7 @@ export class SQLDATA {
                     console.log(`1 recored inserted: ${result.insertId}`);                    
                 }
                 con.conn.unprepare(sqlq);
-                con.conn.release();
+                if (con.conn) con.conn.release();
                 return resolve(0);
             }); 
         });
@@ -1566,7 +1568,7 @@ export class SQLDATA {
                     console.log(`1 recored inserted: ${result.insertId}`);                    
                 }
                 con.conn.unprepare(sqlq);
-                con.conn.release();
+                if (con.conn) con.conn.release();
                 return resolve(0);
             }); 
         });
@@ -1628,7 +1630,7 @@ export class SQLDATA {
                     console.log(`1 recored inserted: ${result.insertId}`);                    
                 }
                 con.conn.unprepare(sqlq);
-                con.conn.release();
+                if (con.conn) con.conn.release();
                 return resolve(0);
             }); 
         });
@@ -1684,7 +1686,7 @@ export class SQLDATA {
                     console.log(`1 recored inserted: ${result.insertId}`);                    
                 }
                 con.conn.unprepare(sqlq);
-                con.conn.release();
+                if (con.conn) con.conn.release();
                 return resolve(0);
             }); 
         });
@@ -1740,7 +1742,7 @@ export class SQLDATA {
                     console.log(`1 recored inserted: ${result.insertId}`);                    
                 }
                 con.conn.unprepare(sqlq);
-                con.conn.release();
+                if (con.conn) con.conn.release();
                 return resolve(0);
             }); 
         });
@@ -1773,7 +1775,7 @@ export class SQLDATA {
                     console.log(`1 recored deleted.`);                    
                 }
                 con.conn.unprepare(sqlq);
-                con.conn.release();
+                if (con.conn) con.conn.release();
                 return resolve(0);
             }); 
         });
@@ -1798,7 +1800,7 @@ export class SQLDATA {
                     console.log(`1 recored deleted.`);                    
                 }
                 con.conn.unprepare(sqlq);
-                con.conn.release();
+                if (con.conn) con.conn.release();
                 return resolve(0);
             }); 
         });
@@ -1823,7 +1825,7 @@ export class SQLDATA {
                     console.log(`1 recored deleted.`);                    
                 }
                 con.conn.unprepare(sqlq);
-                con.conn.release();
+                if (con.conn) con.conn.release();
                 return resolve(0);
             }); 
         });
@@ -1848,7 +1850,7 @@ export class SQLDATA {
                     console.log(`1 recored deleted.`);                    
                 }
                 con.conn.unprepare(sqlq);
-                con.conn.release();
+                if (con.conn) con.conn.release();
                 
                 return resolve(0);
             }); 
@@ -1862,16 +1864,12 @@ async function checkConnection() {
     // https://github.com/sidorares/node-mysql2/issues/959
     console.log("checking connection");
     while (!con.connected) {
-        // TODO add a counter
-        if (!con.loading) {
-            console.log("attempt to connect");
-            await connectSQL();
-        }
-        else {
-            //console.log("waiting to load...");
-        }
+        console.log("attempt to connect");
+        await connectSQL();
     }
+    console.log("regenerating the connection")
     await con.regenerate_connection();
+    console.log("continuting with the new connection")
 }
 
 function checkInt(value: number, err: number, fieldName: string): number {

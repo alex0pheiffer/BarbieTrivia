@@ -173,8 +173,18 @@ async function createNewQuestion(serverID, channelID, client, selected_question 
         let max_img_index = Math.floor(Math.random() * BCONST_1.BCONST.MAXIMUS_IMAGES.length);
         let answers_scrambled;
         if (aq_sql.length <= 0) {
-            console.log("scrambling the answers");
-            answers_scrambled = question.getAnswersScrambled();
+            // check if the answers are " A ", " B ", " C ", " D " ; don't scramble if they are.
+            if (question.getAnswers()[0].toLowerCase().includes(" a ") &&
+                question.getAnswers()[1].toLowerCase().includes(" b ") &&
+                question.getAnswers()[2].toLowerCase().includes(" c ") &&
+                question.getAnswers()[3].toLowerCase().includes(" d ")) {
+                console.log(`not scrambling the answers b/c " A ", " B ", " C ", " D "`);
+                answers_scrambled = question.getAnswersScrambled(false);
+            }
+            else {
+                console.log("scrambling the answers");
+                answers_scrambled = question.getAnswersScrambled();
+            }
             // create the new question
             let aq = { "ask_id": 0,
                 "channel_id": channelID,
@@ -285,14 +295,18 @@ async function createNewQuestion(serverID, channelID, client, selected_question 
                 // nothing 
             });
             collector_drop.on('collect', async (inter) => {
+                console.log("etnered string select menu");
                 //if (inter.type < 6) {
                 await inter.deferUpdate();
                 //}
+                console.log("menu selected: ", inter.values);
                 let result = 0;
                 let user_answer = await DOBuilder_1.DO.getPlayerAnswer(inter.user.id, ask_id);
                 if (user_answer.length > 0) {
+                    console.log("user_answer length > 0");
                     user_answer[0].setResponse(Number(inter.values[0]));
                     result = await DOBuilder_1.DO.updatePlayerAnswer(user_answer[0], result);
+                    console.log("player answer updated");
                 }
                 else {
                     let user_answer_interface = { "answer_id": 0, "user": inter.user.id, "ask_id": ask_id, "response": Number(inter.values[0]), "submitted": 0 };
@@ -313,6 +327,7 @@ async function pressGoButton(interaction, message, questionID, ask_id, base_embe
     let player_answer_number = -1;
     let player_answer;
     if (interaction.channelId == null) {
+        console.log("[BTN] no internetaction channel");
         result = Errors_1.GameInteractionErr.GuildDataUnavailable;
     }
     else {
@@ -323,14 +338,17 @@ async function pressGoButton(interaction, message, questionID, ask_id, base_embe
             for (let i = 0; i < currentQuestions.length; i++) {
                 if (currentQuestions[i].getActive()) {
                     currentQuestion = currentQuestions[i];
+                    console.log("[BTN] current question = ", i);
                 }
             }
         }
         else {
+            console.log("[BTN] current question does not exist");
             result = Errors_1.GameInteractionErr.QuestionDoesNotExist;
         }
         // check that the user has selected an option
         if (currentQuestion != null) {
+            console.log("[BTN] currentQuestion != null");
             player_answer = await DOBuilder_1.DO.getPlayerAnswer(interaction.user.id, ask_id);
             if (player_answer.length > 0) {
                 if (player_answer[0].getResponse() < 0 || player_answer[0].getResponse() > 3) {
@@ -341,10 +359,12 @@ async function pressGoButton(interaction, message, questionID, ask_id, base_embe
                 }
             }
             else {
+                console.log("[BTN] no player answer");
                 result = Errors_1.GameInteractionErr.NoAnswerSelected;
             }
         }
         else {
+            console.log("[BTN] currenquestion = null");
             result = Errors_1.GameInteractionErr.QuestionExpired;
         }
     }

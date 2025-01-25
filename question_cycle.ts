@@ -6,10 +6,16 @@ import { DO } from "./data/DOBuilder";
 import { GameInteractionErr } from "./Errors";
 import { PlayerI } from "./data/data_interfaces/player";
 import { createNewQuestion } from "./new";
+import { gameStillActive } from "./end";
 
 export async function showQuestionResult(message: Message, ask_id: number): Promise<Number> {
     console.log("etnering show question result")
     let result = 0;
+
+    // check if the game is still active
+    if (!(await gameStillActive(message.channelId))) {
+        result = GameInteractionErr.GameDoesNotExist;
+    }
 
     // question
     let asked_questions = await DO.getAskedQuestionByAskID(ask_id);

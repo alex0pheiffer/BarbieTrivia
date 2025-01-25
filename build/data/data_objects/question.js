@@ -174,16 +174,18 @@ class QuestionO {
     getAnswers() {
         return [this.ans_a, this.ans_b, this.ans_c, this.ans_d];
     }
-    getAnswersScrambled() {
+    getAnswersScrambled(scramble = true) {
         let list = [{ "i": 0, "ans": this.ans_a },
             { "i": 1, "ans": this.ans_b },
             { "i": 2, "ans": this.ans_c }];
-        if (!this.d_always_last) {
+        if (!this.d_always_last || !scramble) {
             list.push({ "i": 3, "ans": this.ans_d });
         }
-        list = list.sort(() => Math.random() - 0.5);
-        if (this.d_always_last) {
-            list.push({ "i": 3, "ans": this.ans_d });
+        if (scramble) {
+            list = list.sort(() => Math.random() - 0.5);
+            if (this.d_always_last) {
+                list.push({ "i": 3, "ans": this.ans_d });
+            }
         }
         return list;
     }

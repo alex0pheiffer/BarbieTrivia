@@ -12,6 +12,8 @@ import { PlayerAnswerO } from "./data/data_objects/playerAnswer";
 import { showQuestionResult } from "./question_cycle";
 import { PlayerI } from "./data/data_interfaces/player";
 import { ShuffledAnswerItem } from "./data/component_interfaces/shuffled_answer";
+import { QuestionChannelO } from "./data/data_objects/questionChannel";
+import { gameStillActive } from "./end";
 
 
 export async function createNewGame(interaction: ChatInputCommandInteraction): Promise<Number> {
@@ -28,13 +30,30 @@ export async function createNewGame(interaction: ChatInputCommandInteraction): P
     if (serverId == null) result = GameInteractionErr.GuildDataUnavailable;
 
     // is there an existing game for this channel?
-    console.log("Identified Channel: ", channelId);
-
     let existingGame = await DO.getQuestionChannel(channelId);
-    console.log(`existing : ${existingGame}`);
+    let updateGame: QuestionChannelO | null = null;
+    if (existingGame.length > 0) {
+        for (let i=0; i < existingGame.length; i++) {
+            let qch = existingGame[i];
+            if (qch.getOwner().length < 1) {
+                qch.setOwner(interaction.user.id);
+                qch.setChannel(channelId);
+                result = await DO.updateQuestionChannel(qch, result);
+                let games = await DO.getQuestionChannel(qch.getChannel());
+                for (let j=0; j < games.length; j++) {
+                    if (games[j].getChannel() == channelId && games[j].getOwner() == interaction.user.id) {
+                        updateGame = games[j];
+                    }
+                }
+                break;
+            }
+        }
+    }
+    
 
     // create new game
-    if (!result && (existingGame).length < 1) {
+    if (!result && existingGame.length <= 0) {
+        
         const d = new Date();
         let time = d.getTime();
 
@@ -66,6 +85,19 @@ export async function createNewGame(interaction: ChatInputCommandInteraction): P
             createNewQuestion(serverId!!, channelId, interaction.client);
         }
     }
+    else if (updateGame != null) {
+        let thumbnail = BCONST.MAXIMUS_IMAGES[Math.floor(Math.random()*BCONST.MAXIMUS_IMAGES.length)].url;
+        const embed = new EmbedBuilder().setTimestamp().setThumbnail(thumbnail).setFooter({text: 'Barbie Trivia', iconURL: BCONST.LOGO});
+        embed.setTitle('**Continued Trivia Game**');
+        let description = `This is the continuation of a previously closed trivia game! This game is specific to this channel in this server.\
+        Every 24-48 hours, a new question will be asked. All participants in the channel have the next 23 hours to provide their answer to the question.\
+        \nYou can also add new trivia to the pool! Try it yourself with the \`/add\` command.`;
+        embed.setDescription(description);
+        interaction.editReply({ embeds:[embed]});
+
+        // create the new question
+        createNewQuestion(serverId!!, channelId, interaction.client);
+    }
     else {
         result = GameInteractionErr.GameAlreadyExists;
     }
@@ -73,7 +105,7 @@ export async function createNewGame(interaction: ChatInputCommandInteraction): P
 }
 
 export async function canInitiateNewGame(interaction: ChatInputCommandInteraction): Promise<Number> {
-    let result: number;
+    let result: number = 0;
     let channelId: string;
     let channel = interaction.options.getChannel(`chosenChannel`);
     if (!channel) {
@@ -93,17 +125,23 @@ export async function canInitiateNewGame(interaction: ChatInputCommandInteractio
     }
     else {
         let existingGame = await DO.getQuestionChannelByServer(serverId);
-        console.log(`existing : ${existingGame}`);
-        if (existingGame.length > 0) {
-            result = GameInteractionErr.GameAlreadyExistsInServer;
+        if (existingGame.length <= 0) {
+            return 0
         }
         else {
-            result = 0;
+            for (let i=0; i < existingGame.length; i++) {
+                let qch = existingGame[i];
+                // if a channel exists, see if it has an owner
+                if (qch.getOwner().length > 0) {
+                    result = GameInteractionErr.GameAlreadyExistsInServer;
+                }
+                else {
+                    // update the abanndoned game to this channel
+                    result = 0;
+                }
+            }
         }
     }
-    
-    console.log(`result: ${result}`);
-
     return result;
 }
 
@@ -111,6 +149,11 @@ export async function createNewQuestion(serverID: string, channelID: string, cli
     let result = 0;
     let question: QuestionO;
     let question_id: number;
+
+    // check if the game is still active
+    if (!(await gameStillActive(channelID))) {
+        result = GameInteractionErr.GameDoesNotExist;
+    }
 
     // are we in the lead/master server?
     if (selected_question >= 0) {
@@ -198,10 +241,21 @@ export async function createNewQuestion(serverID: string, channelID: string, cli
         let aq_sql: AskedQuestionO[];
         aq_sql  = await DO.getAskedQuestion(question_id!!, channelID);
         let max_img_index = Math.floor(Math.random()*BCONST.MAXIMUS_IMAGES.length);
-        let answers_scrambled: ShuffledAnswerItem[]
+        let answers_scrambled: ShuffledAnswerItem[];
         if (aq_sql.length <= 0) {
-            console.log("scrambling the answers");
-            answers_scrambled = question!!.getAnswersScrambled();
+            // check if the answers are " A ", " B ", " C ", " D " ; don't scramble if they are.
+            if (question!!.getAnswers()[0].toLowerCase().includes(" a ") &&
+            question!!.getAnswers()[1].toLowerCase().includes(" b ") &&
+            question!!.getAnswers()[2].toLowerCase().includes(" c ") &&
+            question!!.getAnswers()[3].toLowerCase().includes(" d ")) {
+                console.log(`not scrambling the answers b/c " A ", " B ", " C ", " D "`);
+                answers_scrambled = question!!.getAnswersScrambled(false);
+            }
+            else {
+                console.log("scrambling the answers");
+                answers_scrambled = question!!.getAnswersScrambled();
+            }
+            
             // create the new question
             let aq = {"ask_id": 0,
                 "channel_id": channelID,
@@ -301,6 +355,8 @@ export async function createNewQuestion(serverID: string, channelID: string, cli
                         case GameInteractionErr.QuestionDoesNotExist:
                             resp = "This question is not available.";
                             break;
+                        case GameInteractionErr.GameDoesNotExist:
+                            resp = "This trivia game has been terminated.";
                         case GameInteractionErr.GuildDataUnavailable:
                         case GameInteractionErr.SQLConnectionError:
                         default:
@@ -315,14 +371,18 @@ export async function createNewQuestion(serverID: string, channelID: string, cli
                 // nothing 
             });
             collector_drop.on('collect', async (inter: StringSelectMenuInteraction) => {
+                console.log("etnered string select menu")
                 //if (inter.type < 6) {
                     await inter.deferUpdate();
                 //}
+                console.log("menu selected: ", inter.values)
                 let result = 0;
                 let user_answer = await DO.getPlayerAnswer(inter.user.id, ask_id);
                 if (user_answer.length > 0) {
+                    console.log("user_answer length > 0")
                     user_answer[0].setResponse(Number(inter.values[0]));
                     result = await DO.updatePlayerAnswer(user_answer[0], result)
+                    console.log("player answer updated");
                 }
                 else {
                     let user_answer_interface = {"answer_id": 0, "user": inter.user.id, "ask_id": ask_id, "response": Number(inter.values[0]), "submitted": 0} as PlayerAnswerI
@@ -344,10 +404,9 @@ async function pressGoButton(interaction: Interaction, message: Message, questio
     let result = 0;
     let player_answer_number = -1;
     let player_answer: PlayerAnswerO[];
-    if (interaction.channelId == null) {
-        result = GameInteractionErr.GuildDataUnavailable;
-    }
-    else {
+
+    if (interaction.channelId != null && await gameStillActive(interaction.channelId)) {
+
         let currentQuestions = await DO.getAskedQuestion(questionID, interaction.channelId);
         let currentQuestion: AskedQuestionO | null = null;
         // check that the question is still active
@@ -355,15 +414,18 @@ async function pressGoButton(interaction: Interaction, message: Message, questio
             for (let i=0; i < currentQuestions.length; i++) {
                 if (currentQuestions[i].getActive()) {
                     currentQuestion = currentQuestions[i];
+                    console.log("[BTN] current question = ", i)
                 }
             }
         }
         else {
+            console.log("[BTN] current question does not exist")
             result = GameInteractionErr.QuestionDoesNotExist;
         }
     
         // check that the user has selected an option
         if (currentQuestion != null) {
+            console.log("[BTN] currentQuestion != null")
             player_answer = await DO.getPlayerAnswer(interaction.user.id, ask_id);
             if (player_answer.length > 0) {
                 if (player_answer[0].getResponse() < 0 || player_answer[0].getResponse() > 3) {
@@ -374,12 +436,21 @@ async function pressGoButton(interaction: Interaction, message: Message, questio
                 }
             }
             else {
+                console.log("[BTN] no player answer")
                 result = GameInteractionErr.NoAnswerSelected;
             }
         }
         else {
+            console.log("[BTN] currenquestion = null")
             result = GameInteractionErr.QuestionExpired;
         }
+    }
+    else if (interaction.channelId == null) {
+        console.log("[BTN] no internetaction channel");
+        result = GameInteractionErr.GuildDataUnavailable;
+    }
+    else {
+        result = GameInteractionErr.GameDoesNotExist;
     }
 
     // update the user data
@@ -389,11 +460,13 @@ async function pressGoButton(interaction: Interaction, message: Message, questio
     }
 
     // update the message for total number of responses:
-    let responses = await DO.getPlayerAnswers(ask_id);
-    if (responses.length > 0) {
-        base_description += `\n\nCurrent Responses: \`${responses.length}\``;
-        base_embed.setDescription(base_description);
-        message.edit({embeds: [base_embed]});
+    if (!result) {
+        let responses = await DO.getPlayerAnswers(ask_id);
+        if (responses.length > 0) {
+            base_description += `\n\nCurrent Responses: \`${responses.length}\``;
+            base_embed.setDescription(base_description);
+            message.edit({embeds: [base_embed]});
+        }
     }
     
     return [result, player_answer_number];

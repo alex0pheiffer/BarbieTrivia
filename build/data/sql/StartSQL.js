@@ -7,7 +7,6 @@ class SQLConn {
     _conn;
     _pool;
     _connected = false;
-    _loading = false;
     get conn() {
         return this._conn;
     }
@@ -17,9 +16,6 @@ class SQLConn {
     get connected() {
         return this._connected;
     }
-    get loading() {
-        return this._loading;
-    }
     set conn(value) {
         this._conn = value;
     }
@@ -28,9 +24,6 @@ class SQLConn {
     }
     set connected(value) {
         this._connected = value;
-    }
-    set loading(value) {
-        this._loading = value;
     }
     async regenerate_connection() {
         exports.con.conn = await getConnection(exports.con.pool);
@@ -61,15 +54,21 @@ async function connectSQL() {
         console.log(`username: ${BCONST_1.BCONST.SQL_USER}`);
         console.log(`password: ${BCONST_1.BCONST.SQL_PASS}`);
     }
-    if (!exports.con.loading) {
-        exports.con.pool = mysql.createPool({
-            connectionLimit: 10,
-            host: BCONST_1.BCONST.SQL_HOST,
-            user: BCONST_1.BCONST.SQL_USER,
-            password: BCONST_1.BCONST.SQL_PASS,
-            database: BCONST_1.BCONST.SQL_DB
-        });
-    }
+    console.log("creating another pool....");
+    exports.con.pool = mysql.createPool({
+        connectionLimit: 10,
+        host: BCONST_1.BCONST.SQL_HOST,
+        user: BCONST_1.BCONST.SQL_USER,
+        password: BCONST_1.BCONST.SQL_PASS,
+        database: BCONST_1.BCONST.SQL_DB,
+        waitForConnections: true,
+        maxIdle: 10,
+        idleTimeout: 60000,
+        queueLimit: 0,
+        enableKeepAlive: true,
+        keepAliveInitialDelay: 0,
+        decimalNumbers: true
+    });
     exports.con.pool.on('connection', function (connection) {
         console.log('DB Connection established');
         connection.on('error', function (err) {
