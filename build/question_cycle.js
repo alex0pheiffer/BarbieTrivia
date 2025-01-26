@@ -6,9 +6,14 @@ const BCONST_1 = require("./BCONST");
 const DOBuilder_1 = require("./data/DOBuilder");
 const Errors_1 = require("./Errors");
 const new_1 = require("./new");
+const end_1 = require("./end");
 async function showQuestionResult(message, ask_id) {
     console.log("etnering show question result");
     let result = 0;
+    // check if the game is still active
+    if (!(await (0, end_1.gameStillActive)(message.channelId))) {
+        result = Errors_1.GameInteractionErr.GameDoesNotExist;
+    }
     // question
     let asked_questions = await DOBuilder_1.DO.getAskedQuestionByAskID(ask_id);
     let asked_question;
@@ -38,7 +43,11 @@ async function showQuestionResult(message, ask_id) {
                 if (typeof channel === 'undefined')
                     result = Errors_1.GameInteractionErr.GuildDataUnavailable;
                 channel = channel;
-                let description = `Because nobody has responded to the trivia question, the question is being extended another 24 hours.`;
+                let description = "";
+                if (responses.length < 1)
+                    description = `Because nobody has responded to the trivia question, the question is being extended another 24 hours.`;
+                else
+                    description = `Because only one person has responded to the trivia question, the question is being extended another 24 hours.`;
                 let new_message = await channel.send(description);
                 asked_question.setShowResultTime(asked_question.getShowResultTime() + duration);
                 result = await DOBuilder_1.DO.updateAskedQuestion(asked_question, result);

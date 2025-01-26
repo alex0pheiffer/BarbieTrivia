@@ -103,8 +103,7 @@ class BCONST {
         "Why, you think you're so clever. How about this?",
         "I've got a hard one for them this time, Your Wartiness.",
         "Fancy yourself clever, do you? We’ll see about that.",
-        "Answer this, and you’re free to go. Fail, and, well... let’s not dwell on that.",
-        "If you don’t answer soon, I’ll take it as a forfeit, and we all know what happens then.",
+        "If you don't answer soon, who knows how long the merfolk have left.",
         "I've got a cove to poison, unless you think you can stop me.",
         "Oh, Your Boginess, they'll never see it coming.",
         "I'll give you one more chance to prove yourself.",
@@ -114,6 +113,7 @@ class BCONST {
         "So, you want to save the merfolk. How brave.",
         "Do you know how much toad venom it takes to poison seven guardians?",
         "Just one drop, and I can pollute all of Mermaidia.",
+        "I'm sure your curious about my skin routine. Answer this and I might tell you.",
         "This will be sure to confound them, Your Evilness."
     ];
     static MAXIMUS_PHRASES_END_BAD = [

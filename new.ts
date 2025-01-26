@@ -151,12 +151,15 @@ export async function createNewQuestion(serverID: string, channelID: string, cli
     let question_id: number;
 
     // check if the game is still active
+    console.log("checking if game is active");
     if (!(await gameStillActive(channelID))) {
         result = GameInteractionErr.GameDoesNotExist;
     }
+    console.log("game is active?: ", result)
 
     // are we in the lead/master server?
     if (selected_question >= 0) {
+        console.log("selected > 0")
         let question_attempt = await DO.getQuestion(selected_question);
         if (question_attempt) {
             question = question_attempt;
@@ -164,10 +167,13 @@ export async function createNewQuestion(serverID: string, channelID: string, cli
         }
         else {
             result = GameInteractionErr.QuestionDoesNotExist;
+            console.log("question does not exist")
         }
     }
     else if (serverID == BCONST.MASTER_QUESTION_SERVER) {
         
+        console.log("master server");
+
         let unused_questions = await DO.getUnusedQuestions();
         let rand = Math.floor(Math.random()*unused_questions.length);
         question = unused_questions[rand];
@@ -178,6 +184,8 @@ export async function createNewQuestion(serverID: string, channelID: string, cli
         
     }
     else {
+
+        console.log("other server (not master)");
         // TODO this is untested
 
         // choose a random question that has already been asked in the master server,
@@ -227,6 +235,7 @@ export async function createNewQuestion(serverID: string, channelID: string, cli
         duration = prev_question_time_remaining;
     }
 
+    console.log("result beforoe date: ", result)
     if (!result) {
         const d = new Date();
         let time = d.getTime();

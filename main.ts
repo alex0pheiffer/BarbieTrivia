@@ -192,8 +192,8 @@ client.on('ready', async () => {
     }
     else {
         // bug testing on "Just Fungus"   
-        console.log(await DO.getAdmin("415315191547559936"))
-        
+        //console.log(await DO.getAdmin("415315191547559936"))
+        //createNewQuestion("1266960173533237268", "1325514408822308958", client, 454)
     }
 });
 

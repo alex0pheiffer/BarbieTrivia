@@ -6,6 +6,7 @@ const DOBuilder_1 = require("./data/DOBuilder");
 const Errors_1 = require("./Errors");
 const BCONST_1 = require("./BCONST");
 const question_cycle_1 = require("./question_cycle");
+const end_1 = require("./end");
 async function createNewGame(interaction) {
     let result = 0;
     let channelId;
@@ -20,11 +21,27 @@ async function createNewGame(interaction) {
     if (serverId == null)
         result = Errors_1.GameInteractionErr.GuildDataUnavailable;
     // is there an existing game for this channel?
-    console.log("Identified Channel: ", channelId);
     let existingGame = await DOBuilder_1.DO.getQuestionChannel(channelId);
-    console.log(`existing : ${existingGame}`);
+    let updateGame = null;
+    if (existingGame.length > 0) {
+        for (let i = 0; i < existingGame.length; i++) {
+            let qch = existingGame[i];
+            if (qch.getOwner().length < 1) {
+                qch.setOwner(interaction.user.id);
+                qch.setChannel(channelId);
+                result = await DOBuilder_1.DO.updateQuestionChannel(qch, result);
+                let games = await DOBuilder_1.DO.getQuestionChannel(qch.getChannel());
+                for (let j = 0; j < games.length; j++) {
+                    if (games[j].getChannel() == channelId && games[j].getOwner() == interaction.user.id) {
+                        updateGame = games[j];
+                    }
+                }
+                break;
+            }
+        }
+    }
     // create new game
-    if (!result && (existingGame).length < 1) {
+    if (!result && existingGame.length <= 0) {
         const d = new Date();
         let time = d.getTime();
         // register channel
@@ -53,6 +70,18 @@ async function createNewGame(interaction) {
             createNewQuestion(serverId, channelId, interaction.client);
         }
     }
+    else if (updateGame != null) {
+        let thumbnail = BCONST_1.BCONST.MAXIMUS_IMAGES[Math.floor(Math.random() * BCONST_1.BCONST.MAXIMUS_IMAGES.length)].url;
+        const embed = new discord_js_1.EmbedBuilder().setTimestamp().setThumbnail(thumbnail).setFooter({ text: 'Barbie Trivia', iconURL: BCONST_1.BCONST.LOGO });
+        embed.setTitle('**Continued Trivia Game**');
+        let description = `This is the continuation of a previously closed trivia game! This game is specific to this channel in this server.\
+        Every 24-48 hours, a new question will be asked. All participants in the channel have the next 23 hours to provide their answer to the question.\
+        \nYou can also add new trivia to the pool! Try it yourself with the \`/add\` command.`;
+        embed.setDescription(description);
+        interaction.editReply({ embeds: [embed] });
+        // create the new question
+        createNewQuestion(serverId, channelId, interaction.client);
+    }
     else {
         result = Errors_1.GameInteractionErr.GameAlreadyExists;
     }
@@ -60,7 +89,7 @@ async function createNewGame(interaction) {
 }
 exports.createNewGame = createNewGame;
 async function canInitiateNewGame(interaction) {
-    let result;
+    let result = 0;
     let channelId;
     let channel = interaction.options.getChannel(`chosenChannel`);
     if (!channel) {
@@ -78,15 +107,23 @@ async function canInitiateNewGame(interaction) {
     }
     else {
         let existingGame = await DOBuilder_1.DO.getQuestionChannelByServer(serverId);
-        console.log(`existing : ${existingGame}`);
-        if (existingGame.length > 0) {
-            result = Errors_1.GameInteractionErr.GameAlreadyExistsInServer;
+        if (existingGame.length <= 0) {
+            return 0;
         }
         else {
-            result = 0;
+            for (let i = 0; i < existingGame.length; i++) {
+                let qch = existingGame[i];
+                // if a channel exists, see if it has an owner
+                if (qch.getOwner().length > 0) {
+                    result = Errors_1.GameInteractionErr.GameAlreadyExistsInServer;
+                }
+                else {
+                    // update the abanndoned game to this channel
+                    result = 0;
+                }
+            }
         }
     }
-    console.log(`result: ${result}`);
     return result;
 }
 exports.canInitiateNewGame = canInitiateNewGame;
@@ -94,8 +131,15 @@ async function createNewQuestion(serverID, channelID, client, selected_question 
     let result = 0;
     let question;
     let question_id;
+    // check if the game is still active
+    console.log("checking if game is active");
+    if (!(await (0, end_1.gameStillActive)(channelID))) {
+        result = Errors_1.GameInteractionErr.GameDoesNotExist;
+    }
+    console.log("game is active?: ", result);
     // are we in the lead/master server?
     if (selected_question >= 0) {
+        console.log("selected > 0");
         let question_attempt = await DOBuilder_1.DO.getQuestion(selected_question);
         if (question_attempt) {
             question = question_attempt;
@@ -103,9 +147,11 @@ async function createNewQuestion(serverID, channelID, client, selected_question 
         }
         else {
             result = Errors_1.GameInteractionErr.QuestionDoesNotExist;
+            console.log("question does not exist");
         }
     }
     else if (serverID == BCONST_1.BCONST.MASTER_QUESTION_SERVER) {
+        console.log("master server");
         let unused_questions = await DOBuilder_1.DO.getUnusedQuestions();
         let rand = Math.floor(Math.random() * unused_questions.length);
         question = unused_questions[rand];
@@ -113,6 +159,7 @@ async function createNewQuestion(serverID, channelID, client, selected_question 
         question_id = question.getQuestionID();
     }
     else {
+        console.log("other server (not master)");
         // TODO this is untested
         // choose a random question that has already been asked in the master server,
         // but hasn't been asked in this server.
@@ -157,6 +204,7 @@ async function createNewQuestion(serverID, channelID, client, selected_question 
     if (prev_question_time_remaining > 0) {
         duration = prev_question_time_remaining;
     }
+    console.log("result beforoe date: ", result);
     if (!result) {
         const d = new Date();
         let time = d.getTime();
@@ -221,7 +269,11 @@ async function createNewQuestion(serverID, channelID, client, selected_question 
             let thumbnail = BCONST_1.BCONST.MAXIMUS_IMAGES[max_img_index].url;
             const embed = new discord_js_1.EmbedBuilder().setTimestamp().setThumbnail(thumbnail).setFooter({ text: 'Barbie Trivia', iconURL: BCONST_1.BCONST.LOGO });
             embed.setTitle(`**Question ${(result < 1) ? q_ch[0].getQuestionsAsked() + 1 : "???"}**`);
-            let description = "_" + BCONST_1.BCONST.MAXIMUS_PHRASES_START[Math.floor(Math.random() * BCONST_1.BCONST.MAXIMUS_PHRASES_START.length)] + "_\n\n";
+            let description = "_" + BCONST_1.BCONST.MAXIMUS_PHRASES_START[Math.floor(Math.random() * BCONST_1.BCONST.MAXIMUS_PHRASES_START.length)] + "_\n";
+            if (question.getResponseTotal() > 0) {
+                description += `${Math.floor(question.getResponseCorrect() / question.getResponseTotal())}% people got this right.`;
+            }
+            description += "\n\n";
             description += "**" + question.getQuestion() + '**\n';
             if (question.getImage().length > 3) {
                 embed.setImage(question.getImage());
@@ -282,6 +334,8 @@ async function createNewQuestion(serverID, channelID, client, selected_question 
                         case Errors_1.GameInteractionErr.QuestionDoesNotExist:
                             resp = "This question is not available.";
                             break;
+                        case Errors_1.GameInteractionErr.GameDoesNotExist:
+                            resp = "This trivia game has been terminated.";
                         case Errors_1.GameInteractionErr.GuildDataUnavailable:
                         case Errors_1.GameInteractionErr.SQLConnectionError:
                         default:
@@ -326,11 +380,7 @@ async function pressGoButton(interaction, message, questionID, ask_id, base_embe
     let result = 0;
     let player_answer_number = -1;
     let player_answer;
-    if (interaction.channelId == null) {
-        console.log("[BTN] no internetaction channel");
-        result = Errors_1.GameInteractionErr.GuildDataUnavailable;
-    }
-    else {
+    if (interaction.channelId != null && await (0, end_1.gameStillActive)(interaction.channelId)) {
         let currentQuestions = await DOBuilder_1.DO.getAskedQuestion(questionID, interaction.channelId);
         let currentQuestion = null;
         // check that the question is still active
@@ -368,17 +418,26 @@ async function pressGoButton(interaction, message, questionID, ask_id, base_embe
             result = Errors_1.GameInteractionErr.QuestionExpired;
         }
     }
+    else if (interaction.channelId == null) {
+        console.log("[BTN] no internetaction channel");
+        result = Errors_1.GameInteractionErr.GuildDataUnavailable;
+    }
+    else {
+        result = Errors_1.GameInteractionErr.GameDoesNotExist;
+    }
     // update the user data
     if (!result) {
         player_answer[0].setSubmitted(1);
         result = await DOBuilder_1.DO.updatePlayerAnswer(player_answer[0], result);
     }
     // update the message for total number of responses:
-    let responses = await DOBuilder_1.DO.getPlayerAnswers(ask_id);
-    if (responses.length > 0) {
-        base_description += `\n\nCurrent Responses: \`${responses.length}\``;
-        base_embed.setDescription(base_description);
-        message.edit({ embeds: [base_embed] });
+    if (!result) {
+        let responses = await DOBuilder_1.DO.getPlayerAnswers(ask_id);
+        if (responses.length > 0) {
+            base_description += `\n\nCurrent Responses: \`${responses.length}\``;
+            base_embed.setDescription(base_description);
+            message.edit({ embeds: [base_embed] });
+        }
     }
     return [result, player_answer_number];
 }

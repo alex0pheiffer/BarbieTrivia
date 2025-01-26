@@ -18,6 +18,18 @@ class QuestionChannelO_Changes {
         this.question = true;
         this.changes.push("question");
     }
+    change_owner() {
+        if (this.owner)
+            return;
+        this.owner = true;
+        this.changes.push("owner");
+    }
+    change_channel() {
+        if (this.channel)
+            return;
+        this.channel = true;
+        this.changes.push("channel");
+    }
     generateChanges() {
         return this.changes;
     }
@@ -57,13 +69,23 @@ class QuestionChannelO {
     getQuestionsAsked() {
         return this.question;
     }
+    getDate() {
+        return this.date;
+    }
     setQuestionsAsked(value) {
         this.question = value;
         this.changes.change_asked_questions();
         return true;
     }
-    getDate() {
-        return this.date;
+    setOwner(value) {
+        this.owner = value;
+        this.changes.change_owner();
+        return true;
+    }
+    setChannel(value) {
+        this.channel = value;
+        this.changes.change_channel();
+        return true;
     }
     isChanges() {
         return this.changes.isChanges();

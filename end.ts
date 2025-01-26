@@ -63,14 +63,19 @@ export async function hasPermissionToEnd(userID: string, game: QuestionChannelO,
     }
 }
 
+// if the game has an owner 
 export async function gameStillActive(channel_id: string): Promise<boolean> {
+    console.log(channel_id);
     let game: QuestionChannelO | null = null;
     let result = 0;
     let existingGame: QuestionChannelO[] = []
-    existingGame = await DO.getQuestionChannelByServer(channel_id);
+    existingGame = await DO.getQuestionChannel(channel_id);
+    console.log("existing game : ", existingGame);
     if (existingGame.length > 0) {
+        console.log("existing game > 0")
         for (let i=0; i < existingGame.length; i++) {
             let ch = existingGame[i];
+            console.log(`game [${i}] ${ch.getOwner()}`)
             if (ch.getOwner().length > 0)
                 return true;
         }
