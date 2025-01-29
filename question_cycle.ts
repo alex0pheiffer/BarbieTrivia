@@ -37,8 +37,16 @@ export async function showQuestionResult(message: Message, ask_id: number): Prom
         }
         else {
             // collect the responses to this question
-            let responses = await DO.getPlayerAnswers(ask_id);
-            console.log("responses: ", responses)
+            let responses_raw = await DO.getPlayerAnswers(ask_id);
+            // filter responses to only include answers that were _submitted_
+            let responses: PlayerAnswerO[] = [];
+            responses_raw.forEach((r, i) => {
+                if (r.getSubmtitted() > 0) {
+                    responses.push(r);
+                }
+            });
+            console.log("responses raw: ", responses_raw);
+            console.log("responses: ", responses);
             if (responses.length < 2) {
                 let duration = 60 * 60 * 23 * 1000; // 23 hours in ms
                 setTimeout(showQuestionResult, duration, message, ask_id);
@@ -217,6 +225,9 @@ export async function showQuestionResult(message: Message, ask_id: number): Prom
                     else {
                         second_description += "\nNobody got it right!";
                     }
+                    // update the question channel questions asked
+                    result = await DO.updateQuestionChannel(q_ch[0], result);
+
                     let duration = Math.random() * 60 * 60 * 8 * 1000; // 23 hours in ms
                     let hrs = Math.floor(duration / 1000 / 60 / 60);
                     // update the asked_question to include this duration

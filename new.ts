@@ -303,7 +303,7 @@ export async function createNewQuestion(serverID: string, channelID: string, cli
             embed.setTitle(`**Question ${(result<1) ? q_ch[0].getQuestionsAsked()+1 : "???"}**`);
             let description = "_" + BCONST.MAXIMUS_PHRASES_START[Math.floor(Math.random()*BCONST.MAXIMUS_PHRASES_START.length)] + "_\n"
             if (question!!.getResponseTotal() > 0) {
-                description += `${Math.floor(question!!.getResponseCorrect()/question!!.getResponseTotal())}% people got this right.`;
+                description += `${Math.floor(question!!.getResponseCorrect()/question!!.getResponseTotal()*100)}% people got this right.`;
             }
             description += "\n\n";
             description += "**" + question!!.getQuestion() + '**\n';
