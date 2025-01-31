@@ -34,7 +34,15 @@ async function showQuestionResult(message, ask_id) {
         }
         else {
             // collect the responses to this question
-            let responses = await DOBuilder_1.DO.getPlayerAnswers(ask_id);
+            let responses_raw = await DOBuilder_1.DO.getPlayerAnswers(ask_id);
+            // filter responses to only include answers that were _submitted_
+            let responses = [];
+            responses_raw.forEach((r, i) => {
+                if (r.getSubmtitted() > 0) {
+                    responses.push(r);
+                }
+            });
+            console.log("responses raw: ", responses_raw);
             console.log("responses: ", responses);
             if (responses.length < 2) {
                 let duration = 60 * 60 * 23 * 1000; // 23 hours in ms
@@ -205,6 +213,8 @@ async function showQuestionResult(message, ask_id) {
                     else {
                         second_description += "\nNobody got it right!";
                     }
+                    // update the question channel questions asked
+                    result = await DOBuilder_1.DO.updateQuestionChannel(q_ch[0], result);
                     let duration = Math.random() * 60 * 60 * 8 * 1000; // 23 hours in ms
                     let hrs = Math.floor(duration / 1000 / 60 / 60);
                     // update the asked_question to include this duration

@@ -271,7 +271,7 @@ async function createNewQuestion(serverID, channelID, client, selected_question 
             embed.setTitle(`**Question ${(result < 1) ? q_ch[0].getQuestionsAsked() + 1 : "???"}**`);
             let description = "_" + BCONST_1.BCONST.MAXIMUS_PHRASES_START[Math.floor(Math.random() * BCONST_1.BCONST.MAXIMUS_PHRASES_START.length)] + "_\n";
             if (question.getResponseTotal() > 0) {
-                description += `${Math.floor(question.getResponseCorrect() / question.getResponseTotal())}% people got this right.`;
+                description += `${Math.floor(question.getResponseCorrect() / question.getResponseTotal() * 100)}% people got this right.`;
             }
             description += "\n\n";
             description += "**" + question.getQuestion() + '**\n';

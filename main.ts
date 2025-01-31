@@ -147,10 +147,24 @@ client.on(Events.InteractionCreate, async (interaction: Interaction<CacheType>) 
             else if (cmd == 'help') {
                 let max_img_index = Math.floor(Math.random()*BCONST.MAXIMUS_IMAGES.length);
                 let thumbnail = BCONST.MAXIMUS_IMAGES[max_img_index].url;
+                // get the total number of questions
+                let q_list = await DO.getAllQuestions();
+                let q_from_server = 0;
+                if (interaction.guildId) {
+                    let this_server = await DO.getQuestionChannelByServer(interaction.guildId);
+                    for (let i=0; i < this_server.length; i++) {
+                        let s = this_server[i];
+                        if (s.getOwner().length > 0) {
+                            q_from_server = s.getQuestionsAsked();
+                            break;
+                        }
+                    }
+                }
                 const embed = new EmbedBuilder().setTimestamp().setThumbnail(thumbnail).setFooter({text: 'Barbie Trivia', iconURL: BCONST.LOGO});
                 embed.setTitle(`**Help Page**`);
                 let description = `**General Information**\n \
-                Welcome to the Barbie Trivia Bot. Every 24-48 hours, a question is sent for responses, and 23 hours later, the answer will be given. The focus of these questions is the core 2000s-2010s Barbie movies as well as Barbie Life in the Dreamhouse.\n\n
+                Welcome to the Barbie Trivia Bot. Every 24-48 hours, a question is sent for responses, and 23 hours later, the answer will be given. The focus of these questions is the core 2000s-2010s Barbie movies as well as Barbie Life in the Dreamhouse.\n
+                Currently there are ${q_list.length} total questions in circulation, and ${Math.floor(q_from_server / q_list.length*100)}% have been displayed in this server.\n\n
                 **Commands**:\n \
                 \`/new_trivia\` Starts a new trivia game. There can only be one per server.\n \
                 \`/end_trivia\` End an existing trivia game. It can be continued later with \`/new_trivia\`.\n \
