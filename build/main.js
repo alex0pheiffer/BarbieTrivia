@@ -82,7 +82,7 @@ client.on(discord_js_1.Events.InteractionCreate, async (interaction) => {
         try {
             //parse cmd name
             let cmd = interaction.commandName;
-            if (cmd == 'new_trivia') {
+            if (cmd == 'new') {
                 // defer must be command-specific in order to determine if its ephemeral
                 await interaction.deferReply({ ephemeral: false });
                 switch (await (0, new_1.canInitiateNewGame)(interaction)) {
@@ -106,7 +106,7 @@ client.on(discord_js_1.Events.InteractionCreate, async (interaction) => {
                         interaction.editReply({ content: "Something went wrong." });
                 }
             }
-            else if (cmd == 'end_trivia') {
+            else if (cmd == 'end') {
                 await interaction.deferReply({ ephemeral: false });
                 let result = 0;
                 let q_ch = await (0, end_1.getGameInQuestionToEnd)(interaction);
@@ -160,10 +160,24 @@ client.on(discord_js_1.Events.InteractionCreate, async (interaction) => {
             else if (cmd == 'help') {
                 let max_img_index = Math.floor(Math.random() * BCONST_1.BCONST.MAXIMUS_IMAGES.length);
                 let thumbnail = BCONST_1.BCONST.MAXIMUS_IMAGES[max_img_index].url;
+                // get the total number of questions
+                let q_list = await DOBuilder_1.DO.getAllQuestions();
+                let q_from_server = 0;
+                if (interaction.guildId) {
+                    let this_server = await DOBuilder_1.DO.getQuestionChannelByServer(interaction.guildId);
+                    for (let i = 0; i < this_server.length; i++) {
+                        let s = this_server[i];
+                        if (s.getOwner().length > 0) {
+                            q_from_server = s.getQuestionsAsked();
+                            break;
+                        }
+                    }
+                }
                 const embed = new discord_js_1.EmbedBuilder().setTimestamp().setThumbnail(thumbnail).setFooter({ text: 'Barbie Trivia', iconURL: BCONST_1.BCONST.LOGO });
                 embed.setTitle(`**Help Page**`);
                 let description = `**General Information**\n \
-                Welcome to the Barbie Trivia Bot. Every 24-48 hours, a question is sent for responses, and 23 hours later, the answer will be given. The focus of these questions is the core 2000s-2010s Barbie movies as well as Barbie Life in the Dreamhouse.\n\n
+                Welcome to the Barbie Trivia Bot. Every 24-48 hours, a question is sent for responses, and 23 hours later, the answer will be given. The focus of these questions is the core 2000s-2010s Barbie movies as well as Barbie Life in the Dreamhouse.\n
+                Currently there are ${q_list.length} total questions in circulation, and ${Math.floor(q_from_server / q_list.length * 100)}% have been displayed in this server.\n\n
                 **Commands**:\n \
                 \`/new_trivia\` Starts a new trivia game. There can only be one per server.\n \
                 \`/end_trivia\` End an existing trivia game. It can be continued later with \`/new_trivia\`.\n \

@@ -27,4 +27,8 @@ export class DeleteData {
         return result;
     }
 
+    static async deleteAskedQuestion(ask_id: number): Promise<number> {
+        let result = await SQLDATA.deleteAskedQuestion(ask_id);
+        return result;
+    }
 }

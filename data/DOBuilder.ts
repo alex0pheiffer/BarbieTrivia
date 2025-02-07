@@ -339,5 +339,9 @@ export class DO {
     static async deletePlayerAnswer(answer_id: number): Promise<number> {
         return await DeleteData.deletePlayerAnswer(answer_id);
     }
+
+    static async deleteAskedQuestion(ask_id: number): Promise<number> {
+        return await DeleteData.deleteAskedQuestion(ask_id);
+    }
     
 }

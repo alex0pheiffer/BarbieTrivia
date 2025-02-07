@@ -1856,6 +1856,32 @@ export class SQLDATA {
             }); 
         });
     }
+    
+    static async deleteAskedQuestion(ask_id: number): Promise<number> {
+        await checkConnection();
+        return new Promise((resolve, reject) => {
+            const sqlq = `DELETE FROM asked_question WHERE ask_id=?;`;
+            let arr = [ask_id];
+            con.conn.execute(sqlq, arr, (err: any, result: any) => {
+                if (err && err.errno == 1062) {
+                    con.conn.rollback();
+                    return resolve(DataErr.IDDoesNotExist);
+                }
+                else if (err) {
+                    con.conn.rollback();
+                    throw err;
+                }
+
+                if (BCONST.SQL_DEBUG) {
+                    console.log(`1 recored deleted.`);                    
+                }
+                con.conn.unprepare(sqlq);
+                if (con.conn) con.conn.release();
+                
+                return resolve(0);
+            }); 
+        });
+    }
 
 }
 

@@ -81,23 +81,22 @@ export async function showQuestionResult(message: Message, ask_id: number): Prom
                         users_correct_list.push(r.getUser());
                     }
                     if (player_profile == null) {
-                        console.log("new profile")
+                        
                         let new_player = {"player_id": 0, "user": r.getUser(), "q_submitted": 0, "response_total": 1, "response_correct": correct} as PlayerI;
                         result = await DO.insertPlayer(new_player);
-                        console.log("insert payer")
+                        
                     }
                     else {
-                        console.log("existing profile")
+                        
                         player_profile.setResponseTotal(player_profile.getResponseTotal() + 1);
                         if (correct) {
                             player_profile.setResponseCorrect(player_profile.getResponseCorrect() + 1);
                         }
                         result = await DO.updatePlayer(player_profile, result);
-                        console.log("update profile")
+                        
                     }
                     // delete the player response
-                    // TODO ADD THIS BACK LATER
-                    //result = await DO.deletePlayerAnswer(r.getAnswerID());
+                    result = await DO.deletePlayerAnswer(r.getAnswerID());
                 }
                 let total = responses.length;
                 let ratio = count[question.getCorrect()] / total;
@@ -194,9 +193,6 @@ export async function showQuestionResult(message: Message, ask_id: number): Prom
                     result = GameInteractionErr.SQLConnectionError;
                 }
 
-
-                console.log(`End of the updates. Going to send next question. ${result}`);
-
                 if (!result) {
                     // add an extra ping to notify the users
                     let channel: Channel | undefined = await message.client.channels.cache.get(message.channelId);
@@ -248,7 +244,6 @@ export async function showQuestionResult(message: Message, ask_id: number): Prom
 
                     let new_message = await channel!!.send(second_description);
                     // start the next question
-                    console.log("duration set: ", duration);
                     setTimeout(createNewQuestion, duration, message.guildId, message.channelId, message.client);
                 }
             }

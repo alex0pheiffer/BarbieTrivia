@@ -67,7 +67,7 @@ client.on(Events.InteractionCreate, async (interaction: Interaction<CacheType>) 
             //parse cmd name
             let cmd = interaction.commandName;
 
-            if (cmd == 'new_trivia') {
+            if (cmd == 'new') {
                 // defer must be command-specific in order to determine if its ephemeral
                 await interaction.deferReply({ephemeral: false});
                 switch(await canInitiateNewGame(interaction)) {
@@ -91,7 +91,7 @@ client.on(Events.InteractionCreate, async (interaction: Interaction<CacheType>) 
                         interaction.editReply({content:"Something went wrong."});
                 }
             }
-            else if (cmd == 'end_trivia') {
+            else if (cmd == 'end') {
                 await interaction.deferReply({ephemeral: false});
                 let result = 0;
                 let q_ch = await getGameInQuestionToEnd(interaction);
@@ -99,6 +99,13 @@ client.on(Events.InteractionCreate, async (interaction: Interaction<CacheType>) 
                 if (q_ch[0] && !result) {
                     let can_end = await hasPermissionToEnd(interaction.user.id, q_ch[0], interaction.client);
                     if (can_end) {
+                        // delete the current question
+                        let latest_question = await DO.getLatestAskedQuestion(q_ch[0].getChannel());
+                        if (latest_question.length > 0) {
+                            console.log("Latest ask_id: ", latest_question[0].getAskID());
+                        }
+                        result = await DO.delet
+                        // delete the latest responses
                         // do not delete the question_channel
                         // insteady, deactivate it
                         // a channel is de-active if it has no owner
