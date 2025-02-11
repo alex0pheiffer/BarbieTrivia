@@ -17,6 +17,9 @@ class ProposalO_Changes {
     date: boolean = false;
     submitter: boolean = false;
     submitted: boolean = false;
+    accepted: boolean = false;
+    declined: boolean = false;
+    message_id: boolean = false;
 
     private changes = new Array<string>();
 
@@ -95,6 +98,24 @@ class ProposalO_Changes {
         this.submitted = true;
         this.changes.push("submitted");
     }
+
+    public change_accepted() {
+        if (this.accepted) return;
+        this.accepted = true;
+        this.changes.push("accepted");
+    }
+
+    public change_declined() {
+        if (this.declined) return;
+        this.declined = true;
+        this.changes.push("declined");
+    }
+
+    public change_message_id() {
+        if (this.message_id) return;
+        this.message_id = true;
+        this.changes.push("message_id");
+    }
     
     public generateChanges(): Array<string> {
         return this.changes;        
@@ -120,6 +141,9 @@ export class ProposalO {
     private date: number;
     private submitter: string;
     private submitted: number;
+    private accepted: number;
+    private declined: number;
+    private message_id: string;
 
     private changes: ProposalO_Changes;
 
@@ -137,6 +161,9 @@ export class ProposalO {
         this.date = json.date;
         this.submitter = json.submitter;
         this.submitted = json.submitted;
+        this.accepted = json.accepted;
+        this.declined = json.declined;
+        this.message_id = json.message_id;
 
         this.changes = new ProposalO_Changes(this.proposal_id);
     }
@@ -208,6 +235,18 @@ export class ProposalO {
 
     public getSubmitted(): number {
         return this.submitted;
+    }
+
+    public getAccepted(): number {
+        return this.accepted;
+    }
+
+    public getDeclined(): number {
+        return this.declined;
+    }
+
+    public getMessageID(): string {
+        return this.message_id;
     }
 
     public setQuestion(value: string): boolean {
@@ -311,6 +350,24 @@ export class ProposalO {
     public setSubmitted(value: number): boolean {
         this.submitted = value;
         this.changes.change_submitted();
+        return true;
+    }
+
+    public setAccepted(value: number): boolean {
+        this.accepted = value;
+        this.changes.change_accepted();
+        return true;
+    }
+
+    public setDeclined(value: number): boolean {
+        this.declined = value;
+        this.changes.change_declined();
+        return true;
+    }
+
+    public setMessageID(value: string): boolean {
+        this.message_id = value;
+        this.changes.change_message_id();
         return true;
     }
     

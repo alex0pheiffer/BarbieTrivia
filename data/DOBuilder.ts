@@ -33,6 +33,16 @@ export class DO {
         }
         return null;
     }
+    
+    static async getAdminByID(id: number): Promise<AdminO | null> {
+        let admin: AdminO;
+        let adminjson = await GetData.getAdminByID(id);
+        if (adminjson) {
+            admin = new AdminO(adminjson);
+            return admin;
+        }
+        return null;
+    }
 
     static async getAskedQuestion(question_id: number, channel_id: string): Promise<Array<AskedQuestionO>> {
         let askedArray: Array<AskedQuestionO> = [];

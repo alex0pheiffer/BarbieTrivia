@@ -27,4 +27,7 @@ export interface ProposalI {
     date: number;
     submitter: string;
     submitted: number;
+    accepted: number;
+    declined: number;
+    message_id: string;
 }

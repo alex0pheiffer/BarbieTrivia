@@ -16,6 +16,9 @@ class ProposalO_Changes {
     date = false;
     submitter = false;
     submitted = false;
+    accepted = false;
+    declined = false;
+    message_id = false;
     changes = new Array();
     constructor(proposal_id) {
         this.proposal_id = proposal_id;
@@ -92,6 +95,24 @@ class ProposalO_Changes {
         this.submitted = true;
         this.changes.push("submitted");
     }
+    change_accepted() {
+        if (this.accepted)
+            return;
+        this.accepted = true;
+        this.changes.push("accepted");
+    }
+    change_declined() {
+        if (this.declined)
+            return;
+        this.declined = true;
+        this.changes.push("declined");
+    }
+    change_message_id() {
+        if (this.message_id)
+            return;
+        this.message_id = true;
+        this.changes.push("message_id");
+    }
     generateChanges() {
         return this.changes;
     }
@@ -113,6 +134,9 @@ class ProposalO {
     date;
     submitter;
     submitted;
+    accepted;
+    declined;
+    message_id;
     changes;
     constructor(json) {
         this.proposal_id = json.proposal_id;
@@ -128,6 +152,9 @@ class ProposalO {
         this.date = json.date;
         this.submitter = json.submitter;
         this.submitted = json.submitted;
+        this.accepted = json.accepted;
+        this.declined = json.declined;
+        this.message_id = json.message_id;
         this.changes = new ProposalO_Changes(this.proposal_id);
     }
     getProposalID() {
@@ -184,6 +211,15 @@ class ProposalO {
     }
     getSubmitted() {
         return this.submitted;
+    }
+    getAccepted() {
+        return this.accepted;
+    }
+    getDeclined() {
+        return this.declined;
+    }
+    getMessageID() {
+        return this.message_id;
     }
     setQuestion(value) {
         if (value.length > Database_Constants_1.DBC.question_length) {
@@ -275,6 +311,21 @@ class ProposalO {
     setSubmitted(value) {
         this.submitted = value;
         this.changes.change_submitted();
+        return true;
+    }
+    setAccepted(value) {
+        this.accepted = value;
+        this.changes.change_accepted();
+        return true;
+    }
+    setDeclined(value) {
+        this.declined = value;
+        this.changes.change_declined();
+        return true;
+    }
+    setMessageID(value) {
+        this.message_id = value;
+        this.changes.change_message_id();
         return true;
     }
     isChanges() {

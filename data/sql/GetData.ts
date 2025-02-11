@@ -20,6 +20,12 @@ export class GetData {
         else return JSON.parse($DATA) as AdminI;
     }
 
+    static async getAdminByID(id: number): Promise<AdminI | null> {
+        let $DATA = await SQLDATA.getAdminSQLbyID(id);
+        if ($DATA == "") return null;
+        else return JSON.parse($DATA) as AdminI;
+    }
+
     static async getAskedQuestion(question_id: number, channel_id: string): Promise<Array<AskedQuestionI>> {
         let $DATA = await SQLDATA.getAskedQuestionSQL(question_id, channel_id);
         return $DATA as unknown as Array<AskedQuestionI>; // hopefully this doesnt cause issues

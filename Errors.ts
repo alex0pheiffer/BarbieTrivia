@@ -5,4 +5,4 @@
 /* Game Interaction Errors */
 export const GameInteractionErr = Object.freeze({"GameAlreadyExists": 1, "GameAlreadyExistsInServer": 2, "GuildDataUnavailable": 3, "SQLConnectionError": 4, "NoNewQuestionAvailable": 5, "NoAnswerSelected": 6, "QuestionDoesNotExist": 7, "QuestionExpired": 8, "NoPlayerResponses": 9, "QuestionChannelDoesNotExist": 10, "GameDoesNotExist": 11});
 /* Player Data Errors */
-export const DataErr = Object.freeze({"IDDoesNotExist": 201, "InvalidInputToSQL": 202, "IDAlreadyExists": 203});
+export const DataErr = Object.freeze({"IDDoesNotExist": 201, "InvalidInputToSQL": 202, "IDAlreadyExists": 203, "URLNotImage": 204});

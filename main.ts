@@ -46,10 +46,10 @@ client.on(Events.InteractionCreate, async (interaction: Interaction<CacheType>) 
             (<ChatInputCommandInteraction>interaction).reply({content: 'Bot does not have permission to **use external emojis** in this channel. :frowning2:', ephemeral: true});   
             return;
         }
-        else if (!interaction.guild.members.me.permissionsIn(interaction.channelId!).has(PermissionsBitField.Flags.AddReactions))  {
-            (<ChatInputCommandInteraction>interaction).reply({content: 'Bot does not have permission to **add reactions** in this channel. :frowning2:', ephemeral: true});
-            return;
-        }
+        // else if (!interaction.guild.members.me.permissionsIn(interaction.channelId!).has(PermissionsBitField.Flags.AddReactions))  {
+        //     (<ChatInputCommandInteraction>interaction).reply({content: 'Bot does not have permission to **add reactions** in this channel. :frowning2:', ephemeral: true});
+        //     return;
+        // }
         else if (!interaction.guild.members.me.permissionsIn(interaction.channelId!).has(PermissionsBitField.Flags.ManageMessages))  {
             (<ChatInputCommandInteraction>interaction).reply({content: 'Bot does not have permission to **manage messages** in this channel. :frowning2:', ephemeral: true});        
             return;
@@ -103,8 +103,11 @@ client.on(Events.InteractionCreate, async (interaction: Interaction<CacheType>) 
                         let latest_question = await DO.getLatestAskedQuestion(q_ch[0].getChannel());
                         if (latest_question.length > 0) {
                             console.log("Latest ask_id: ", latest_question[0].getAskID());
+                            if (latest_question[0].getActive()) {
+                                result = await DO.deleteAskedQuestion(latest_question[0].getAskID())
+                            }
                         }
-                        result = await DO.delet
+                        
                         // delete the latest responses
                         // do not delete the question_channel
                         // insteady, deactivate it
@@ -170,12 +173,12 @@ client.on(Events.InteractionCreate, async (interaction: Interaction<CacheType>) 
                 const embed = new EmbedBuilder().setTimestamp().setThumbnail(thumbnail).setFooter({text: 'Barbie Trivia', iconURL: BCONST.LOGO});
                 embed.setTitle(`**Help Page**`);
                 let description = `**General Information**\n \
-                Welcome to the Barbie Trivia Bot. Every 24-48 hours, a question is sent for responses, and 23 hours later, the answer will be given. The focus of these questions is the core 2000s-2010s Barbie movies as well as Barbie Life in the Dreamhouse.\n
+                Welcome to the Fan-Made Barbie Trivia Bot. Every 24-48 hours, a question is sent for responses, and 23 hours later, the answer will be given. The focus of these questions is the core 2000s-2010s Barbie movies as well as Barbie Life in the Dreamhouse.\n
                 Currently there are ${q_list.length} total questions in circulation, and ${Math.floor(q_from_server / q_list.length*100)}% have been displayed in this server.\n\n
                 **Commands**:\n \
-                \`/new_trivia\` Starts a new trivia game. There can only be one per server.\n \
-                \`/end_trivia\` End an existing trivia game. It can be continued later with \`/new_trivia\`.\n \
-                \`/add\` Add new trivia to the database!\n \
+                \`/new\` Starts a new trivia game. There can only be one per server.\n \
+                \`/end\` End an existing trivia game. It can be continued later with \`/new_trivia\`.\n \
+                \`/add\` Add new trivia to the database! (Screened by admins).\n \
                 \`/profile\` See stats of yourself and friends!\n \
                 \n \
                 **Bot Invite URL**\n \

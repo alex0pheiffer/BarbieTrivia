@@ -62,6 +62,7 @@ class BCONST {
     static BTN_PROPOSAL_DECLINE = "Proposal Decline";
     // Game Specific Information
     static TIME_UNTIL_ANSWER = 23 * 60 * 60 * 1000; //ms
+    static INVALID_IMAGE_URL = "https://cdn.discordapp.com/attachments/1305182222214496288/1337795538887770233/invalid_image_url.png?ex=67a8beaf&is=67a76d2f&hm=4ab2c0ab907fbb65d06132094250e65e5184a82e5161e1895a90cb7c88d53f6b&";
     static QUESTION_INTERVALS = [
         { "label": "Every Hour", "description": "", "value": 0 },
         { "label": "Every 6 Hours", "description": "", "value": 1 },
@@ -114,7 +115,9 @@ class BCONST {
         "Do you know how much toad venom it takes to poison seven guardians?",
         "Just one drop, and I can pollute all of Mermaidia.",
         "I'm sure your curious about my skin routine. Answer this and I might tell you.",
-        "This will be sure to confound them, Your Evilness."
+        "This will be sure to confound them, Your Evilness.",
+        "So you think you can defeat _us_?",
+        "Shall we put your confidence to the test?",
     ];
     static MAXIMUS_PHRASES_END_BAD = [
         "Too bad.",
@@ -133,7 +136,9 @@ class BCONST {
         "Such an answer deserves banishment to the Bogs of the Hinterlands.",
         "Lefting, leftaroo! Let's try that again.",
         "I found it! The immunity berry!",
-        "You make the Carousel of Confusion look logical."
+        "You make the Carousel of Confusion look logical.",
+        "You only won the first time because I wasn't there. Look at you now.",
+        "You have the intellect of an _average_ fungus."
     ];
     static MAXIMUS_PHRASES_END_GOOD = [
         "I see you've been studying.",
@@ -147,7 +152,8 @@ class BCONST {
         "Maybe we try that again before telling Her Wartiness.",
         "Looks like it wasn't the right berry after all.",
         "Fungus? Oh, no, no, no. These buffoons are fungus. Call me, Fungus Maximus.",
-        "Best 2 out of 3?"
+        "Best 2 out of 3?",
+        "Maybe _you_ should try asking questions then (No, really, try `/add`)."
     ];
 }
 exports.BCONST = BCONST;

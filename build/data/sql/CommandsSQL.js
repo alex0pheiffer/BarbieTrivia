@@ -57,6 +57,38 @@ class SQLDATA {
             });
         });
     }
+    static async getAdminSQLbyID(id) {
+        await checkConnection();
+        return new Promise((resolve, reject) => {
+            // determine if this column exists
+            // use a prepared statement
+            const sqlq = `SELECT * FROM admin WHERE admin_id = ?;`;
+            // store the values in an array
+            let arr = [id];
+            // execute the prepared statement
+            StartSQL_1.con.conn.execute(sqlq, arr, (err, result) => {
+                if (err) {
+                    StartSQL_1.con.conn.rollback();
+                    throw err;
+                }
+                if (BCONST_1.BCONST.SQL_DEBUG) {
+                    console.log("Obtained Data: ");
+                    console.log(result);
+                }
+                // check that a result exists
+                if (result.length <= 0) {
+                    resolve("");
+                    return;
+                }
+                else {
+                    StartSQL_1.con.conn.unprepare(sqlq);
+                    if (StartSQL_1.con.conn)
+                        StartSQL_1.con.conn.release();
+                }
+                return resolve(JSON.stringify(result[0]));
+            });
+        });
+    }
     static async getAskedQuestionSQL(question_id, channel_id) {
         await checkConnection();
         return new Promise((resolve, reject) => {
@@ -651,6 +683,36 @@ class SQLDATA {
                         sql_changes += ` ${p} = ?,`;
                         arr.push(value);
                         break;
+                    case "accepted":
+                        value = proposal.getAccepted();
+                        err = checkInt(value, errType.InvalidInputToSQL, p);
+                        if (err) {
+                            StartSQL_1.con.conn.rollback();
+                            return resolve(err);
+                        }
+                        sql_changes += ` ${p} = ?,`;
+                        arr.push(value);
+                        break;
+                    case "declined":
+                        value = proposal.getDeclined();
+                        err = checkInt(value, errType.InvalidInputToSQL, p);
+                        if (err) {
+                            StartSQL_1.con.conn.rollback();
+                            return resolve(err);
+                        }
+                        sql_changes += ` ${p} = ?,`;
+                        arr.push(value);
+                        break;
+                    case "message_id":
+                        value = proposal.getMessageID();
+                        err = checkString(value, Database_Constants_1.DBC.userID_length, errType.InvalidInputToSQL, p);
+                        if (err) {
+                            StartSQL_1.con.conn.rollback();
+                            return resolve(err);
+                        }
+                        sql_changes += ` ${p} = ?,`;
+                        arr.push(value);
+                        break;
                     default:
                         console.log("Error: the property " + p + " is not supported by updateProposal.");
                         break;
@@ -1161,6 +1223,18 @@ class SQLDATA {
             err = checkInt(value, Errors_1.DataErr.InvalidInputToSQL, "submitted");
             if (err)
                 return resolve(err);
+            value = proposal.getAccepted();
+            err = checkInt(value, Errors_1.DataErr.InvalidInputToSQL, "accepted");
+            if (err)
+                return resolve(err);
+            value = proposal.getDeclined();
+            err = checkInt(value, Errors_1.DataErr.InvalidInputToSQL, "declined");
+            if (err)
+                return resolve(err);
+            value = proposal.getMessageID();
+            err = checkString(value, Database_Constants_1.DBC.userID_length, Errors_1.DataErr.InvalidInputToSQL, "message_id");
+            if (err)
+                return resolve(err);
             const sql_columns = `(question, \
             image, \
             ans_a, \
@@ -1172,8 +1246,11 @@ class SQLDATA {
             correct, \
             date, \
             submitter, \
-            submitted)`;
-            const sql_values = "(?,?,?,?,?,?,?,?,?,?,?,?)";
+            submitted, \
+            accepted, \
+            declined,
+            message_id)`;
+            const sql_values = "(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
             let arr = [proposal.getQuestion(),
                 proposal.getImage(),
                 proposal.getAnswer("ans_a"),
@@ -1185,7 +1262,10 @@ class SQLDATA {
                 proposal.getCorrect(),
                 proposal.getDate(),
                 proposal.getSubmitter(),
-                proposal.getSubmitted()
+                proposal.getSubmitted(),
+                proposal.getAccepted(),
+                proposal.getDeclined(),
+                proposal.getMessageID()
             ];
             const sqlq = `INSERT INTO proposal ${sql_columns} VALUES ${sql_values};`;
             StartSQL_1.con.conn.execute(sqlq, arr, (err, result) => {
@@ -1734,6 +1814,30 @@ class SQLDATA {
         return new Promise((resolve, reject) => {
             const sqlq = `DELETE FROM player_answer WHERE answer_id=?;`;
             let arr = [answer_id];
+            StartSQL_1.con.conn.execute(sqlq, arr, (err, result) => {
+                if (err && err.errno == 1062) {
+                    StartSQL_1.con.conn.rollback();
+                    return resolve(Errors_1.DataErr.IDDoesNotExist);
+                }
+                else if (err) {
+                    StartSQL_1.con.conn.rollback();
+                    throw err;
+                }
+                if (BCONST_1.BCONST.SQL_DEBUG) {
+                    console.log(`1 recored deleted.`);
+                }
+                StartSQL_1.con.conn.unprepare(sqlq);
+                if (StartSQL_1.con.conn)
+                    StartSQL_1.con.conn.release();
+                return resolve(0);
+            });
+        });
+    }
+    static async deleteAskedQuestion(ask_id) {
+        await checkConnection();
+        return new Promise((resolve, reject) => {
+            const sqlq = `DELETE FROM asked_question WHERE ask_id=?;`;
+            let arr = [ask_id];
             StartSQL_1.con.conn.execute(sqlq, arr, (err, result) => {
                 if (err && err.errno == 1062) {
                     StartSQL_1.con.conn.rollback();

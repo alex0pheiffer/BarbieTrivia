@@ -75,6 +75,43 @@ export class SQLDATA {
         });
     }
 
+    static async getAdminSQLbyID(id: number): Promise<string> {
+        await checkConnection();
+        return new Promise((resolve, reject) => {
+            // determine if this column exists
+            // use a prepared statement
+            const sqlq = `SELECT * FROM admin WHERE admin_id = ?;`;
+            // store the values in an array
+            let arr = [id];
+
+            // execute the prepared statement
+            con.conn.execute(sqlq, arr, (err: any, result: Array<string>) => {
+                if (err) {
+                    con.conn.rollback();
+                    throw err;
+                }
+
+                if (BCONST.SQL_DEBUG) {
+                    console.log("Obtained Data: ");
+                    console.log(result);
+                }
+
+                // check that a result exists
+                if (result.length <= 0) {
+                    resolve("");
+                    return;
+                }
+                else {
+                    con.conn.unprepare(sqlq);
+                    if (con.conn) con.conn.release();
+                }
+
+
+                return resolve(JSON.stringify(result[0]));
+            });
+        });
+    }
+
     static async getAskedQuestionSQL(question_id: number, channel_id: string): Promise<Array<JSON>> {
         await checkConnection();
         return new Promise((resolve, reject) => {
@@ -728,6 +765,36 @@ export class SQLDATA {
                         sql_changes += ` ${p} = ?,`;
                         arr.push(value);
                         break;
+                    case "accepted":
+                        value = proposal.getAccepted();
+                        err = checkInt(value, errType.InvalidInputToSQL, p);
+                        if (err) {
+                            con.conn.rollback();
+                            return resolve(err);
+                        }
+                        sql_changes += ` ${p} = ?,`;
+                        arr.push(value);
+                        break;
+                    case "declined":
+                        value = proposal.getDeclined();
+                        err = checkInt(value, errType.InvalidInputToSQL, p);
+                        if (err) {
+                            con.conn.rollback();
+                            return resolve(err);
+                        }
+                        sql_changes += ` ${p} = ?,`;
+                        arr.push(value);
+                        break;
+                    case "message_id":
+                        value = proposal.getMessageID();
+                        err = checkString(value, DBC.userID_length, errType.InvalidInputToSQL, p);
+                        if (err) {
+                            con.conn.rollback();
+                            return resolve(err);
+                        }
+                        sql_changes += ` ${p} = ?,`;
+                        arr.push(value);
+                        break;
                     default:
                         console.log("Error: the property "+p+" is not supported by updateProposal.");
                         break;
@@ -1260,6 +1327,15 @@ export class SQLDATA {
             value = proposal.getSubmitted();
             err = checkInt(value, DataErr.InvalidInputToSQL, "submitted");
             if (err) return resolve(err);
+            value = proposal.getAccepted();
+            err = checkInt(value, DataErr.InvalidInputToSQL, "accepted");
+            if (err) return resolve(err);   
+            value = proposal.getDeclined();
+            err = checkInt(value, DataErr.InvalidInputToSQL, "declined");
+            if (err) return resolve(err);
+            value = proposal.getMessageID();
+            err = checkString(value, DBC.userID_length, DataErr.InvalidInputToSQL, "message_id");
+            if (err) return resolve(err);      
 
             const sql_columns = `(question, \
             image, \
@@ -1272,9 +1348,12 @@ export class SQLDATA {
             correct, \
             date, \
             submitter, \
-            submitted)`;
+            submitted, \
+            accepted, \
+            declined,
+            message_id)`;
 
-            const sql_values = "(?,?,?,?,?,?,?,?,?,?,?,?)";
+            const sql_values = "(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
             let arr = [proposal.getQuestion(),
                 proposal.getImage(),
                 proposal.getAnswer("ans_a"),
@@ -1286,7 +1365,10 @@ export class SQLDATA {
                 proposal.getCorrect(),
                 proposal.getDate(),
                 proposal.getSubmitter(),
-                proposal.getSubmitted()
+                proposal.getSubmitted(),
+                proposal.getAccepted(),
+                proposal.getDeclined(),
+                proposal.getMessageID()
             ];
 
             const sqlq = `INSERT INTO proposal ${sql_columns} VALUES ${sql_values};`;

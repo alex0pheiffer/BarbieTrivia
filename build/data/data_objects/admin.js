@@ -21,6 +21,9 @@ class AdminO {
         this.granter = json.granter;
         this.changes = new AdminO_Changes(this.admin_id);
     }
+    getAdminID() {
+        return this.admin_id;
+    }
     getAdmin() {
         return this.user;
     }

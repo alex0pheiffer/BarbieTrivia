@@ -66,7 +66,7 @@ async function connectSQL() {
         idleTimeout: 60000,
         queueLimit: 0,
         enableKeepAlive: true,
-        keepAliveInitialDelay: 0,
+        keepAliveInitialDelay: 100000,
         decimalNumbers: true
     });
     exports.con.pool.on('connection', function (connection) {
@@ -85,6 +85,8 @@ async function getConnection(pool) {
     return new Promise((resolve, reject) => {
         pool.getConnection((err, connection) => {
             if (err) {
+                connection.destroy();
+                console.log("there was an error retrieving the connection. ", err);
                 return reject(err);
             }
             resolve(connection);

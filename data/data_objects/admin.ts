@@ -28,6 +28,9 @@ export class AdminO {
         this.granter = json.granter;
         this.changes = new AdminO_Changes(this.admin_id);
     }
+    public getAdminID(): number {
+        return this.admin_id;
+    }
 
     public getAdmin(): string {
         return this.user;

@@ -15,6 +15,13 @@ class GetData {
         else
             return JSON.parse($DATA);
     }
+    static async getAdminByID(id) {
+        let $DATA = await CommandsSQL_1.SQLDATA.getAdminSQLbyID(id);
+        if ($DATA == "")
+            return null;
+        else
+            return JSON.parse($DATA);
+    }
     static async getAskedQuestion(question_id, channel_id) {
         let $DATA = await CommandsSQL_1.SQLDATA.getAskedQuestionSQL(question_id, channel_id);
         return $DATA; // hopefully this doesnt cause issues

@@ -24,5 +24,9 @@ class DeleteData {
         let result = await CommandsSQL_1.SQLDATA.deletePlayerAnswer(answer_id);
         return result;
     }
+    static async deleteAskedQuestion(ask_id) {
+        let result = await CommandsSQL_1.SQLDATA.deleteAskedQuestion(ask_id);
+        return result;
+    }
 }
 exports.DeleteData = DeleteData;

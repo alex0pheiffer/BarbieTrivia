@@ -27,6 +27,15 @@ class DO {
         }
         return null;
     }
+    static async getAdminByID(id) {
+        let admin;
+        let adminjson = await GetData_1.GetData.getAdminByID(id);
+        if (adminjson) {
+            admin = new admin_1.AdminO(adminjson);
+            return admin;
+        }
+        return null;
+    }
     static async getAskedQuestion(question_id, channel_id) {
         let askedArray = [];
         let asked;
@@ -272,6 +281,9 @@ class DO {
     }
     static async deletePlayerAnswer(answer_id) {
         return await DeleteData_1.DeleteData.deletePlayerAnswer(answer_id);
+    }
+    static async deleteAskedQuestion(ask_id) {
+        return await DeleteData_1.DeleteData.deleteAskedQuestion(ask_id);
     }
 }
 exports.DO = DO;

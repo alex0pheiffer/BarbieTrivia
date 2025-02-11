@@ -7,9 +7,11 @@ import { ProposalI } from "./data/data_interfaces/proposal";
 import { DropdownItem } from "./data/component_interfaces/dropdown_item";
 import { QuestionO } from "./data/data_objects/question";
 import { PlayerI } from "./data/data_interfaces/player";
+import { AdminO } from "./data/data_objects/admin";
 
 // hour time out period
 const modal_timeout = 60 * 60 * 1000;
+const ADMIN_COUNT = 3;
 
 export async function addPrompt(interaction: ChatInputCommandInteraction): Promise<number> {
     let result = 0;
@@ -99,7 +101,12 @@ async function createFirstModal(interaction: ChatInputCommandInteraction | Butto
         if (prompt != null) {
             prompt.setQuestion(question_input);
             if (image_input.length > 3) {
-                prompt.setImage(image_input);
+                if (await checkImage(image_input)) {
+                    prompt.setImage(image_input);
+                }
+                else {
+                    prompt.setImage(BCONST.INVALID_IMAGE_URL);
+                }
             }
             result = await DO.updateProposal(prompt, result);
         }
@@ -116,7 +123,10 @@ async function createFirstModal(interaction: ChatInputCommandInteraction | Butto
                     "correct": 0,
                     "date": 0,
                     "submitter": interaction.user.id,
-                    "submitted": 0} as ProposalI;
+                    "submitted": 0,
+                    "accepted": 0,
+                    "declined": 0,
+                    "message_id": ""} as ProposalI;
                 prompt = new ProposalO(prompt_interface);
             result = await DO.insertProposal(prompt);
             prompt = await DO.getProposalByQuestion(question_input);
@@ -648,6 +658,17 @@ async function buttonResponse(interaction: ButtonInteraction, proposal_id: numbe
         }
     }
     if (!result) {
+        // variables needed to be defined outside of "block scope"
+        let admin_count = ADMIN_COUNT; // incorrectly hard coded rn; TODO fix later
+        let current_admin: AdminO | null;
+        let current_admin_bin: number;
+        let all_admin_bin = 0;
+        for (let i=0; i < admin_count; i++) {
+            all_admin_bin += Math.pow(2, i-1);
+        }
+        let accepted_values = prompt!!.getAccepted();
+        let declined_values = prompt!!.getDeclined();
+
         switch (interaction.customId) {
             case BCONST.BTN_QUESTION:
                 result = await createFirstModal(interaction, proposal_id, master_message, isAdminCheck);
@@ -664,6 +685,10 @@ async function buttonResponse(interaction: ButtonInteraction, proposal_id: numbe
                     prompt!!.getAnswers()[2].length > 0 && 
                     prompt!!.getAnswers()[3].length > 0 && 
                     prompt!!.getQuestion().length > 0) {
+                    // if the image url is invalid, replace with no image
+                    if (prompt?.getImage() == BCONST.INVALID_IMAGE_URL) {
+                        prompt!!.setImage("");
+                    }
                     // submit the current prompt
                     prompt!!.setSubmitted(1);
                     const d = new Date();
@@ -718,28 +743,99 @@ async function buttonResponse(interaction: ButtonInteraction, proposal_id: numbe
                 }
                 break;
             case BCONST.BTN_PROPOSAL_ACCEPT:
-                interaction.reply({content: `${interaction.user.username} has chosen to accept this question. It has been added to the pool.`});
-                // add as an official question
-                let question_interface = prompt!!.getQuestionI();
-                let question_object = new QuestionO(question_interface);
-                result = await DO.insertQuestion(question_object);
-                // delete the prompt
-                result = await DO.deleteProposal(prompt!!.getProposalID()!!);
-                // update the user's profile
-                let user_profile = await DO.getPlayer(prompt!!.getSubmitter());
-                if (user_profile != null) {
-                    user_profile.setQSubmitted(user_profile.getQSubmitted() + 1);
-                    result = await DO.updatePlayer(user_profile, result);
+                // check what the current accept number is
+                // each admin has a bit to represent if they've responded
+                // 0001 -- admin 1
+                // 0010 -- admin 2
+                // 0100 -- admin 3
+                current_admin  = await DO.getAdmin(interaction.user.id);
+                current_admin_bin = Math.pow(2, current_admin!!.getAdminID()-1);
+                let accepted_values_new = accepted_values;
+                // check if this user has already responded
+                if (accepted_values & current_admin_bin) {
+                    // user has already accepted
+                    // do nothing
+                    interaction.deferUpdate();
                 }
                 else {
-                    let new_player = {"player_id": 0, "user": interaction.user.id, "q_submitted": 1, "response_total": 0, "response_correct": 0} as PlayerI;
-                    result = await DO.insertPlayer(new_player);
+                    if (declined_values & current_admin_bin) {
+                        // user had _previously_ declined
+                        // update existing declined values
+                        let declined_values_new = declined_values ^ current_admin_bin;
+                        prompt!!.setDeclined(declined_values_new);
+                    }
+                    accepted_values_new = accepted_values | current_admin_bin;
+                    prompt!!.setAccepted(accepted_values_new);
+                    if ((all_admin_bin & accepted_values_new) == all_admin_bin) {
+                        // TODO send a confirmation to the player that submitted the question
+                        // all users have accepted; send the confirmation that the question has been accepted
+                        interaction.reply({content: `All ${admin_count} admins have chosen to accept this question. It has been added to the pool.`});
+                        // add as an official question
+                        let question_interface = prompt!!.getQuestionI();
+                        let question_object = new QuestionO(question_interface);
+                        result = await DO.insertQuestion(question_object);
+                        // delete the prompt
+                        result = await DO.deleteProposal(prompt!!.getProposalID()!!);
+                        // update the user's profile
+                        let user_profile = await DO.getPlayer(prompt!!.getSubmitter());
+                        if (user_profile != null) {
+                            user_profile.setQSubmitted(user_profile.getQSubmitted() + 1);
+                            result = await DO.updatePlayer(user_profile, result);
+                        }
+                        else {
+                            let new_player = {"player_id": 0, "user": interaction.user.id, "q_submitted": 1, "response_total": 0, "response_correct": 0} as PlayerI;
+                            result = await DO.insertPlayer(new_player);
+                        }
+                    }
+                    else {
+                        // we will not be sending an interaction reply
+                        interaction.deferUpdate();
+                        // update the existing message
+                        result = await DO.updateProposal(prompt!!, 0);
+                        updateAdminByMessageID(prompt!!, interaction.client);
+                    }
                 }
                 break;
             case BCONST.BTN_PROPOSAL_DECLINE:
-                interaction.reply({content: `${interaction.user.username} has chosen to decline this question. It has been deleted.`});
-                // delete the prompt
-                result = await DO.deleteProposal(prompt!!.getProposalID()!!);
+                // check what the current accept number is
+                // each admin has a bit to represent if they've responded
+                // 0001 -- admin 1
+                // 0010 -- admin 2
+                // 0100 -- admin 3
+                current_admin  = await DO.getAdmin(interaction.user.id);
+                current_admin_bin = Math.pow(2, current_admin!!.getAdminID()-1);
+                let declined_values_new = declined_values;
+                // check if this user has already responded
+                if (declined_values & current_admin_bin) {
+                    // user has already declined
+                    // do nothing
+                    interaction.deferUpdate();
+                }
+                else {
+                    if (accepted_values & current_admin_bin) {
+                        // user had _previously_ accepted
+                        // update existing accepted values
+                        let accepted_values_new = accepted_values ^ current_admin_bin;
+                        prompt!!.setAccepted(accepted_values_new);
+                    }
+                    declined_values_new = declined_values | current_admin_bin;
+                    prompt!!.setDeclined(declined_values_new);
+                    if ((all_admin_bin & declined_values_new) == all_admin_bin) {
+                        // TODO the last declined player must select a reason for declining the question.
+                        // TODO inform the user of the reason why they were declined
+                        // all users have declined; send the confirmation that the question has been accepted
+                        interaction.reply({content: `All ${admin_count} admins have chosen to decline this question.`});
+                        // delete the prompt
+                        result = await DO.deleteProposal(prompt!!.getProposalID()!!);
+                    }
+                    else {
+                        // we will not be sending an interaction reply
+                        interaction.deferUpdate();
+                        // update the existing message
+                        result = await DO.updateProposal(prompt!!, 0);
+                        updateAdminByMessageID(prompt!!, interaction.client);
+                    }
+                }
                 break;
             default:
                 result = GameInteractionErr.GuildDataUnavailable;
@@ -812,6 +908,9 @@ async function adminCheckEmbed(interaction: ChatInputCommandInteraction | Button
         description += "\n" + "Answer order does not matter.";
     }
 
+    description += "\n";
+    description += await add_admin_acceptdeny(prompt, client);
+
     embed.setDescription(description);
     
     let ans_title: string;
@@ -872,9 +971,16 @@ async function adminCheckEmbed(interaction: ChatInputCommandInteraction | Button
     let message: any;
     if (isFirstPass) {
         message = await channel.send({embeds: [embed], components: [dropdown_ABCD, dropdown_D_Last, btns_deny] });
+        prompt!!.setMessageID(message.id);
+        result = await DO.updateProposal(prompt, 0);
     }
     else if (interaction != null) {
-        message = await interaction.editReply({embeds: [embed], components: [dropdown_ABCD, dropdown_D_Last, btns_deny] });
+        let channel: Channel | undefined = await client.channels.cache.get(BCONST.MASTER_PROMPT_CHANNEL!!);
+        if (channel instanceof TextChannel) {
+            let message: Message | undefined = await channel.messages.fetch(prompt!!.getMessageID())
+            await message.edit({embeds: [embed], components: [dropdown_ABCD, dropdown_D_Last, btns_deny] });
+        }
+        //message = await interaction.editReply({embeds: [embed], components: [dropdown_ABCD, dropdown_D_Last, btns_deny] });
     }
     
     const filter_btn = (inter: MessageComponentInteraction) => (inter.customId === BCONST.BTN_QUESTION || inter.customId === BCONST.BTN_ANSWER || inter.customId === BCONST.BTN_FUNFACT || inter.customId === BCONST.BTN_PROPOSAL_ACCEPT || inter.customId === BCONST.BTN_PROPOSAL_DECLINE);
@@ -969,6 +1075,9 @@ async function adminCheckEmbed(interaction: ChatInputCommandInteraction | Button
             else {
                 description += "\n" + "Answer order does not matter.";
             }
+
+            description += "\n";
+            description += await add_admin_acceptdeny(prompt_new!!, client);
             
             embed.setDescription(description);
             inter.editReply({embeds: [embed], components: [dropdown_ABCD, dropdown_D_Last, btns_deny] });
@@ -1033,6 +1142,9 @@ async function adminCheckEmbed(interaction: ChatInputCommandInteraction | Button
             else {
                 description += "\n" + "Answer order does not matter.";
             }
+
+            description += "\n";
+            description += await add_admin_acceptdeny(prompt_new!!, client);
             
             embed.setDescription(description);
             inter.editReply({embeds: [embed], components: [dropdown_ABCD, dropdown_D_Last, btns_deny] });
@@ -1040,4 +1152,95 @@ async function adminCheckEmbed(interaction: ChatInputCommandInteraction | Button
     });
 
     return result;
+}
+
+async function checkImage(url: string) {
+     
+    const res = await fetch(url, {method: 'HEAD'});
+    const buff = await res.blob();
+   
+    return buff.type.startsWith('image/')
+
+}
+
+async function add_admin_acceptdeny(prompt: ProposalO, client: Client): Promise<string> {
+    let str = "";
+    let admin_count = ADMIN_COUNT; // incorrectly hard coded rn; TODO fix later
+    let admin_bin = 0; // this only works if all the admin IDs are numerical (no skipped/missing id's)
+    let admin: AdminO | null;
+    for (let i=0; i < admin_count; i++) {
+        admin_bin = Math.pow(2, i);
+        admin = await DO.getAdminByID(i+1);
+        if (admin === null) {
+            str += `<Admin ${i}> does not exist.\n`
+        }
+        else {
+            let user = await client.users.fetch(admin.getAdmin());
+            if (admin_bin & prompt!!.getAccepted()) {
+                str += `${user.username} has **accepted**.\n`;
+            }
+            else if (admin_bin & prompt!!.getDeclined()) {
+                str += `${user.username} has **declined**.\n`;
+            }
+            else {
+                str += `${user.username} has **not responded**.\n`;
+            }
+        }
+    }
+    return str;
+}
+
+async function updateAdminByMessageID(prompt: ProposalO, client: Client) {
+    let result = 0;
+    let answer_sent = false;
+    let funfact_sent = false;
+
+    const embed = new EmbedBuilder().setFooter({text: 'Barbie Trivia', iconURL: BCONST.LOGO});
+    embed.setTitle(`**Newly Submitted Question**`);
+    
+    let user = await client.users.fetch(prompt!!.getSubmitter());
+    let description = `_Proposed Question by ${user.username}:_\n\n`;
+    description += `**${prompt!!.getQuestion()}**`;
+    if (prompt!!.getImage().length > 3) {
+        embed.setImage(prompt!!.getImage());
+    }
+    if (prompt!!.getAnswers()[0].length > 0) {
+        answer_sent = true;
+        let letter: string;
+        for (let i=0; i < 4; i++) {
+            if (i == 0) letter = "A"
+            else if (i == 1) letter = "B"
+            else if (i == 2) letter = "C"
+            else letter = "D"
+            if (i == prompt!!.getCorrect()) {
+                description += `\n**${letter}. ${prompt!!.getAnswers()[i]}**`;
+            }
+            else {
+                description += `\n${letter}. ${prompt!!.getAnswers()[i]}`;
+            }
+        }
+        description += `\n\nThe correct answer is \`${prompt!!.getAnswers()[prompt!!.getCorrect()]}\`.`;
+        
+    }
+    if (prompt!!.getFunFact().length > 2) {
+        description += "\n" + prompt!!.getFunFact();
+        funfact_sent = true;
+    }     
+    if (prompt!!.getDAlwaysLast()) {
+        description += "\n" + "Answer D is always last.";
+    }
+    else {
+        description += "\n" + "Answer order does not matter.";
+    }
+
+    description += "\n";
+    description += await add_admin_acceptdeny(prompt, client);
+
+    embed.setDescription(description);
+    let channel: Channel | undefined = await client.channels.cache.get(BCONST.MASTER_PROMPT_CHANNEL!!);
+    if (channel instanceof TextChannel) {
+        let message: Message | undefined = await channel.messages.fetch(prompt!!.getMessageID())
+        console.log(message);
+        await message.edit({embeds: [embed], components: message.components });
+    }
 }

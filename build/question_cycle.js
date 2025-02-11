@@ -78,23 +78,18 @@ async function showQuestionResult(message, ask_id) {
                         users_correct_list.push(r.getUser());
                     }
                     if (player_profile == null) {
-                        console.log("new profile");
                         let new_player = { "player_id": 0, "user": r.getUser(), "q_submitted": 0, "response_total": 1, "response_correct": correct };
                         result = await DOBuilder_1.DO.insertPlayer(new_player);
-                        console.log("insert payer");
                     }
                     else {
-                        console.log("existing profile");
                         player_profile.setResponseTotal(player_profile.getResponseTotal() + 1);
                         if (correct) {
                             player_profile.setResponseCorrect(player_profile.getResponseCorrect() + 1);
                         }
                         result = await DOBuilder_1.DO.updatePlayer(player_profile, result);
-                        console.log("update profile");
                     }
                     // delete the player response
-                    // TODO ADD THIS BACK LATER
-                    //result = await DO.deletePlayerAnswer(r.getAnswerID());
+                    result = await DOBuilder_1.DO.deletePlayerAnswer(r.getAnswerID());
                 }
                 let total = responses.length;
                 let ratio = count[question.getCorrect()] / total;
@@ -184,7 +179,6 @@ async function showQuestionResult(message, ask_id) {
                     console.log("ERROR: could not update the question channel question count.");
                     result = Errors_1.GameInteractionErr.SQLConnectionError;
                 }
-                console.log(`End of the updates. Going to send next question. ${result}`);
                 if (!result) {
                     // add an extra ping to notify the users
                     let channel = await message.client.channels.cache.get(message.channelId);
@@ -233,7 +227,6 @@ async function showQuestionResult(message, ask_id) {
                     }
                     let new_message = await channel.send(second_description);
                     // start the next question
-                    console.log("duration set: ", duration);
                     setTimeout(new_1.createNewQuestion, duration, message.guildId, message.channelId, message.client);
                 }
             }

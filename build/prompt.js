@@ -9,6 +9,7 @@ const Errors_1 = require("./Errors");
 const question_1 = require("./data/data_objects/question");
 // hour time out period
 const modal_timeout = 60 * 60 * 1000;
+const ADMIN_COUNT = 3;
 async function addPrompt(interaction) {
     let result = 0;
     // display the new question
@@ -89,7 +90,12 @@ async function createFirstModal(interaction, current_prompt, master_message, isA
         if (prompt != null) {
             prompt.setQuestion(question_input);
             if (image_input.length > 3) {
-                prompt.setImage(image_input);
+                if (await checkImage(image_input)) {
+                    prompt.setImage(image_input);
+                }
+                else {
+                    prompt.setImage(BCONST_1.BCONST.INVALID_IMAGE_URL);
+                }
             }
             result = await DOBuilder_1.DO.updateProposal(prompt, result);
         }
@@ -106,7 +112,10 @@ async function createFirstModal(interaction, current_prompt, master_message, isA
                 "correct": 0,
                 "date": 0,
                 "submitter": interaction.user.id,
-                "submitted": 0 };
+                "submitted": 0,
+                "accepted": 0,
+                "declined": 0,
+                "message_id": "" };
             prompt = new proposal_1.ProposalO(prompt_interface);
             result = await DOBuilder_1.DO.insertProposal(prompt);
             prompt = await DOBuilder_1.DO.getProposalByQuestion(question_input);
@@ -597,6 +606,16 @@ async function buttonResponse(interaction, proposal_id, master_message, isAdminC
         }
     }
     if (!result) {
+        // variables needed to be defined outside of "block scope"
+        let admin_count = ADMIN_COUNT; // incorrectly hard coded rn; TODO fix later
+        let current_admin;
+        let current_admin_bin;
+        let all_admin_bin = 0;
+        for (let i = 0; i < admin_count; i++) {
+            all_admin_bin += Math.pow(2, i - 1);
+        }
+        let accepted_values = prompt.getAccepted();
+        let declined_values = prompt.getDeclined();
         switch (interaction.customId) {
             case BCONST_1.BCONST.BTN_QUESTION:
                 result = await createFirstModal(interaction, proposal_id, master_message, isAdminCheck);
@@ -613,6 +632,10 @@ async function buttonResponse(interaction, proposal_id, master_message, isAdminC
                     prompt.getAnswers()[2].length > 0 &&
                     prompt.getAnswers()[3].length > 0 &&
                     prompt.getQuestion().length > 0) {
+                    // if the image url is invalid, replace with no image
+                    if (prompt?.getImage() == BCONST_1.BCONST.INVALID_IMAGE_URL) {
+                        prompt.setImage("");
+                    }
                     // submit the current prompt
                     prompt.setSubmitted(1);
                     const d = new Date();
@@ -666,28 +689,99 @@ async function buttonResponse(interaction, proposal_id, master_message, isAdminC
                 }
                 break;
             case BCONST_1.BCONST.BTN_PROPOSAL_ACCEPT:
-                interaction.reply({ content: `${interaction.user.username} has chosen to accept this question. It has been added to the pool.` });
-                // add as an official question
-                let question_interface = prompt.getQuestionI();
-                let question_object = new question_1.QuestionO(question_interface);
-                result = await DOBuilder_1.DO.insertQuestion(question_object);
-                // delete the prompt
-                result = await DOBuilder_1.DO.deleteProposal(prompt.getProposalID());
-                // update the user's profile
-                let user_profile = await DOBuilder_1.DO.getPlayer(prompt.getSubmitter());
-                if (user_profile != null) {
-                    user_profile.setQSubmitted(user_profile.getQSubmitted() + 1);
-                    result = await DOBuilder_1.DO.updatePlayer(user_profile, result);
+                // check what the current accept number is
+                // each admin has a bit to represent if they've responded
+                // 0001 -- admin 1
+                // 0010 -- admin 2
+                // 0100 -- admin 3
+                current_admin = await DOBuilder_1.DO.getAdmin(interaction.user.id);
+                current_admin_bin = Math.pow(2, current_admin.getAdminID() - 1);
+                let accepted_values_new = accepted_values;
+                // check if this user has already responded
+                if (accepted_values & current_admin_bin) {
+                    // user has already accepted
+                    // do nothing
+                    interaction.deferUpdate();
                 }
                 else {
-                    let new_player = { "player_id": 0, "user": interaction.user.id, "q_submitted": 1, "response_total": 0, "response_correct": 0 };
-                    result = await DOBuilder_1.DO.insertPlayer(new_player);
+                    if (declined_values & current_admin_bin) {
+                        // user had _previously_ declined
+                        // update existing declined values
+                        let declined_values_new = declined_values ^ current_admin_bin;
+                        prompt.setDeclined(declined_values_new);
+                    }
+                    accepted_values_new = accepted_values | current_admin_bin;
+                    prompt.setAccepted(accepted_values_new);
+                    if ((all_admin_bin & accepted_values_new) == all_admin_bin) {
+                        // TODO send a confirmation to the player that submitted the question
+                        // all users have accepted; send the confirmation that the question has been accepted
+                        interaction.reply({ content: `All ${admin_count} admins have chosen to accept this question. It has been added to the pool.` });
+                        // add as an official question
+                        let question_interface = prompt.getQuestionI();
+                        let question_object = new question_1.QuestionO(question_interface);
+                        result = await DOBuilder_1.DO.insertQuestion(question_object);
+                        // delete the prompt
+                        result = await DOBuilder_1.DO.deleteProposal(prompt.getProposalID());
+                        // update the user's profile
+                        let user_profile = await DOBuilder_1.DO.getPlayer(prompt.getSubmitter());
+                        if (user_profile != null) {
+                            user_profile.setQSubmitted(user_profile.getQSubmitted() + 1);
+                            result = await DOBuilder_1.DO.updatePlayer(user_profile, result);
+                        }
+                        else {
+                            let new_player = { "player_id": 0, "user": interaction.user.id, "q_submitted": 1, "response_total": 0, "response_correct": 0 };
+                            result = await DOBuilder_1.DO.insertPlayer(new_player);
+                        }
+                    }
+                    else {
+                        // we will not be sending an interaction reply
+                        interaction.deferUpdate();
+                        // update the existing message
+                        result = await DOBuilder_1.DO.updateProposal(prompt, 0);
+                        updateAdminByMessageID(prompt, interaction.client);
+                    }
                 }
                 break;
             case BCONST_1.BCONST.BTN_PROPOSAL_DECLINE:
-                interaction.reply({ content: `${interaction.user.username} has chosen to decline this question. It has been deleted.` });
-                // delete the prompt
-                result = await DOBuilder_1.DO.deleteProposal(prompt.getProposalID());
+                // check what the current accept number is
+                // each admin has a bit to represent if they've responded
+                // 0001 -- admin 1
+                // 0010 -- admin 2
+                // 0100 -- admin 3
+                current_admin = await DOBuilder_1.DO.getAdmin(interaction.user.id);
+                current_admin_bin = Math.pow(2, current_admin.getAdminID() - 1);
+                let declined_values_new = declined_values;
+                // check if this user has already responded
+                if (declined_values & current_admin_bin) {
+                    // user has already declined
+                    // do nothing
+                    interaction.deferUpdate();
+                }
+                else {
+                    if (accepted_values & current_admin_bin) {
+                        // user had _previously_ accepted
+                        // update existing accepted values
+                        let accepted_values_new = accepted_values ^ current_admin_bin;
+                        prompt.setAccepted(accepted_values_new);
+                    }
+                    declined_values_new = declined_values | current_admin_bin;
+                    prompt.setDeclined(declined_values_new);
+                    if ((all_admin_bin & declined_values_new) == all_admin_bin) {
+                        // TODO the last declined player must select a reason for declining the question.
+                        // TODO inform the user of the reason why they were declined
+                        // all users have declined; send the confirmation that the question has been accepted
+                        interaction.reply({ content: `All ${admin_count} admins have chosen to decline this question.` });
+                        // delete the prompt
+                        result = await DOBuilder_1.DO.deleteProposal(prompt.getProposalID());
+                    }
+                    else {
+                        // we will not be sending an interaction reply
+                        interaction.deferUpdate();
+                        // update the existing message
+                        result = await DOBuilder_1.DO.updateProposal(prompt, 0);
+                        updateAdminByMessageID(prompt, interaction.client);
+                    }
+                }
                 break;
             default:
                 result = Errors_1.GameInteractionErr.GuildDataUnavailable;
@@ -754,6 +848,8 @@ async function adminCheckEmbed(interaction, client, prompt, isFirstPass) {
     else {
         description += "\n" + "Answer order does not matter.";
     }
+    description += "\n";
+    description += await add_admin_acceptdeny(prompt, client);
     embed.setDescription(description);
     let ans_title;
     let ans_style;
@@ -805,9 +901,16 @@ async function adminCheckEmbed(interaction, client, prompt, isFirstPass) {
     let message;
     if (isFirstPass) {
         message = await channel.send({ embeds: [embed], components: [dropdown_ABCD, dropdown_D_Last, btns_deny] });
+        prompt.setMessageID(message.id);
+        result = await DOBuilder_1.DO.updateProposal(prompt, 0);
     }
     else if (interaction != null) {
-        message = await interaction.editReply({ embeds: [embed], components: [dropdown_ABCD, dropdown_D_Last, btns_deny] });
+        let channel = await client.channels.cache.get(BCONST_1.BCONST.MASTER_PROMPT_CHANNEL);
+        if (channel instanceof discord_js_1.TextChannel) {
+            let message = await channel.messages.fetch(prompt.getMessageID());
+            await message.edit({ embeds: [embed], components: [dropdown_ABCD, dropdown_D_Last, btns_deny] });
+        }
+        //message = await interaction.editReply({embeds: [embed], components: [dropdown_ABCD, dropdown_D_Last, btns_deny] });
     }
     const filter_btn = (inter) => (inter.customId === BCONST_1.BCONST.BTN_QUESTION || inter.customId === BCONST_1.BCONST.BTN_ANSWER || inter.customId === BCONST_1.BCONST.BTN_FUNFACT || inter.customId === BCONST_1.BCONST.BTN_PROPOSAL_ACCEPT || inter.customId === BCONST_1.BCONST.BTN_PROPOSAL_DECLINE);
     const filter_dropdown = (inter) => inter.customId === BCONST_1.BCONST.DROPDOWN_ABCD;
@@ -901,6 +1004,8 @@ async function adminCheckEmbed(interaction, client, prompt, isFirstPass) {
             else {
                 description += "\n" + "Answer order does not matter.";
             }
+            description += "\n";
+            description += await add_admin_acceptdeny(prompt_new, client);
             embed.setDescription(description);
             inter.editReply({ embeds: [embed], components: [dropdown_ABCD, dropdown_D_Last, btns_deny] });
         }
@@ -964,9 +1069,95 @@ async function adminCheckEmbed(interaction, client, prompt, isFirstPass) {
             else {
                 description += "\n" + "Answer order does not matter.";
             }
+            description += "\n";
+            description += await add_admin_acceptdeny(prompt_new, client);
             embed.setDescription(description);
             inter.editReply({ embeds: [embed], components: [dropdown_ABCD, dropdown_D_Last, btns_deny] });
         }
     });
     return result;
+}
+async function checkImage(url) {
+    const res = await fetch(url, { method: 'HEAD' });
+    const buff = await res.blob();
+    return buff.type.startsWith('image/');
+}
+async function add_admin_acceptdeny(prompt, client) {
+    let str = "";
+    let admin_count = ADMIN_COUNT; // incorrectly hard coded rn; TODO fix later
+    let admin_bin = 0; // this only works if all the admin IDs are numerical (no skipped/missing id's)
+    let admin;
+    for (let i = 0; i < admin_count; i++) {
+        admin_bin = Math.pow(2, i);
+        admin = await DOBuilder_1.DO.getAdminByID(i + 1);
+        if (admin === null) {
+            str += `<Admin ${i}> does not exist.\n`;
+        }
+        else {
+            let user = await client.users.fetch(admin.getAdmin());
+            if (admin_bin & prompt.getAccepted()) {
+                str += `${user.username} has **accepted**.\n`;
+            }
+            else if (admin_bin & prompt.getDeclined()) {
+                str += `${user.username} has **declined**.\n`;
+            }
+            else {
+                str += `${user.username} has **not responded**.\n`;
+            }
+        }
+    }
+    return str;
+}
+async function updateAdminByMessageID(prompt, client) {
+    let result = 0;
+    let answer_sent = false;
+    let funfact_sent = false;
+    const embed = new discord_js_1.EmbedBuilder().setFooter({ text: 'Barbie Trivia', iconURL: BCONST_1.BCONST.LOGO });
+    embed.setTitle(`**Newly Submitted Question**`);
+    let user = await client.users.fetch(prompt.getSubmitter());
+    let description = `_Proposed Question by ${user.username}:_\n\n`;
+    description += `**${prompt.getQuestion()}**`;
+    if (prompt.getImage().length > 3) {
+        embed.setImage(prompt.getImage());
+    }
+    if (prompt.getAnswers()[0].length > 0) {
+        answer_sent = true;
+        let letter;
+        for (let i = 0; i < 4; i++) {
+            if (i == 0)
+                letter = "A";
+            else if (i == 1)
+                letter = "B";
+            else if (i == 2)
+                letter = "C";
+            else
+                letter = "D";
+            if (i == prompt.getCorrect()) {
+                description += `\n**${letter}. ${prompt.getAnswers()[i]}**`;
+            }
+            else {
+                description += `\n${letter}. ${prompt.getAnswers()[i]}`;
+            }
+        }
+        description += `\n\nThe correct answer is \`${prompt.getAnswers()[prompt.getCorrect()]}\`.`;
+    }
+    if (prompt.getFunFact().length > 2) {
+        description += "\n" + prompt.getFunFact();
+        funfact_sent = true;
+    }
+    if (prompt.getDAlwaysLast()) {
+        description += "\n" + "Answer D is always last.";
+    }
+    else {
+        description += "\n" + "Answer order does not matter.";
+    }
+    description += "\n";
+    description += await add_admin_acceptdeny(prompt, client);
+    embed.setDescription(description);
+    let channel = await client.channels.cache.get(BCONST_1.BCONST.MASTER_PROMPT_CHANNEL);
+    if (channel instanceof discord_js_1.TextChannel) {
+        let message = await channel.messages.fetch(prompt.getMessageID());
+        console.log(message);
+        await message.edit({ embeds: [embed], components: message.components });
+    }
 }
