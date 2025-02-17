@@ -20,6 +20,7 @@ class ProposalO_Changes {
     accepted: boolean = false;
     declined: boolean = false;
     message_id: boolean = false;
+    reason: boolean = false;
 
     private changes = new Array<string>();
 
@@ -116,6 +117,12 @@ class ProposalO_Changes {
         this.message_id = true;
         this.changes.push("message_id");
     }
+
+    public change_reason() {
+        if (this.reason) return;
+        this.reason = true;
+        this.changes.push("reason");
+    }
     
     public generateChanges(): Array<string> {
         return this.changes;        
@@ -144,6 +151,7 @@ export class ProposalO {
     private accepted: number;
     private declined: number;
     private message_id: string;
+    private reason: number;
 
     private changes: ProposalO_Changes;
 
@@ -164,6 +172,7 @@ export class ProposalO {
         this.accepted = json.accepted;
         this.declined = json.declined;
         this.message_id = json.message_id;
+        this.reason = json.reason;
 
         this.changes = new ProposalO_Changes(this.proposal_id);
     }
@@ -247,6 +256,10 @@ export class ProposalO {
 
     public getMessageID(): string {
         return this.message_id;
+    }
+
+    public getReason(): number {
+        return this.reason;
     }
 
     public setQuestion(value: string): boolean {
@@ -368,6 +381,12 @@ export class ProposalO {
     public setMessageID(value: string): boolean {
         this.message_id = value;
         this.changes.change_message_id();
+        return true;
+    }
+
+    public setReason(value: number): boolean {
+        this.reason = value;
+        this.changes.change_reason();
         return true;
     }
     

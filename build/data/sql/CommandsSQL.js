@@ -713,6 +713,16 @@ class SQLDATA {
                         sql_changes += ` ${p} = ?,`;
                         arr.push(value);
                         break;
+                    case "reason":
+                        value = proposal.getReason();
+                        err = checkInt(value, errType.InvalidInputToSQL, p);
+                        if (err) {
+                            StartSQL_1.con.conn.rollback();
+                            return resolve(err);
+                        }
+                        sql_changes += ` ${p} = ?,`;
+                        arr.push(value);
+                        break;
                     default:
                         console.log("Error: the property " + p + " is not supported by updateProposal.");
                         break;
@@ -1862,14 +1872,10 @@ exports.SQLDATA = SQLDATA;
 async function checkConnection() {
     // this is kinda important
     // https://github.com/sidorares/node-mysql2/issues/959
-    console.log("checking connection");
     while (!StartSQL_1.con.connected) {
-        console.log("attempt to connect");
         await (0, StartSQL_1.connectSQL)();
     }
-    console.log("regenerating the connection");
     await StartSQL_1.con.regenerate_connection();
-    console.log("continuting with the new connection");
 }
 function checkInt(value, err, fieldName) {
     if (value < -1 || value > MAX_INT) {

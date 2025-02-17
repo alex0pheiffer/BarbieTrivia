@@ -60,6 +60,10 @@ class BCONST {
     static BTN_PROPOSAL_SUBMIT = "Proposal Submit";
     static BTN_PROPOSAL_ACCEPT = "Proposal Accept";
     static BTN_PROPOSAL_DECLINE = "Proposal Decline";
+    static BTN_DECLINE_END = "Decline and Submit";
+    static BTN_ACCEPT_END = "Accept and Submit";
+    static DROPDOWN_DECLINE = "Decline Reasoning";
+    static DROPDOWN_ACCEPT = "Accept Reasoning";
     // Game Specific Information
     static TIME_UNTIL_ANSWER = 23 * 60 * 60 * 1000; //ms
     static INVALID_IMAGE_URL = "https://cdn.discordapp.com/attachments/1305182222214496288/1337795538887770233/invalid_image_url.png?ex=67a8beaf&is=67a76d2f&hm=4ab2c0ab907fbb65d06132094250e65e5184a82e5161e1895a90cb7c88d53f6b&";
@@ -155,6 +159,15 @@ class BCONST {
         "Best 2 out of 3?",
         "Maybe _you_ should try asking questions then (No, really, try `/add`)."
     ];
+    static DECLINE_REASON = [
+        ["Inaccurate", "This question contains information that is not accurate."],
+        ["Irrelevant", "The submitted question is not consistent with the Barbie theme."],
+        ["Subjective", "The submitted question is not objective and has not one correct answer."],
+        ["Controversial", "The submitted question may be controversial or offensive and has been declined."],
+        ["Missing Image", "The question refers to an image that cannot be viewed."],
+        ["Irrelevant Image", "The question contains an image that is not appropriate for the question."]
+    ];
+    static DECLINE_HELP = "If you'd like to revise the question, you can resubmit it using the `/add` command. For any questions, you may contact `Longlongtail`. Please provide your proposal id number.";
 }
 exports.BCONST = BCONST;
 // export the class to be used by main.ts

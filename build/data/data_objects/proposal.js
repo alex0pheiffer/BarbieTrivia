@@ -19,6 +19,7 @@ class ProposalO_Changes {
     accepted = false;
     declined = false;
     message_id = false;
+    reason = false;
     changes = new Array();
     constructor(proposal_id) {
         this.proposal_id = proposal_id;
@@ -113,6 +114,12 @@ class ProposalO_Changes {
         this.message_id = true;
         this.changes.push("message_id");
     }
+    change_reason() {
+        if (this.reason)
+            return;
+        this.reason = true;
+        this.changes.push("reason");
+    }
     generateChanges() {
         return this.changes;
     }
@@ -137,6 +144,7 @@ class ProposalO {
     accepted;
     declined;
     message_id;
+    reason;
     changes;
     constructor(json) {
         this.proposal_id = json.proposal_id;
@@ -155,6 +163,7 @@ class ProposalO {
         this.accepted = json.accepted;
         this.declined = json.declined;
         this.message_id = json.message_id;
+        this.reason = json.reason;
         this.changes = new ProposalO_Changes(this.proposal_id);
     }
     getProposalID() {
@@ -220,6 +229,9 @@ class ProposalO {
     }
     getMessageID() {
         return this.message_id;
+    }
+    getReason() {
+        return this.reason;
     }
     setQuestion(value) {
         if (value.length > Database_Constants_1.DBC.question_length) {
@@ -326,6 +338,11 @@ class ProposalO {
     setMessageID(value) {
         this.message_id = value;
         this.changes.change_message_id();
+        return true;
+    }
+    setReason(value) {
+        this.reason = value;
+        this.changes.change_reason();
         return true;
     }
     isChanges() {

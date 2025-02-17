@@ -75,7 +75,7 @@ async function createFirstModal(interaction: ChatInputCommandInteraction | Butto
                     i.customId === `${BCONST.MODAL_PROMPT}_${interaction.id}`;
                 if (filter) {
                     if (isAdminCheck) {
-                        await i.deferReply({ephemeral: false});
+                        await i.deferUpdate();
                         console.log("Defer Reply (1)")
                     }
                     else {
@@ -233,7 +233,7 @@ async function createSecondModal(interaction: ChatInputCommandInteraction | Butt
                     i.customId === `${BCONST.MODAL_PROMPT2}_${interaction.id}`;
                 if (filter) {
                     if (isAdminCheck) {
-                        await i.deferReply({ephemeral: false});
+                        await i.deferUpdate();
                         console.log("Defer Reply (3)")
                     }
                     else {
@@ -330,7 +330,7 @@ async function createThirdModal(interaction: ChatInputCommandInteraction | Butto
                     i.customId === `${BCONST.MODAL_PROMPT3}_${interaction.id}`;
                 if (filter) {
                     if (isAdminCheck) {
-                        await i.deferReply({ephemeral: false});
+                        await i.deferUpdate();
                         console.log("Defer Reply (5)")
                     }
                     else {
@@ -468,7 +468,6 @@ async function createEmbedResult(interaction: ChatInputCommandInteraction | Butt
         new ButtonBuilder().setCustomId(BCONST.BTN_PROPOSAL_SUBMIT).setLabel("Submit").setStyle(submit_style));
     
     // create in-between button
-    
     const dropdown_ABCD: any = new ActionRowBuilder().addComponents( new StringSelectMenuBuilder().setCustomId(BCONST.DROPDOWN_ABCD).setPlaceholder('Select the correct answer:').addOptions(itemsDropDown_abcd));
     const dropdown_D_Last: any = new ActionRowBuilder().addComponents( new StringSelectMenuBuilder().setCustomId(BCONST.DROPDOWN_DLAST).setPlaceholder('Should option D always be last?').addOptions(itemsDropDown_d_always_last));
     let message: any;
@@ -664,7 +663,7 @@ async function buttonResponse(interaction: ButtonInteraction, proposal_id: numbe
         let current_admin_bin: number;
         let all_admin_bin = 0;
         for (let i=0; i < admin_count; i++) {
-            all_admin_bin += Math.pow(2, i-1);
+            all_admin_bin += Math.pow(2, i);
         }
         let accepted_values = prompt!!.getAccepted();
         let declined_values = prompt!!.getDeclined();
@@ -775,7 +774,8 @@ async function buttonResponse(interaction: ButtonInteraction, proposal_id: numbe
                         let question_object = new QuestionO(question_interface);
                         result = await DO.insertQuestion(question_object);
                         // delete the prompt
-                        result = await DO.deleteProposal(prompt!!.getProposalID()!!);
+                        console.log("DELETE PROPOSAL WAS HERE (1)")
+                        //result = await DO.deleteProposal(prompt!!.getProposalID()!!);
                         // update the user's profile
                         let user_profile = await DO.getPlayer(prompt!!.getSubmitter());
                         if (user_profile != null) {
@@ -805,6 +805,7 @@ async function buttonResponse(interaction: ButtonInteraction, proposal_id: numbe
                 current_admin  = await DO.getAdmin(interaction.user.id);
                 current_admin_bin = Math.pow(2, current_admin!!.getAdminID()-1);
                 let declined_values_new = declined_values;
+                
                 // check if this user has already responded
                 if (declined_values & current_admin_bin) {
                     // user has already declined
@@ -813,6 +814,7 @@ async function buttonResponse(interaction: ButtonInteraction, proposal_id: numbe
                 }
                 else {
                     if (accepted_values & current_admin_bin) {
+                        console.log("Previously accepted");
                         // user had _previously_ accepted
                         // update existing accepted values
                         let accepted_values_new = accepted_values ^ current_admin_bin;
@@ -821,14 +823,123 @@ async function buttonResponse(interaction: ButtonInteraction, proposal_id: numbe
                     declined_values_new = declined_values | current_admin_bin;
                     prompt!!.setDeclined(declined_values_new);
                     if ((all_admin_bin & declined_values_new) == all_admin_bin) {
+                        await interaction.deferReply();
                         // TODO the last declined player must select a reason for declining the question.
-                        // TODO inform the user of the reason why they were declined
+                        const embed = new EmbedBuilder().setFooter({text: 'Barbie Trivia', iconURL: BCONST.LOGO});
+                        embed.setTitle(`**Proposal Decline Reason**`);
+                        let description = `All ${admin_count} admins have chosen to decline this question. Please choose a reason to decline the question.\n`;
+                        embed.setDescription(description);
+                        
+                        let declineDropDown = Array<DropdownItem>();
+                        for (let i=0; i < BCONST.DECLINE_REASON.length; i++) {
+                            let ddd_label = BCONST.DECLINE_REASON[i][0];
+                            let ddd_description = BCONST.DECLINE_REASON[i][1];
+                            declineDropDown.push({"description": ddd_description, "label": ddd_label, "value": i.toString()})
+                        }
+                        
+                        const btn_decline: any = new ActionRowBuilder().addComponents(
+                            new ButtonBuilder().setCustomId(BCONST.BTN_DECLINE_END).setLabel("Send Decline").setStyle(ButtonStyle.Secondary));
+                        const dropdown_reason: any = new ActionRowBuilder().addComponents( new StringSelectMenuBuilder().setCustomId(BCONST.DROPDOWN_DECLINE).setPlaceholder('Select the reason.').addOptions(declineDropDown));
+                        
                         // all users have declined; send the confirmation that the question has been accepted
-                        interaction.reply({content: `All ${admin_count} admins have chosen to decline this question.`});
+                        let message = await interaction.editReply({embeds: [embed], components: [dropdown_reason, btn_decline] });
                         // delete the prompt
-                        result = await DO.deleteProposal(prompt!!.getProposalID()!!);
+                        console.log("DELETE PROPOSAL WAS HERE (2)")
+                        //result = await DO.deleteProposal(prompt!!.getProposalID()!!);
+
+                        // collectors for the button/dropdown widgets sent
+                        const filter_btn_decline = (inter: MessageComponentInteraction) => (inter.customId === BCONST.BTN_DECLINE_END);
+                        const filter_drop_decline = (inter: MessageComponentInteraction) => (inter.customId === BCONST.DROPDOWN_DECLINE);
+                        const btn_collector = message.createMessageComponentCollector({ filter: filter_btn_decline, componentType: ComponentType.Button});
+                        const collector_drop_d = message.createMessageComponentCollector({filter: filter_drop_decline});
+                        btn_collector.on('collect', async (inter: ButtonInteraction) => {
+                            await inter.deferReply();
+                            if (prompt!!.getProposalID() == null) {
+                                result = GameInteractionErr.QuestionDoesNotExist;
+                            }
+                            else {
+                                let refresh_prompt = await DO.getProposal(prompt!!.getProposalID()!!);
+                                if (refresh_prompt === null) {
+                                    result = GameInteractionErr.QuestionDoesNotExist;
+                                    inter.editReply("This proposal was already rejected.");
+                                }
+                                else {
+                                    if (refresh_prompt.getReason() > 0) {
+                                        // inform the user why they were declined
+                                        let submitter_description = `Hello user. I am here to inform you that your question submission [ID=${refresh_prompt.getProposalID()}] has been **declined** by the admins.\n\n`;
+                                        submitter_description += `**Reason:** ${BCONST.DECLINE_REASON[refresh_prompt.getReason()-1][0]}\n`;
+                                        submitter_description += `${BCONST.DECLINE_REASON[refresh_prompt.getReason()-1][1]}\n${BCONST.DECLINE_HELP}\n\n`;
+                                        submitter_description += `**Original Question:**\n`
+                                        submitter_description += `${refresh_prompt!!.getQuestion()}`;
+                                        let letter: string;
+                                        for (let i=0; i < 4; i++) {
+                                            if (i == 0) letter = "A"
+                                            else if (i == 1) letter = "B"
+                                            else if (i == 2) letter = "C"
+                                            else letter = "D"
+                                            if (i == refresh_prompt!!.getCorrect()) {
+                                                submitter_description += `\n**${letter}. ${refresh_prompt!!.getAnswers()[i]}**`;
+                                            }
+                                            else {
+                                                submitter_description += `\n${letter}. ${refresh_prompt!!.getAnswers()[i]}`;
+                                            }
+                                        }
+                                        submitter_description += `\n\nCorrect: \`${refresh_prompt!!.getAnswers()[refresh_prompt!!.getCorrect()]}\`.`;
+                                        if (refresh_prompt!!.getImage().length > 3) {
+                                            submitter_description += `\nAttachment: ${refresh_prompt!!.getImage()}`
+                                        }
+                                        if (refresh_prompt!!.getFunFact().length > 2) {
+                                            submitter_description += "\nFun Fact: " + refresh_prompt!!.getFunFact();
+                                        }
+                                        let submit_user = await inter.client.users.fetch(refresh_prompt.getSubmitter());
+                                        try {
+                                            inter.client.users.send(refresh_prompt.getSubmitter(), submitter_description);
+                                            inter.editReply("Response sent to user.");
+                                        }
+                                        catch (err) {
+                                            inter.editReply(`Cannot send to user. Returned with error:\n${err}`);
+                                        }
+                                    }
+                                    else {
+                                        inter.editReply("You must select a reason to decline the proposal.");
+                                    }
+                                }
+                            }
+                        });
+                        btn_collector.on('end', (collected: string) => {
+                            // nothing 
+                        });
+                        collector_drop_d.on('collect', async (inter: StringSelectMenuInteraction) => {
+                            let prompt_id = prompt!!.getProposalID();
+                            if (prompt_id == null) {
+                                result = GameInteractionErr.QuestionDoesNotExist;
+                                await inter.deferUpdate();
+                            }
+                            else {
+                                let refresh_prompt = await DO.getProposal(prompt_id);
+                                if (refresh_prompt === null) {
+                                    result = GameInteractionErr.QuestionDoesNotExist;
+                                    inter.reply("This proposal was already rejected.");
+                                }
+                                else {
+                                    refresh_prompt.setReason(Number(inter.values[0])+1);
+                                    result = await DO.updateProposal(refresh_prompt, result);
+                                    const embed_update = new EmbedBuilder().setFooter({text: 'Barbie Trivia', iconURL: BCONST.LOGO});
+                                    embed_update.setTitle(`**Proposal Decline Reason**`);
+                                    let description = `All ${admin_count} admins have chosen to decline this question. Please choose a reason to decline the question.\n\n`;
+                                    description += `**Reason:** [${BCONST.DECLINE_REASON[Number(inter.values[0])][0]}]\n`
+                                    description +=  BCONST.DECLINE_REASON[Number(inter.values[0])][1];
+                                    embed.setDescription(description);
+                                    await inter.update({embeds: [embed], components: inter.message.components })
+                                }
+                            }
+                        });
+                        collector_drop_d.on('end', (collected: string) => {
+                            // nothing
+                        });
                     }
                     else {
+                        console.log("Not all admins have declined");
                         // we will not be sending an interaction reply
                         interaction.deferUpdate();
                         // update the existing message
@@ -871,7 +982,7 @@ async function adminCheckEmbed(interaction: ChatInputCommandInteraction | Button
     let funfact_sent = false;
 
     const embed = new EmbedBuilder().setFooter({text: 'Barbie Trivia', iconURL: BCONST.LOGO});
-    embed.setTitle(`**Newly Submitted Question**`);
+    embed.setTitle(`**Newly Submitted Question [#${prompt!!.getProposalID()} ]**`);
     
     let user = await client.users.fetch(prompt!!.getSubmitter());
     let description = `_Proposed Question by ${user.username}:_\n\n`;
@@ -977,8 +1088,8 @@ async function adminCheckEmbed(interaction: ChatInputCommandInteraction | Button
     else if (interaction != null) {
         let channel: Channel | undefined = await client.channels.cache.get(BCONST.MASTER_PROMPT_CHANNEL!!);
         if (channel instanceof TextChannel) {
-            let message: Message | undefined = await channel.messages.fetch(prompt!!.getMessageID())
-            await message.edit({embeds: [embed], components: [dropdown_ABCD, dropdown_D_Last, btns_deny] });
+            message = await channel.messages.fetch(prompt!!.getMessageID())
+            await message.edit({embeds: [embed], components: [dropdown_ABCD, dropdown_D_Last, btns_deny] });   
         }
         //message = await interaction.editReply({embeds: [embed], components: [dropdown_ABCD, dropdown_D_Last, btns_deny] });
     }
@@ -1240,7 +1351,6 @@ async function updateAdminByMessageID(prompt: ProposalO, client: Client) {
     let channel: Channel | undefined = await client.channels.cache.get(BCONST.MASTER_PROMPT_CHANNEL!!);
     if (channel instanceof TextChannel) {
         let message: Message | undefined = await channel.messages.fetch(prompt!!.getMessageID())
-        console.log(message);
         await message.edit({embeds: [embed], components: message.components });
     }
 }

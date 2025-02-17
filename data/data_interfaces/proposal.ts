@@ -30,4 +30,5 @@ export interface ProposalI {
     accepted: number;
     declined: number;
     message_id: string;
+    reason: number;
 }
