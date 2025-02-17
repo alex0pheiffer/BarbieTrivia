@@ -520,6 +520,7 @@ async function createEmbedResult(interaction: ChatInputCommandInteraction | Butt
         // nothing 
     });
     collector_drop.on('collect', async (inter: StringSelectMenuInteraction) => {
+        console.log("defer update (3)")
         await inter.deferUpdate();
         let proposal_id = prompt!!.getProposalID()!!;
         let result = 0;
@@ -583,6 +584,7 @@ async function createEmbedResult(interaction: ChatInputCommandInteraction | Butt
         // nothing
     });
     collector_drop_d.on('collect', async (inter: StringSelectMenuInteraction) => {
+        console.log("defer update (4)")
         await inter.deferUpdate();
         let proposal_id = prompt!!.getProposalID()!!;
         let result = 0;
@@ -754,6 +756,7 @@ async function buttonResponse(interaction: ButtonInteraction, proposal_id: numbe
                 if (accepted_values & current_admin_bin) {
                     // user has already accepted
                     // do nothing
+                    console.log("defer update (5)")
                     interaction.deferUpdate();
                 }
                 else {
@@ -774,7 +777,7 @@ async function buttonResponse(interaction: ButtonInteraction, proposal_id: numbe
                         let question_object = new QuestionO(question_interface);
                         result = await DO.insertQuestion(question_object);
                         // delete the prompt
-                        console.log("DELETE PROPOSAL WAS HERE (1)")
+                        // TODO you probably dont want to delete here if youre going to be sending a reply to the user
                         //result = await DO.deleteProposal(prompt!!.getProposalID()!!);
                         // update the user's profile
                         let user_profile = await DO.getPlayer(prompt!!.getSubmitter());
@@ -789,6 +792,7 @@ async function buttonResponse(interaction: ButtonInteraction, proposal_id: numbe
                     }
                     else {
                         // we will not be sending an interaction reply
+                        console.log("defer update (6)")
                         interaction.deferUpdate();
                         // update the existing message
                         result = await DO.updateProposal(prompt!!, 0);
@@ -810,6 +814,7 @@ async function buttonResponse(interaction: ButtonInteraction, proposal_id: numbe
                 if (declined_values & current_admin_bin) {
                     // user has already declined
                     // do nothing
+                    console.log("defer update (7)")
                     interaction.deferUpdate();
                 }
                 else {
@@ -823,6 +828,7 @@ async function buttonResponse(interaction: ButtonInteraction, proposal_id: numbe
                     declined_values_new = declined_values | current_admin_bin;
                     prompt!!.setDeclined(declined_values_new);
                     if ((all_admin_bin & declined_values_new) == all_admin_bin) {
+                        console.log("defer reply (0)")
                         await interaction.deferReply();
                         // TODO the last declined player must select a reason for declining the question.
                         const embed = new EmbedBuilder().setFooter({text: 'Barbie Trivia', iconURL: BCONST.LOGO});
@@ -842,17 +848,16 @@ async function buttonResponse(interaction: ButtonInteraction, proposal_id: numbe
                         const dropdown_reason: any = new ActionRowBuilder().addComponents( new StringSelectMenuBuilder().setCustomId(BCONST.DROPDOWN_DECLINE).setPlaceholder('Select the reason.').addOptions(declineDropDown));
                         
                         // all users have declined; send the confirmation that the question has been accepted
+                        console.log("edit reply (0)")
                         let message = await interaction.editReply({embeds: [embed], components: [dropdown_reason, btn_decline] });
-                        // delete the prompt
-                        console.log("DELETE PROPOSAL WAS HERE (2)")
-                        //result = await DO.deleteProposal(prompt!!.getProposalID()!!);
-
+                        
                         // collectors for the button/dropdown widgets sent
                         const filter_btn_decline = (inter: MessageComponentInteraction) => (inter.customId === BCONST.BTN_DECLINE_END);
                         const filter_drop_decline = (inter: MessageComponentInteraction) => (inter.customId === BCONST.DROPDOWN_DECLINE);
                         const btn_collector = message.createMessageComponentCollector({ filter: filter_btn_decline, componentType: ComponentType.Button});
                         const collector_drop_d = message.createMessageComponentCollector({filter: filter_drop_decline});
                         btn_collector.on('collect', async (inter: ButtonInteraction) => {
+                            console.log("defer reply (1)")
                             await inter.deferReply();
                             if (prompt!!.getProposalID() == null) {
                                 result = GameInteractionErr.QuestionDoesNotExist;
@@ -861,6 +866,7 @@ async function buttonResponse(interaction: ButtonInteraction, proposal_id: numbe
                                 let refresh_prompt = await DO.getProposal(prompt!!.getProposalID()!!);
                                 if (refresh_prompt === null) {
                                     result = GameInteractionErr.QuestionDoesNotExist;
+                                    console.log("edit reply (1)")
                                     inter.editReply("This proposal was already rejected.");
                                 }
                                 else {
@@ -894,13 +900,18 @@ async function buttonResponse(interaction: ButtonInteraction, proposal_id: numbe
                                         let submit_user = await inter.client.users.fetch(refresh_prompt.getSubmitter());
                                         try {
                                             inter.client.users.send(refresh_prompt.getSubmitter(), submitter_description);
-                                            inter.editReply("Response sent to user.");
+                                            console.log("edit reply (2)")
+                                            inter.editReply(`Response sent to user; Proposal [#${prompt!!.getProposalID()}] was deleted from the database.`);
+                                            // delete the prompt
+                                            result = await DO.deleteProposal(prompt!!.getProposalID()!!);
                                         }
                                         catch (err) {
+                                            console.log("edit reply (3)")
                                             inter.editReply(`Cannot send to user. Returned with error:\n${err}`);
                                         }
                                     }
                                     else {
+                                        console.log("edit reply (4)")
                                         inter.editReply("You must select a reason to decline the proposal.");
                                     }
                                 }
@@ -913,6 +924,7 @@ async function buttonResponse(interaction: ButtonInteraction, proposal_id: numbe
                             let prompt_id = prompt!!.getProposalID();
                             if (prompt_id == null) {
                                 result = GameInteractionErr.QuestionDoesNotExist;
+                                console.log("defer update (8)")
                                 await inter.deferUpdate();
                             }
                             else {
@@ -941,6 +953,7 @@ async function buttonResponse(interaction: ButtonInteraction, proposal_id: numbe
                     else {
                         console.log("Not all admins have declined");
                         // we will not be sending an interaction reply
+                        console.log("defer update (0)")
                         interaction.deferUpdate();
                         // update the existing message
                         result = await DO.updateProposal(prompt!!, 0);
@@ -1084,6 +1097,177 @@ async function adminCheckEmbed(interaction: ChatInputCommandInteraction | Button
         message = await channel.send({embeds: [embed], components: [dropdown_ABCD, dropdown_D_Last, btns_deny] });
         prompt!!.setMessageID(message.id);
         result = await DO.updateProposal(prompt, 0);
+
+        const filter_btn = (inter: MessageComponentInteraction) => (inter.customId === BCONST.BTN_QUESTION || inter.customId === BCONST.BTN_ANSWER || inter.customId === BCONST.BTN_FUNFACT || inter.customId === BCONST.BTN_PROPOSAL_ACCEPT || inter.customId === BCONST.BTN_PROPOSAL_DECLINE);
+        const filter_dropdown = (inter: MessageComponentInteraction) => inter.customId === BCONST.DROPDOWN_ABCD;
+        const filter_dropdown_d = (inter: MessageComponentInteraction) => inter.customId === BCONST.DROPDOWN_DLAST;
+        const btn_collector = message.createMessageComponentCollector({ filter: filter_btn, componentType: ComponentType.Button});
+        const collector_drop = message.createMessageComponentCollector({filter: filter_dropdown});
+        const collector_drop_d = message.createMessageComponentCollector({filter: filter_dropdown_d});
+        btn_collector.on('collect', async (inter: ButtonInteraction) => {
+            if (prompt!!.getProposalID() == null) {
+                result = GameInteractionErr.QuestionDoesNotExist;
+            }
+            else {
+                console.log("buttonresponse #")
+                buttonResponse(inter, prompt!!.getProposalID()!!, message!!, true).then(async (err) => {
+                    let resp = "";
+                    switch (err) {
+                        case 0: 
+                            break;
+                        case GameInteractionErr.QuestionDoesNotExist:
+                            resp = "The proposal has ended.";
+                            break;
+                        case GameInteractionErr.NoAnswerSelected:
+                        case GameInteractionErr.QuestionExpired:
+                        case GameInteractionErr.GuildDataUnavailable:
+                        case GameInteractionErr.SQLConnectionError:
+                        default:
+                            resp = "Something went wrong.";
+                    }
+        
+                    // respond to the interaction
+                    if (resp.length > 0) {
+                        inter.reply(resp);
+                    }
+                });
+            }
+        });
+        btn_collector.on('end', (collected: string) => {
+            // nothing 
+        });
+        collector_drop.on('collect', async (inter: StringSelectMenuInteraction) => {
+            console.log("defer update (1)")
+            await inter.deferUpdate();
+            let proposal_id = prompt!!.getProposalID()!!;
+            let result = 0;
+            // get the current proposal
+            let prompt_new: ProposalO | null = null;
+            if (proposal_id >= 0) {
+                prompt_new = await DO.getProposal(proposal_id);
+                if (prompt == null) {
+                    result = GameInteractionErr.QuestionDoesNotExist;
+                }
+            }
+
+            if (!result) {
+                prompt_new!!.setCorrect(Number(inter.values[0]))
+                result = await DO.updateProposal(prompt_new!!, result);
+
+                // update the description
+                // this is poor programming but im tired
+                const embed = new EmbedBuilder().setFooter({text: 'Barbie Trivia', iconURL: BCONST.LOGO});
+                embed.setTitle(`**Newly Submitted Question**`);
+                let user = await client.users.fetch(prompt!!.getSubmitter());
+                let description = `_Proposed Question by ${user.username}:_\n\n`;
+                description += `**${prompt!!.getQuestion()}**`;
+                if (prompt_new!!.getImage().length > 3) {
+                    embed.setImage(prompt_new!!.getImage());
+                }
+                if (prompt_new!!.getAnswers()[0].length > 0) {
+                    answer_sent = true;
+                    let letter: string;
+                    for (let i=0; i < 4; i++) {
+                        if (i == 0) letter = "A"
+                        else if (i == 1) letter = "B"
+                        else if (i == 2) letter = "C"
+                        else letter = "D"
+                        if (i == prompt_new!!.getCorrect()) {
+                            description += `\n**${letter}. ${prompt_new!!.getAnswers()[i]}**`;
+                        }
+                        else {
+                            description += `\n${letter}. ${prompt_new!!.getAnswers()[i]}`;
+                        }
+                    }
+                    description += `\n\nThe correct answer is \`${prompt_new!!.getAnswers()[prompt_new!!.getCorrect()]}\`.`;
+                    
+                }
+                if (prompt_new!!.getFunFact().length > 2) {
+                    description += "\n" + prompt_new!!.getFunFact();
+                    funfact_sent = true;
+                }           
+                if (prompt_new!!.getDAlwaysLast()) {
+                    description += "\n" + "Answer D is always last.";
+                }
+                else {
+                    description += "\n" + "Answer order does not matter.";
+                }
+
+                description += "\n";
+                description += await add_admin_acceptdeny(prompt_new!!, client);
+                
+                embed.setDescription(description);
+                inter.editReply({embeds: [embed], components: [dropdown_ABCD, dropdown_D_Last, btns_deny] });
+                
+            }
+        });
+        collector_drop.on('end', (collected: string) => {
+            // nothing
+        });
+        collector_drop_d.on('collect', async (inter: StringSelectMenuInteraction) => {
+            console.log("defer update (2)")
+            await inter.deferUpdate();
+            let proposal_id = prompt!!.getProposalID()!!;
+            let result = 0;
+            // get the current proposal
+            let prompt_new: ProposalO | null = null;
+            if (proposal_id >= 0) {
+                prompt_new = await DO.getProposal(proposal_id);
+                if (prompt == null) {
+                    result = GameInteractionErr.QuestionDoesNotExist;
+                }
+            }
+
+            if (!result) {
+                prompt_new!!.setDAlwaysLast(Boolean(Number(inter.values[0])))
+                result = await DO.updateProposal(prompt_new!!, result);
+
+                // update the description
+                // this is poor programming but im tired
+                const embed = new EmbedBuilder().setFooter({text: 'Barbie Trivia', iconURL: BCONST.LOGO});
+                embed.setTitle(`**Newly Submitted Question**`);
+                let user = await client.users.fetch(prompt!!.getSubmitter());
+                let description = `_Proposed Question by ${user.username}:_\n\n`;
+                description += `**${prompt!!.getQuestion()}**`;
+                if (prompt_new!!.getImage().length > 3) {
+                    embed.setImage(prompt_new!!.getImage());
+                }
+                if (prompt_new!!.getAnswers()[0].length > 0) {
+                    answer_sent = true;
+                    let letter: string;
+                    for (let i=0; i < 4; i++) {
+                        if (i == 0) letter = "A"
+                        else if (i == 1) letter = "B"
+                        else if (i == 2) letter = "C"
+                        else letter = "D"
+                        if (i == prompt_new!!.getCorrect()) {
+                            description += `\n**${letter}. ${prompt_new!!.getAnswers()[i]}**`;
+                        }
+                        else {
+                            description += `\n${letter}. ${prompt_new!!.getAnswers()[i]}`;
+                        }
+                    }
+                    description += `\n\nThe correct answer is \`${prompt_new!!.getAnswers()[prompt_new!!.getCorrect()]}\`.`;
+                    
+                }
+                if (prompt_new!!.getFunFact().length > 2) {
+                    description += "\n" + prompt_new!!.getFunFact();
+                    funfact_sent = true;
+                }   
+                if (prompt_new!!.getDAlwaysLast()) {
+                    description += "\n" + "Answer D is always last.";
+                }
+                else {
+                    description += "\n" + "Answer order does not matter.";
+                }
+
+                description += "\n";
+                description += await add_admin_acceptdeny(prompt_new!!, client);
+                
+                embed.setDescription(description);
+                inter.editReply({embeds: [embed], components: [dropdown_ABCD, dropdown_D_Last, btns_deny] });
+            }
+        });
     }
     else if (interaction != null) {
         let channel: Channel | undefined = await client.channels.cache.get(BCONST.MASTER_PROMPT_CHANNEL!!);
@@ -1093,174 +1277,6 @@ async function adminCheckEmbed(interaction: ChatInputCommandInteraction | Button
         }
         //message = await interaction.editReply({embeds: [embed], components: [dropdown_ABCD, dropdown_D_Last, btns_deny] });
     }
-    
-    const filter_btn = (inter: MessageComponentInteraction) => (inter.customId === BCONST.BTN_QUESTION || inter.customId === BCONST.BTN_ANSWER || inter.customId === BCONST.BTN_FUNFACT || inter.customId === BCONST.BTN_PROPOSAL_ACCEPT || inter.customId === BCONST.BTN_PROPOSAL_DECLINE);
-    const filter_dropdown = (inter: MessageComponentInteraction) => inter.customId === BCONST.DROPDOWN_ABCD;
-    const filter_dropdown_d = (inter: MessageComponentInteraction) => inter.customId === BCONST.DROPDOWN_DLAST;
-    const btn_collector = message.createMessageComponentCollector({ filter: filter_btn, componentType: ComponentType.Button});
-    const collector_drop = message.createMessageComponentCollector({filter: filter_dropdown});
-    const collector_drop_d = message.createMessageComponentCollector({filter: filter_dropdown_d});
-    btn_collector.on('collect', async (inter: ButtonInteraction) => {
-        if (prompt!!.getProposalID() == null) {
-            result = GameInteractionErr.QuestionDoesNotExist;
-        }
-        else {
-            buttonResponse(inter, prompt!!.getProposalID()!!, message!!, true).then(async (err) => {
-                let resp = "";
-                switch (err) {
-                    case 0: 
-                        break;
-                    case GameInteractionErr.QuestionDoesNotExist:
-                        resp = "The proposal has ended.";
-                        break;
-                    case GameInteractionErr.NoAnswerSelected:
-                    case GameInteractionErr.QuestionExpired:
-                    case GameInteractionErr.GuildDataUnavailable:
-                    case GameInteractionErr.SQLConnectionError:
-                    default:
-                        resp = "Something went wrong.";
-                }
-    
-                // respond to the interaction
-                if (resp.length > 0) {
-                    inter.reply(resp);
-                }
-            });
-        }
-    });
-    btn_collector.on('end', (collected: string) => {
-        // nothing 
-    });
-    collector_drop.on('collect', async (inter: StringSelectMenuInteraction) => {
-        await inter.deferUpdate();
-        let proposal_id = prompt!!.getProposalID()!!;
-        let result = 0;
-        // get the current proposal
-        let prompt_new: ProposalO | null = null;
-        if (proposal_id >= 0) {
-            prompt_new = await DO.getProposal(proposal_id);
-            if (prompt == null) {
-                result = GameInteractionErr.QuestionDoesNotExist;
-            }
-        }
-
-        if (!result) {
-            prompt_new!!.setCorrect(Number(inter.values[0]))
-            result = await DO.updateProposal(prompt_new!!, result);
-
-            // update the description
-            // this is poor programming but im tired
-            const embed = new EmbedBuilder().setFooter({text: 'Barbie Trivia', iconURL: BCONST.LOGO});
-            embed.setTitle(`**Newly Submitted Question**`);
-            let user = await client.users.fetch(prompt!!.getSubmitter());
-            let description = `_Proposed Question by ${user.username}:_\n\n`;
-            description += `**${prompt!!.getQuestion()}**`;
-            if (prompt_new!!.getImage().length > 3) {
-                embed.setImage(prompt_new!!.getImage());
-            }
-            if (prompt_new!!.getAnswers()[0].length > 0) {
-                answer_sent = true;
-                let letter: string;
-                for (let i=0; i < 4; i++) {
-                    if (i == 0) letter = "A"
-                    else if (i == 1) letter = "B"
-                    else if (i == 2) letter = "C"
-                    else letter = "D"
-                    if (i == prompt_new!!.getCorrect()) {
-                        description += `\n**${letter}. ${prompt_new!!.getAnswers()[i]}**`;
-                    }
-                    else {
-                        description += `\n${letter}. ${prompt_new!!.getAnswers()[i]}`;
-                    }
-                }
-                description += `\n\nThe correct answer is \`${prompt_new!!.getAnswers()[prompt_new!!.getCorrect()]}\`.`;
-                
-            }
-            if (prompt_new!!.getFunFact().length > 2) {
-                description += "\n" + prompt_new!!.getFunFact();
-                funfact_sent = true;
-            }           
-            if (prompt_new!!.getDAlwaysLast()) {
-                description += "\n" + "Answer D is always last.";
-            }
-            else {
-                description += "\n" + "Answer order does not matter.";
-            }
-
-            description += "\n";
-            description += await add_admin_acceptdeny(prompt_new!!, client);
-            
-            embed.setDescription(description);
-            inter.editReply({embeds: [embed], components: [dropdown_ABCD, dropdown_D_Last, btns_deny] });
-            
-        }
-    });
-    collector_drop.on('end', (collected: string) => {
-        // nothing
-    });
-    collector_drop_d.on('collect', async (inter: StringSelectMenuInteraction) => {
-        await inter.deferUpdate();
-        let proposal_id = prompt!!.getProposalID()!!;
-        let result = 0;
-        // get the current proposal
-        let prompt_new: ProposalO | null = null;
-        if (proposal_id >= 0) {
-            prompt_new = await DO.getProposal(proposal_id);
-            if (prompt == null) {
-                result = GameInteractionErr.QuestionDoesNotExist;
-            }
-        }
-
-        if (!result) {
-            prompt_new!!.setDAlwaysLast(Boolean(Number(inter.values[0])))
-            result = await DO.updateProposal(prompt_new!!, result);
-
-            // update the description
-            // this is poor programming but im tired
-            const embed = new EmbedBuilder().setFooter({text: 'Barbie Trivia', iconURL: BCONST.LOGO});
-            embed.setTitle(`**Newly Submitted Question**`);
-            let user = await client.users.fetch(prompt!!.getSubmitter());
-            let description = `_Proposed Question by ${user.username}:_\n\n`;
-            description += `**${prompt!!.getQuestion()}**`;
-            if (prompt_new!!.getImage().length > 3) {
-                embed.setImage(prompt_new!!.getImage());
-            }
-            if (prompt_new!!.getAnswers()[0].length > 0) {
-                answer_sent = true;
-                let letter: string;
-                for (let i=0; i < 4; i++) {
-                    if (i == 0) letter = "A"
-                    else if (i == 1) letter = "B"
-                    else if (i == 2) letter = "C"
-                    else letter = "D"
-                    if (i == prompt_new!!.getCorrect()) {
-                        description += `\n**${letter}. ${prompt_new!!.getAnswers()[i]}**`;
-                    }
-                    else {
-                        description += `\n${letter}. ${prompt_new!!.getAnswers()[i]}`;
-                    }
-                }
-                description += `\n\nThe correct answer is \`${prompt_new!!.getAnswers()[prompt_new!!.getCorrect()]}\`.`;
-                
-            }
-            if (prompt_new!!.getFunFact().length > 2) {
-                description += "\n" + prompt_new!!.getFunFact();
-                funfact_sent = true;
-            }   
-            if (prompt_new!!.getDAlwaysLast()) {
-                description += "\n" + "Answer D is always last.";
-            }
-            else {
-                description += "\n" + "Answer order does not matter.";
-            }
-
-            description += "\n";
-            description += await add_admin_acceptdeny(prompt_new!!, client);
-            
-            embed.setDescription(description);
-            inter.editReply({embeds: [embed], components: [dropdown_ABCD, dropdown_D_Last, btns_deny] });
-        }
-    });
 
     return result;
 }

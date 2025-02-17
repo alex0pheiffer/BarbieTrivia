@@ -473,6 +473,7 @@ async function createEmbedResult(interaction, prompt, master_message) {
         // nothing 
     });
     collector_drop.on('collect', async (inter) => {
+        console.log("defer update (3)");
         await inter.deferUpdate();
         let proposal_id = prompt.getProposalID();
         let result = 0;
@@ -535,6 +536,7 @@ async function createEmbedResult(interaction, prompt, master_message) {
         // nothing
     });
     collector_drop_d.on('collect', async (inter) => {
+        console.log("defer update (4)");
         await inter.deferUpdate();
         let proposal_id = prompt.getProposalID();
         let result = 0;
@@ -701,6 +703,7 @@ async function buttonResponse(interaction, proposal_id, master_message, isAdminC
                 if (accepted_values & current_admin_bin) {
                     // user has already accepted
                     // do nothing
+                    console.log("defer update (5)");
                     interaction.deferUpdate();
                 }
                 else {
@@ -721,7 +724,7 @@ async function buttonResponse(interaction, proposal_id, master_message, isAdminC
                         let question_object = new question_1.QuestionO(question_interface);
                         result = await DOBuilder_1.DO.insertQuestion(question_object);
                         // delete the prompt
-                        console.log("DELETE PROPOSAL WAS HERE (1)");
+                        // TODO you probably dont want to delete here if youre going to be sending a reply to the user
                         //result = await DO.deleteProposal(prompt!!.getProposalID()!!);
                         // update the user's profile
                         let user_profile = await DOBuilder_1.DO.getPlayer(prompt.getSubmitter());
@@ -736,6 +739,7 @@ async function buttonResponse(interaction, proposal_id, master_message, isAdminC
                     }
                     else {
                         // we will not be sending an interaction reply
+                        console.log("defer update (6)");
                         interaction.deferUpdate();
                         // update the existing message
                         result = await DOBuilder_1.DO.updateProposal(prompt, 0);
@@ -756,6 +760,7 @@ async function buttonResponse(interaction, proposal_id, master_message, isAdminC
                 if (declined_values & current_admin_bin) {
                     // user has already declined
                     // do nothing
+                    console.log("defer update (7)");
                     interaction.deferUpdate();
                 }
                 else {
@@ -769,6 +774,7 @@ async function buttonResponse(interaction, proposal_id, master_message, isAdminC
                     declined_values_new = declined_values | current_admin_bin;
                     prompt.setDeclined(declined_values_new);
                     if ((all_admin_bin & declined_values_new) == all_admin_bin) {
+                        console.log("defer reply (0)");
                         await interaction.deferReply();
                         // TODO the last declined player must select a reason for declining the question.
                         const embed = new discord_js_1.EmbedBuilder().setFooter({ text: 'Barbie Trivia', iconURL: BCONST_1.BCONST.LOGO });
@@ -784,16 +790,15 @@ async function buttonResponse(interaction, proposal_id, master_message, isAdminC
                         const btn_decline = new discord_js_1.ActionRowBuilder().addComponents(new discord_js_1.ButtonBuilder().setCustomId(BCONST_1.BCONST.BTN_DECLINE_END).setLabel("Send Decline").setStyle(discord_js_1.ButtonStyle.Secondary));
                         const dropdown_reason = new discord_js_1.ActionRowBuilder().addComponents(new discord_js_1.StringSelectMenuBuilder().setCustomId(BCONST_1.BCONST.DROPDOWN_DECLINE).setPlaceholder('Select the reason.').addOptions(declineDropDown));
                         // all users have declined; send the confirmation that the question has been accepted
+                        console.log("edit reply (0)");
                         let message = await interaction.editReply({ embeds: [embed], components: [dropdown_reason, btn_decline] });
-                        // delete the prompt
-                        console.log("DELETE PROPOSAL WAS HERE (2)");
-                        //result = await DO.deleteProposal(prompt!!.getProposalID()!!);
                         // collectors for the button/dropdown widgets sent
                         const filter_btn_decline = (inter) => (inter.customId === BCONST_1.BCONST.BTN_DECLINE_END);
                         const filter_drop_decline = (inter) => (inter.customId === BCONST_1.BCONST.DROPDOWN_DECLINE);
                         const btn_collector = message.createMessageComponentCollector({ filter: filter_btn_decline, componentType: discord_js_1.ComponentType.Button });
                         const collector_drop_d = message.createMessageComponentCollector({ filter: filter_drop_decline });
                         btn_collector.on('collect', async (inter) => {
+                            console.log("defer reply (1)");
                             await inter.deferReply();
                             if (prompt.getProposalID() == null) {
                                 result = Errors_1.GameInteractionErr.QuestionDoesNotExist;
@@ -802,6 +807,7 @@ async function buttonResponse(interaction, proposal_id, master_message, isAdminC
                                 let refresh_prompt = await DOBuilder_1.DO.getProposal(prompt.getProposalID());
                                 if (refresh_prompt === null) {
                                     result = Errors_1.GameInteractionErr.QuestionDoesNotExist;
+                                    console.log("edit reply (1)");
                                     inter.editReply("This proposal was already rejected.");
                                 }
                                 else {
@@ -809,7 +815,7 @@ async function buttonResponse(interaction, proposal_id, master_message, isAdminC
                                         // inform the user why they were declined
                                         let submitter_description = `Hello user. I am here to inform you that your question submission [ID=${refresh_prompt.getProposalID()}] has been **declined** by the admins.\n\n`;
                                         submitter_description += `**Reason:** ${BCONST_1.BCONST.DECLINE_REASON[refresh_prompt.getReason() - 1][0]}\n`;
-                                        submitter_description += `${BCONST_1.BCONST.DECLINE_REASON[refresh_prompt.getReason() - 1][1]} ${BCONST_1.BCONST.DECLINE_HELP}\n\n`;
+                                        submitter_description += `${BCONST_1.BCONST.DECLINE_REASON[refresh_prompt.getReason() - 1][1]}\n${BCONST_1.BCONST.DECLINE_HELP}\n\n`;
                                         submitter_description += `**Original Question:**\n`;
                                         submitter_description += `${refresh_prompt.getQuestion()}`;
                                         let letter;
@@ -839,13 +845,18 @@ async function buttonResponse(interaction, proposal_id, master_message, isAdminC
                                         let submit_user = await inter.client.users.fetch(refresh_prompt.getSubmitter());
                                         try {
                                             inter.client.users.send(refresh_prompt.getSubmitter(), submitter_description);
-                                            inter.editReply("Response sent to user.");
+                                            console.log("edit reply (2)");
+                                            inter.editReply(`Response sent to user; Proposal [#${prompt.getProposalID()}] was deleted from the database.`);
+                                            // delete the prompt
+                                            result = await DOBuilder_1.DO.deleteProposal(prompt.getProposalID());
                                         }
                                         catch (err) {
+                                            console.log("edit reply (3)");
                                             inter.editReply(`Cannot send to user. Returned with error:\n${err}`);
                                         }
                                     }
                                     else {
+                                        console.log("edit reply (4)");
                                         inter.editReply("You must select a reason to decline the proposal.");
                                     }
                                 }
@@ -858,6 +869,7 @@ async function buttonResponse(interaction, proposal_id, master_message, isAdminC
                             let prompt_id = prompt.getProposalID();
                             if (prompt_id == null) {
                                 result = Errors_1.GameInteractionErr.QuestionDoesNotExist;
+                                console.log("defer update (8)");
                                 await inter.deferUpdate();
                             }
                             else {
@@ -886,6 +898,7 @@ async function buttonResponse(interaction, proposal_id, master_message, isAdminC
                     else {
                         console.log("Not all admins have declined");
                         // we will not be sending an interaction reply
+                        console.log("defer update (0)");
                         interaction.deferUpdate();
                         // update the existing message
                         result = await DOBuilder_1.DO.updateProposal(prompt, 0);
@@ -1013,6 +1026,172 @@ async function adminCheckEmbed(interaction, client, prompt, isFirstPass) {
         message = await channel.send({ embeds: [embed], components: [dropdown_ABCD, dropdown_D_Last, btns_deny] });
         prompt.setMessageID(message.id);
         result = await DOBuilder_1.DO.updateProposal(prompt, 0);
+        const filter_btn = (inter) => (inter.customId === BCONST_1.BCONST.BTN_QUESTION || inter.customId === BCONST_1.BCONST.BTN_ANSWER || inter.customId === BCONST_1.BCONST.BTN_FUNFACT || inter.customId === BCONST_1.BCONST.BTN_PROPOSAL_ACCEPT || inter.customId === BCONST_1.BCONST.BTN_PROPOSAL_DECLINE);
+        const filter_dropdown = (inter) => inter.customId === BCONST_1.BCONST.DROPDOWN_ABCD;
+        const filter_dropdown_d = (inter) => inter.customId === BCONST_1.BCONST.DROPDOWN_DLAST;
+        const btn_collector = message.createMessageComponentCollector({ filter: filter_btn, componentType: discord_js_1.ComponentType.Button });
+        const collector_drop = message.createMessageComponentCollector({ filter: filter_dropdown });
+        const collector_drop_d = message.createMessageComponentCollector({ filter: filter_dropdown_d });
+        btn_collector.on('collect', async (inter) => {
+            if (prompt.getProposalID() == null) {
+                result = Errors_1.GameInteractionErr.QuestionDoesNotExist;
+            }
+            else {
+                console.log("buttonresponse #");
+                buttonResponse(inter, prompt.getProposalID(), message, true).then(async (err) => {
+                    let resp = "";
+                    switch (err) {
+                        case 0:
+                            break;
+                        case Errors_1.GameInteractionErr.QuestionDoesNotExist:
+                            resp = "The proposal has ended.";
+                            break;
+                        case Errors_1.GameInteractionErr.NoAnswerSelected:
+                        case Errors_1.GameInteractionErr.QuestionExpired:
+                        case Errors_1.GameInteractionErr.GuildDataUnavailable:
+                        case Errors_1.GameInteractionErr.SQLConnectionError:
+                        default:
+                            resp = "Something went wrong.";
+                    }
+                    // respond to the interaction
+                    if (resp.length > 0) {
+                        inter.reply(resp);
+                    }
+                });
+            }
+        });
+        btn_collector.on('end', (collected) => {
+            // nothing 
+        });
+        collector_drop.on('collect', async (inter) => {
+            console.log("defer update (1)");
+            await inter.deferUpdate();
+            let proposal_id = prompt.getProposalID();
+            let result = 0;
+            // get the current proposal
+            let prompt_new = null;
+            if (proposal_id >= 0) {
+                prompt_new = await DOBuilder_1.DO.getProposal(proposal_id);
+                if (prompt == null) {
+                    result = Errors_1.GameInteractionErr.QuestionDoesNotExist;
+                }
+            }
+            if (!result) {
+                prompt_new.setCorrect(Number(inter.values[0]));
+                result = await DOBuilder_1.DO.updateProposal(prompt_new, result);
+                // update the description
+                // this is poor programming but im tired
+                const embed = new discord_js_1.EmbedBuilder().setFooter({ text: 'Barbie Trivia', iconURL: BCONST_1.BCONST.LOGO });
+                embed.setTitle(`**Newly Submitted Question**`);
+                let user = await client.users.fetch(prompt.getSubmitter());
+                let description = `_Proposed Question by ${user.username}:_\n\n`;
+                description += `**${prompt.getQuestion()}**`;
+                if (prompt_new.getImage().length > 3) {
+                    embed.setImage(prompt_new.getImage());
+                }
+                if (prompt_new.getAnswers()[0].length > 0) {
+                    answer_sent = true;
+                    let letter;
+                    for (let i = 0; i < 4; i++) {
+                        if (i == 0)
+                            letter = "A";
+                        else if (i == 1)
+                            letter = "B";
+                        else if (i == 2)
+                            letter = "C";
+                        else
+                            letter = "D";
+                        if (i == prompt_new.getCorrect()) {
+                            description += `\n**${letter}. ${prompt_new.getAnswers()[i]}**`;
+                        }
+                        else {
+                            description += `\n${letter}. ${prompt_new.getAnswers()[i]}`;
+                        }
+                    }
+                    description += `\n\nThe correct answer is \`${prompt_new.getAnswers()[prompt_new.getCorrect()]}\`.`;
+                }
+                if (prompt_new.getFunFact().length > 2) {
+                    description += "\n" + prompt_new.getFunFact();
+                    funfact_sent = true;
+                }
+                if (prompt_new.getDAlwaysLast()) {
+                    description += "\n" + "Answer D is always last.";
+                }
+                else {
+                    description += "\n" + "Answer order does not matter.";
+                }
+                description += "\n";
+                description += await add_admin_acceptdeny(prompt_new, client);
+                embed.setDescription(description);
+                inter.editReply({ embeds: [embed], components: [dropdown_ABCD, dropdown_D_Last, btns_deny] });
+            }
+        });
+        collector_drop.on('end', (collected) => {
+            // nothing
+        });
+        collector_drop_d.on('collect', async (inter) => {
+            console.log("defer update (2)");
+            await inter.deferUpdate();
+            let proposal_id = prompt.getProposalID();
+            let result = 0;
+            // get the current proposal
+            let prompt_new = null;
+            if (proposal_id >= 0) {
+                prompt_new = await DOBuilder_1.DO.getProposal(proposal_id);
+                if (prompt == null) {
+                    result = Errors_1.GameInteractionErr.QuestionDoesNotExist;
+                }
+            }
+            if (!result) {
+                prompt_new.setDAlwaysLast(Boolean(Number(inter.values[0])));
+                result = await DOBuilder_1.DO.updateProposal(prompt_new, result);
+                // update the description
+                // this is poor programming but im tired
+                const embed = new discord_js_1.EmbedBuilder().setFooter({ text: 'Barbie Trivia', iconURL: BCONST_1.BCONST.LOGO });
+                embed.setTitle(`**Newly Submitted Question**`);
+                let user = await client.users.fetch(prompt.getSubmitter());
+                let description = `_Proposed Question by ${user.username}:_\n\n`;
+                description += `**${prompt.getQuestion()}**`;
+                if (prompt_new.getImage().length > 3) {
+                    embed.setImage(prompt_new.getImage());
+                }
+                if (prompt_new.getAnswers()[0].length > 0) {
+                    answer_sent = true;
+                    let letter;
+                    for (let i = 0; i < 4; i++) {
+                        if (i == 0)
+                            letter = "A";
+                        else if (i == 1)
+                            letter = "B";
+                        else if (i == 2)
+                            letter = "C";
+                        else
+                            letter = "D";
+                        if (i == prompt_new.getCorrect()) {
+                            description += `\n**${letter}. ${prompt_new.getAnswers()[i]}**`;
+                        }
+                        else {
+                            description += `\n${letter}. ${prompt_new.getAnswers()[i]}`;
+                        }
+                    }
+                    description += `\n\nThe correct answer is \`${prompt_new.getAnswers()[prompt_new.getCorrect()]}\`.`;
+                }
+                if (prompt_new.getFunFact().length > 2) {
+                    description += "\n" + prompt_new.getFunFact();
+                    funfact_sent = true;
+                }
+                if (prompt_new.getDAlwaysLast()) {
+                    description += "\n" + "Answer D is always last.";
+                }
+                else {
+                    description += "\n" + "Answer order does not matter.";
+                }
+                description += "\n";
+                description += await add_admin_acceptdeny(prompt_new, client);
+                embed.setDescription(description);
+                inter.editReply({ embeds: [embed], components: [dropdown_ABCD, dropdown_D_Last, btns_deny] });
+            }
+        });
     }
     else if (interaction != null) {
         let channel = await client.channels.cache.get(BCONST_1.BCONST.MASTER_PROMPT_CHANNEL);
@@ -1022,169 +1201,6 @@ async function adminCheckEmbed(interaction, client, prompt, isFirstPass) {
         }
         //message = await interaction.editReply({embeds: [embed], components: [dropdown_ABCD, dropdown_D_Last, btns_deny] });
     }
-    const filter_btn = (inter) => (inter.customId === BCONST_1.BCONST.BTN_QUESTION || inter.customId === BCONST_1.BCONST.BTN_ANSWER || inter.customId === BCONST_1.BCONST.BTN_FUNFACT || inter.customId === BCONST_1.BCONST.BTN_PROPOSAL_ACCEPT || inter.customId === BCONST_1.BCONST.BTN_PROPOSAL_DECLINE);
-    const filter_dropdown = (inter) => inter.customId === BCONST_1.BCONST.DROPDOWN_ABCD;
-    const filter_dropdown_d = (inter) => inter.customId === BCONST_1.BCONST.DROPDOWN_DLAST;
-    const btn_collector = message.createMessageComponentCollector({ filter: filter_btn, componentType: discord_js_1.ComponentType.Button });
-    const collector_drop = message.createMessageComponentCollector({ filter: filter_dropdown });
-    const collector_drop_d = message.createMessageComponentCollector({ filter: filter_dropdown_d });
-    btn_collector.on('collect', async (inter) => {
-        if (prompt.getProposalID() == null) {
-            result = Errors_1.GameInteractionErr.QuestionDoesNotExist;
-        }
-        else {
-            buttonResponse(inter, prompt.getProposalID(), message, true).then(async (err) => {
-                let resp = "";
-                switch (err) {
-                    case 0:
-                        break;
-                    case Errors_1.GameInteractionErr.QuestionDoesNotExist:
-                        resp = "The proposal has ended.";
-                        break;
-                    case Errors_1.GameInteractionErr.NoAnswerSelected:
-                    case Errors_1.GameInteractionErr.QuestionExpired:
-                    case Errors_1.GameInteractionErr.GuildDataUnavailable:
-                    case Errors_1.GameInteractionErr.SQLConnectionError:
-                    default:
-                        resp = "Something went wrong.";
-                }
-                // respond to the interaction
-                if (resp.length > 0) {
-                    inter.reply(resp);
-                }
-            });
-        }
-    });
-    btn_collector.on('end', (collected) => {
-        // nothing 
-    });
-    collector_drop.on('collect', async (inter) => {
-        await inter.deferUpdate();
-        let proposal_id = prompt.getProposalID();
-        let result = 0;
-        // get the current proposal
-        let prompt_new = null;
-        if (proposal_id >= 0) {
-            prompt_new = await DOBuilder_1.DO.getProposal(proposal_id);
-            if (prompt == null) {
-                result = Errors_1.GameInteractionErr.QuestionDoesNotExist;
-            }
-        }
-        if (!result) {
-            prompt_new.setCorrect(Number(inter.values[0]));
-            result = await DOBuilder_1.DO.updateProposal(prompt_new, result);
-            // update the description
-            // this is poor programming but im tired
-            const embed = new discord_js_1.EmbedBuilder().setFooter({ text: 'Barbie Trivia', iconURL: BCONST_1.BCONST.LOGO });
-            embed.setTitle(`**Newly Submitted Question**`);
-            let user = await client.users.fetch(prompt.getSubmitter());
-            let description = `_Proposed Question by ${user.username}:_\n\n`;
-            description += `**${prompt.getQuestion()}**`;
-            if (prompt_new.getImage().length > 3) {
-                embed.setImage(prompt_new.getImage());
-            }
-            if (prompt_new.getAnswers()[0].length > 0) {
-                answer_sent = true;
-                let letter;
-                for (let i = 0; i < 4; i++) {
-                    if (i == 0)
-                        letter = "A";
-                    else if (i == 1)
-                        letter = "B";
-                    else if (i == 2)
-                        letter = "C";
-                    else
-                        letter = "D";
-                    if (i == prompt_new.getCorrect()) {
-                        description += `\n**${letter}. ${prompt_new.getAnswers()[i]}**`;
-                    }
-                    else {
-                        description += `\n${letter}. ${prompt_new.getAnswers()[i]}`;
-                    }
-                }
-                description += `\n\nThe correct answer is \`${prompt_new.getAnswers()[prompt_new.getCorrect()]}\`.`;
-            }
-            if (prompt_new.getFunFact().length > 2) {
-                description += "\n" + prompt_new.getFunFact();
-                funfact_sent = true;
-            }
-            if (prompt_new.getDAlwaysLast()) {
-                description += "\n" + "Answer D is always last.";
-            }
-            else {
-                description += "\n" + "Answer order does not matter.";
-            }
-            description += "\n";
-            description += await add_admin_acceptdeny(prompt_new, client);
-            embed.setDescription(description);
-            inter.editReply({ embeds: [embed], components: [dropdown_ABCD, dropdown_D_Last, btns_deny] });
-        }
-    });
-    collector_drop.on('end', (collected) => {
-        // nothing
-    });
-    collector_drop_d.on('collect', async (inter) => {
-        await inter.deferUpdate();
-        let proposal_id = prompt.getProposalID();
-        let result = 0;
-        // get the current proposal
-        let prompt_new = null;
-        if (proposal_id >= 0) {
-            prompt_new = await DOBuilder_1.DO.getProposal(proposal_id);
-            if (prompt == null) {
-                result = Errors_1.GameInteractionErr.QuestionDoesNotExist;
-            }
-        }
-        if (!result) {
-            prompt_new.setDAlwaysLast(Boolean(Number(inter.values[0])));
-            result = await DOBuilder_1.DO.updateProposal(prompt_new, result);
-            // update the description
-            // this is poor programming but im tired
-            const embed = new discord_js_1.EmbedBuilder().setFooter({ text: 'Barbie Trivia', iconURL: BCONST_1.BCONST.LOGO });
-            embed.setTitle(`**Newly Submitted Question**`);
-            let user = await client.users.fetch(prompt.getSubmitter());
-            let description = `_Proposed Question by ${user.username}:_\n\n`;
-            description += `**${prompt.getQuestion()}**`;
-            if (prompt_new.getImage().length > 3) {
-                embed.setImage(prompt_new.getImage());
-            }
-            if (prompt_new.getAnswers()[0].length > 0) {
-                answer_sent = true;
-                let letter;
-                for (let i = 0; i < 4; i++) {
-                    if (i == 0)
-                        letter = "A";
-                    else if (i == 1)
-                        letter = "B";
-                    else if (i == 2)
-                        letter = "C";
-                    else
-                        letter = "D";
-                    if (i == prompt_new.getCorrect()) {
-                        description += `\n**${letter}. ${prompt_new.getAnswers()[i]}**`;
-                    }
-                    else {
-                        description += `\n${letter}. ${prompt_new.getAnswers()[i]}`;
-                    }
-                }
-                description += `\n\nThe correct answer is \`${prompt_new.getAnswers()[prompt_new.getCorrect()]}\`.`;
-            }
-            if (prompt_new.getFunFact().length > 2) {
-                description += "\n" + prompt_new.getFunFact();
-                funfact_sent = true;
-            }
-            if (prompt_new.getDAlwaysLast()) {
-                description += "\n" + "Answer D is always last.";
-            }
-            else {
-                description += "\n" + "Answer order does not matter.";
-            }
-            description += "\n";
-            description += await add_admin_acceptdeny(prompt_new, client);
-            embed.setDescription(description);
-            inter.editReply({ embeds: [embed], components: [dropdown_ABCD, dropdown_D_Last, btns_deny] });
-        }
-    });
     return result;
 }
 async function checkImage(url) {

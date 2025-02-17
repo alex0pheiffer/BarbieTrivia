@@ -244,6 +244,7 @@ export async function showQuestionResult(message: Message, ask_id: number): Prom
 
                     let new_message = await channel!!.send(second_description);
                     // start the next question
+
                     setTimeout(createNewQuestion, duration, message.guildId, message.channelId, message.client);
                 }
             }
