@@ -533,7 +533,7 @@ async function createEmbedResult(interaction: ChatInputCommandInteraction | Butt
             }
         }
 
-        if (!result) {
+        if (!result && proposal_id >= 0) {
             prompt_new!!.setCorrect(Number(inter.values[0]))
             result = await DO.updateProposal(prompt_new!!, result);
 
@@ -578,6 +578,9 @@ async function createEmbedResult(interaction: ChatInputCommandInteraction | Butt
             embed.setDescription(description);
             inter.editReply({embeds: [embed], components: [btns_submit, dropdown_ABCD, dropdown_D_Last] });
             
+        }
+        else {
+            console.log("Proposal id was not >= 0: ", proposal_id)
         }
     });
     collector_drop.on('end', (collected: string) => {
@@ -752,14 +755,14 @@ async function buttonResponse(interaction: ButtonInteraction, proposal_id: numbe
                 current_admin  = await DO.getAdmin(interaction.user.id);
                 current_admin_bin = Math.pow(2, current_admin!!.getAdminID()-1);
                 let accepted_values_new = accepted_values;
+                
                 // check if this user has already responded
                 if (accepted_values & current_admin_bin) {
                     // user has already accepted
                     // do nothing
-                    console.log("defer update (5)")
                     interaction.deferUpdate();
                 }
-                else {
+                else  if (!((all_admin_bin & accepted_values) == all_admin_bin)){
                     if (declined_values & current_admin_bin) {
                         // user had _previously_ declined
                         // update existing declined values
@@ -769,30 +772,49 @@ async function buttonResponse(interaction: ButtonInteraction, proposal_id: numbe
                     accepted_values_new = accepted_values | current_admin_bin;
                     prompt!!.setAccepted(accepted_values_new);
                     if ((all_admin_bin & accepted_values_new) == all_admin_bin) {
-                        // TODO send a confirmation to the player that submitted the question
-                        // all users have accepted; send the confirmation that the question has been accepted
-                        interaction.reply({content: `All ${admin_count} admins have chosen to accept this question. It has been added to the pool.`});
-                        // add as an official question
-                        let question_interface = prompt!!.getQuestionI();
-                        let question_object = new QuestionO(question_interface);
-                        result = await DO.insertQuestion(question_object);
-                        // delete the prompt
-                        // TODO you probably dont want to delete here if youre going to be sending a reply to the user
-                        //result = await DO.deleteProposal(prompt!!.getProposalID()!!);
-                        // update the user's profile
-                        let user_profile = await DO.getPlayer(prompt!!.getSubmitter());
-                        if (user_profile != null) {
-                            user_profile.setQSubmitted(user_profile.getQSubmitted() + 1);
-                            result = await DO.updatePlayer(user_profile, result);
+                        await interaction.deferReply();
+                        // admins do not need to choose a reason for accepting a question
+                        // inform the user
+                        let submitter_description = `Hello user. I am here to inform you that your question submission [ID=${prompt!!.getProposalID()}] has been **accepted** by the admins.\n\n`;
+                        submitter_description += `**Original Question:**\n`
+                        submitter_description += `${prompt!!.getQuestion()}`;
+                        let letter: string;
+                        for (let i=0; i < 4; i++) {
+                            if (i == 0) letter = "A"
+                            else if (i == 1) letter = "B"
+                            else if (i == 2) letter = "C"
+                            else letter = "D"
+                            if (i == prompt!!.getCorrect()) {
+                                submitter_description += `\n**${letter}. ${prompt!!.getAnswers()[i]}**`;
+                            }
+                            else {
+                                submitter_description += `\n${letter}. ${prompt!!.getAnswers()[i]}`;
+                            }
                         }
-                        else {
-                            let new_player = {"player_id": 0, "user": interaction.user.id, "q_submitted": 1, "response_total": 0, "response_correct": 0} as PlayerI;
-                            result = await DO.insertPlayer(new_player);
+                        submitter_description += `\n\nCorrect: \`${prompt!!.getAnswers()[prompt!!.getCorrect()]}\`.`;
+                        if (prompt!!.getImage().length > 3) {
+                            submitter_description += `\nAttachment: ${prompt!!.getImage()}`
+                        }
+                        if (prompt!!.getFunFact().length > 2) {
+                            submitter_description += "\nFun Fact: " + prompt!!.getFunFact();
+                        }
+                        let submit_user = await interaction.client.users.fetch(prompt!!.getSubmitter());
+                        try {
+                            interaction.client.users.send(prompt!!.getSubmitter(), submitter_description);
+                            interaction.editReply(`Response sent to user; Proposal [#${prompt!!.getProposalID()}] was added to the database.`);
+                            // insert the question
+                            // delete the prompt
+                            let question_interface = prompt!!.getQuestionI();
+                            let question_object = new QuestionO(question_interface);
+                            result = await DO.insertQuestion(question_object);
+                            result = await DO.deleteProposal(prompt!!.getProposalID()!!);
+                        }
+                        catch (err) {
+                            interaction.editReply(`Cannot send to user. Returned with error:\n${err}`);
                         }
                     }
                     else {
                         // we will not be sending an interaction reply
-                        console.log("defer update (6)")
                         interaction.deferUpdate();
                         // update the existing message
                         result = await DO.updateProposal(prompt!!, 0);
@@ -814,12 +836,12 @@ async function buttonResponse(interaction: ButtonInteraction, proposal_id: numbe
                 if (declined_values & current_admin_bin) {
                     // user has already declined
                     // do nothing
-                    console.log("defer update (7)")
                     interaction.deferUpdate();
                 }
-                else {
+                else if (!((all_admin_bin & declined_values) == all_admin_bin)) {
+                    console.log(`prev decline state: ${declined_values}`)
+                    console.log(`prev decline state: ${((all_admin_bin & declined_values) == all_admin_bin)}`)
                     if (accepted_values & current_admin_bin) {
-                        console.log("Previously accepted");
                         // user had _previously_ accepted
                         // update existing accepted values
                         let accepted_values_new = accepted_values ^ current_admin_bin;
@@ -828,7 +850,6 @@ async function buttonResponse(interaction: ButtonInteraction, proposal_id: numbe
                     declined_values_new = declined_values | current_admin_bin;
                     prompt!!.setDeclined(declined_values_new);
                     if ((all_admin_bin & declined_values_new) == all_admin_bin) {
-                        console.log("defer reply (0)")
                         await interaction.deferReply();
                         // TODO the last declined player must select a reason for declining the question.
                         const embed = new EmbedBuilder().setFooter({text: 'Barbie Trivia', iconURL: BCONST.LOGO});
@@ -848,7 +869,6 @@ async function buttonResponse(interaction: ButtonInteraction, proposal_id: numbe
                         const dropdown_reason: any = new ActionRowBuilder().addComponents( new StringSelectMenuBuilder().setCustomId(BCONST.DROPDOWN_DECLINE).setPlaceholder('Select the reason.').addOptions(declineDropDown));
                         
                         // all users have declined; send the confirmation that the question has been accepted
-                        console.log("edit reply (0)")
                         let message = await interaction.editReply({embeds: [embed], components: [dropdown_reason, btn_decline] });
                         
                         // collectors for the button/dropdown widgets sent
@@ -857,7 +877,6 @@ async function buttonResponse(interaction: ButtonInteraction, proposal_id: numbe
                         const btn_collector = message.createMessageComponentCollector({ filter: filter_btn_decline, componentType: ComponentType.Button});
                         const collector_drop_d = message.createMessageComponentCollector({filter: filter_drop_decline});
                         btn_collector.on('collect', async (inter: ButtonInteraction) => {
-                            console.log("defer reply (1)")
                             await inter.deferReply();
                             if (prompt!!.getProposalID() == null) {
                                 result = GameInteractionErr.QuestionDoesNotExist;
@@ -866,7 +885,6 @@ async function buttonResponse(interaction: ButtonInteraction, proposal_id: numbe
                                 let refresh_prompt = await DO.getProposal(prompt!!.getProposalID()!!);
                                 if (refresh_prompt === null) {
                                     result = GameInteractionErr.QuestionDoesNotExist;
-                                    console.log("edit reply (1)")
                                     inter.editReply("This proposal was already rejected.");
                                 }
                                 else {
@@ -900,18 +918,15 @@ async function buttonResponse(interaction: ButtonInteraction, proposal_id: numbe
                                         let submit_user = await inter.client.users.fetch(refresh_prompt.getSubmitter());
                                         try {
                                             inter.client.users.send(refresh_prompt.getSubmitter(), submitter_description);
-                                            console.log("edit reply (2)")
                                             inter.editReply(`Response sent to user; Proposal [#${prompt!!.getProposalID()}] was deleted from the database.`);
                                             // delete the prompt
                                             result = await DO.deleteProposal(prompt!!.getProposalID()!!);
                                         }
                                         catch (err) {
-                                            console.log("edit reply (3)")
                                             inter.editReply(`Cannot send to user. Returned with error:\n${err}`);
                                         }
                                     }
                                     else {
-                                        console.log("edit reply (4)")
                                         inter.editReply("You must select a reason to decline the proposal.");
                                     }
                                 }
@@ -924,7 +939,6 @@ async function buttonResponse(interaction: ButtonInteraction, proposal_id: numbe
                             let prompt_id = prompt!!.getProposalID();
                             if (prompt_id == null) {
                                 result = GameInteractionErr.QuestionDoesNotExist;
-                                console.log("defer update (8)")
                                 await inter.deferUpdate();
                             }
                             else {
@@ -951,9 +965,7 @@ async function buttonResponse(interaction: ButtonInteraction, proposal_id: numbe
                         });
                     }
                     else {
-                        console.log("Not all admins have declined");
                         // we will not be sending an interaction reply
-                        console.log("defer update (0)")
                         interaction.deferUpdate();
                         // update the existing message
                         result = await DO.updateProposal(prompt!!, 0);
@@ -1109,7 +1121,6 @@ async function adminCheckEmbed(interaction: ChatInputCommandInteraction | Button
                 result = GameInteractionErr.QuestionDoesNotExist;
             }
             else {
-                console.log("buttonresponse #")
                 buttonResponse(inter, prompt!!.getProposalID()!!, message!!, true).then(async (err) => {
                     let resp = "";
                     switch (err) {
@@ -1206,18 +1217,23 @@ async function adminCheckEmbed(interaction: ChatInputCommandInteraction | Button
         });
         collector_drop_d.on('collect', async (inter: StringSelectMenuInteraction) => {
             console.log("defer update (2)")
-            await inter.deferUpdate();
             let proposal_id = prompt!!.getProposalID()!!;
             let result = 0;
             // get the current proposal
             let prompt_new: ProposalO | null = null;
             if (proposal_id >= 0) {
                 prompt_new = await DO.getProposal(proposal_id);
-                if (prompt == null) {
+                if (prompt_new == null) {
                     result = GameInteractionErr.QuestionDoesNotExist;
                 }
             }
-
+            if (prompt == null || proposal_id < 0 || result) {
+                inter.reply(`The proposal ${proposal_id < 0 ? "N/A" : `#${proposal_id}`} is no longer active.`)
+                return
+            }
+            
+            await inter.deferUpdate();
+            
             if (!result) {
                 prompt_new!!.setDAlwaysLast(Boolean(Number(inter.values[0])))
                 result = await DO.updateProposal(prompt_new!!, result);

@@ -98,7 +98,10 @@ async function getConnection(pool: any): Promise<any> {
     return new Promise((resolve, reject) => {
         pool.getConnection((err: any, connection: any) => {
             if (err) {
-                connection.destroy();
+                console.log(err);
+                if (connection) {
+                    connection.destroy();
+                }
                 console.log("there was an error retrieving the connection. ", err)
                 return reject(err);
             }

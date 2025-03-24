@@ -1,7 +1,7 @@
 ##### Locally ######
 directory: D:/Important_Things/Applications/DiscordJS/BarbieTrivia/
 tsc -p tsconfig.json    // build the typescript
-node ./build/main.json
+node ./build/main.js
 
 ##### Docker ######
 first, verify the ip address the docker is using with the
