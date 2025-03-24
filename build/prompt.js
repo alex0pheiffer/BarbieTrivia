@@ -610,6 +610,9 @@ async function buttonResponse(interaction, proposal_id, master_message, isAdminC
             result = Errors_1.GameInteractionErr.QuestionDoesNotExist;
         }
     }
+    if (prompt == null || proposal_id < 0 || result) {
+        return Errors_1.GameInteractionErr.QuestionDoesNotExist;
+    }
     if (!result) {
         // variables needed to be defined outside of "block scope"
         let admin_count = ADMIN_COUNT; // incorrectly hard coded rn; TODO fix later
@@ -1079,17 +1082,21 @@ async function adminCheckEmbed(interaction, client, prompt, isFirstPass) {
         });
         collector_drop.on('collect', async (inter) => {
             console.log("defer update (1)");
-            await inter.deferUpdate();
             let proposal_id = prompt.getProposalID();
             let result = 0;
             // get the current proposal
             let prompt_new = null;
             if (proposal_id >= 0) {
                 prompt_new = await DOBuilder_1.DO.getProposal(proposal_id);
-                if (prompt == null) {
+                if (prompt_new == null) {
                     result = Errors_1.GameInteractionErr.QuestionDoesNotExist;
                 }
             }
+            if (prompt == null || proposal_id < 0 || result) {
+                inter.reply(`The proposal ${proposal_id < 0 ? "N/A" : `#${proposal_id}`} is no longer active.`);
+                return;
+            }
+            await inter.deferUpdate();
             if (!result) {
                 prompt_new.setCorrect(Number(inter.values[0]));
                 result = await DOBuilder_1.DO.updateProposal(prompt_new, result);

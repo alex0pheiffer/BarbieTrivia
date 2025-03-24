@@ -661,6 +661,10 @@ async function buttonResponse(interaction: ButtonInteraction, proposal_id: numbe
             result = GameInteractionErr.QuestionDoesNotExist;
         }
     }
+    if (prompt == null || proposal_id < 0 || result) {
+        return GameInteractionErr.QuestionDoesNotExist;
+    }
+        
     if (!result) {
         // variables needed to be defined outside of "block scope"
         let admin_count = ADMIN_COUNT; // incorrectly hard coded rn; TODO fix later
@@ -1149,17 +1153,22 @@ async function adminCheckEmbed(interaction: ChatInputCommandInteraction | Button
         });
         collector_drop.on('collect', async (inter: StringSelectMenuInteraction) => {
             console.log("defer update (1)")
-            await inter.deferUpdate();
             let proposal_id = prompt!!.getProposalID()!!;
             let result = 0;
             // get the current proposal
             let prompt_new: ProposalO | null = null;
             if (proposal_id >= 0) {
                 prompt_new = await DO.getProposal(proposal_id);
-                if (prompt == null) {
+                if (prompt_new == null) {
                     result = GameInteractionErr.QuestionDoesNotExist;
                 }
             }
+            if (prompt == null || proposal_id < 0 || result) {
+                inter.reply(`The proposal ${proposal_id < 0 ? "N/A" : `#${proposal_id}`} is no longer active.`)
+                return
+            }
+            
+            await inter.deferUpdate();
 
             if (!result) {
                 prompt_new!!.setCorrect(Number(inter.values[0]))
