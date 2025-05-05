@@ -59,8 +59,11 @@ async function hasPermissionToEnd(userID, game, client) {
     }
 }
 exports.hasPermissionToEnd = hasPermissionToEnd;
-// if the game has an owner 
-async function gameStillActive(channel_id) {
+// if the game has an owner
+// also
+// check if the bot is still in a question_channel's server
+// remove the owner (deactive the game) if they are not
+async function gameStillActive(channel_id, client) {
     console.log(channel_id);
     let game = null;
     let result = 0;
@@ -72,8 +75,27 @@ async function gameStillActive(channel_id) {
         for (let i = 0; i < existingGame.length; i++) {
             let ch = existingGame[i];
             console.log(`game [${i}] ${ch.getOwner()}`);
-            if (ch.getOwner().length > 0)
+            if (ch.getOwner().length > 0) {
+                const guild = client.guilds.cache.get(ch.getServer());
+                if (guild) {
+                    console.log(`Still in guild: ${guild.name}`);
+                }
+                else {
+                    console.log(`Bot is no longer in the guild ${ch.getServer}.`);
+                    // delete the current question
+                    let latest_question = await DOBuilder_1.DO.getLatestAskedQuestion(ch.getChannel());
+                    if (latest_question.length > 0) {
+                        if (latest_question[0].getActive()) {
+                            result = await DOBuilder_1.DO.deleteAskedQuestion(latest_question[0].getAskID());
+                        }
+                    }
+                    // set the owner to ""
+                    ch.setOwner("");
+                    result = await DOBuilder_1.DO.updateQuestionChannel(ch, result);
+                    return false;
+                }
                 return true;
+            }
         }
     }
     return false;

@@ -48,7 +48,7 @@ export async function showQuestionResult(message: Message, ask_id: number): Prom
             console.log("responses raw: ", responses_raw);
             console.log("responses: ", responses);
             if (responses.length < 2) {
-                let duration = 60 * 60 * 23 * 1000; // 23 hours in ms
+                let duration = BCONST.TIME_UNTIL_ANSWER;
                 setTimeout(showQuestionResult, duration, message, ask_id);
                 let channel: Channel | undefined = await message.client.channels.cache.get(message.channelId);
                 if (typeof channel === 'undefined') result = GameInteractionErr.GuildDataUnavailable;
@@ -224,7 +224,7 @@ export async function showQuestionResult(message: Message, ask_id: number): Prom
                     // update the question channel questions asked
                     result = await DO.updateQuestionChannel(q_ch[0], result);
 
-                    let duration = Math.random() * 60 * 60 * 8 * 1000; // 23 hours in ms
+                    let duration = Math.random() * BCONST.TIME_UNTIL_NEXT_QUESTION_MAX;
                     let hrs = Math.floor(duration / 1000 / 60 / 60);
                     // update the asked_question to include this duration
                     const d = new Date();

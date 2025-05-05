@@ -45,7 +45,7 @@ async function showQuestionResult(message, ask_id) {
             console.log("responses raw: ", responses_raw);
             console.log("responses: ", responses);
             if (responses.length < 2) {
-                let duration = 60 * 60 * 23 * 1000; // 23 hours in ms
+                let duration = BCONST_1.BCONST.TIME_UNTIL_ANSWER;
                 setTimeout(showQuestionResult, duration, message, ask_id);
                 let channel = await message.client.channels.cache.get(message.channelId);
                 if (typeof channel === 'undefined')
@@ -209,7 +209,7 @@ async function showQuestionResult(message, ask_id) {
                     }
                     // update the question channel questions asked
                     result = await DOBuilder_1.DO.updateQuestionChannel(q_ch[0], result);
-                    let duration = Math.random() * 60 * 60 * 8 * 1000; // 23 hours in ms
+                    let duration = Math.random() * BCONST_1.BCONST.TIME_UNTIL_NEXT_QUESTION_MAX;
                     let hrs = Math.floor(duration / 1000 / 60 / 60);
                     // update the asked_question to include this duration
                     const d = new Date();

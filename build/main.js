@@ -47,30 +47,30 @@ client.on(discord_js_1.Events.InteractionCreate, async (interaction) => {
         interaction = (<ChatInputCommandInteraction>interaction);
     */
     //check permissions (we have to check viewchannel for interactions..)
-    if (!interaction.guild?.members.me?.permissionsIn(interaction.channelId).has(discord_js_1.PermissionsBitField.Flags.ViewChannel)) {
-        interaction.reply({ content: 'Bot does not have permission to **view** this channel. :frowning2:', ephemeral: true });
-        return;
-    }
-    else if (!interaction.guild.members.me.permissionsIn(interaction.channelId).has(discord_js_1.PermissionsBitField.Flags.SendMessages)) {
-        interaction.reply({ content: 'Bot does not have permission to **send messages** in this channel. :frowning2:', ephemeral: true });
-        return;
-    }
-    else if (!interaction.guild.members.me.permissionsIn(interaction.channelId).has(discord_js_1.PermissionsBitField.Flags.EmbedLinks)) {
-        interaction.reply({ content: 'Bot does not have permission to **embed links** in this channel. :frowning2:', ephemeral: true });
-        return;
-    }
-    else if (!interaction.guild.members.me.permissionsIn(interaction.channelId).has(discord_js_1.PermissionsBitField.Flags.UseExternalEmojis)) {
-        interaction.reply({ content: 'Bot does not have permission to **use external emojis** in this channel. :frowning2:', ephemeral: true });
-        return;
-    }
+    // if (!interaction.guild?.members.me?.permissionsIn(interaction.channelId!).has(PermissionsBitField.Flags.ViewChannel)) {
+    //     (<ChatInputCommandInteraction>interaction).reply({content: 'Bot does not have permission to **view** this channel. :frowning2:', ephemeral: true});
+    //     return;
+    // }
+    // else if (!interaction.guild.members.me.permissionsIn(interaction.channelId!).has(PermissionsBitField.Flags.SendMessages)) {
+    //     (<ChatInputCommandInteraction>interaction).reply({content: 'Bot does not have permission to **send messages** in this channel. :frowning2:', ephemeral: true});
+    //     return;
+    // }
+    // else if (!interaction.guild.members.me.permissionsIn(interaction.channelId!).has(PermissionsBitField.Flags.EmbedLinks)) {
+    //     (<ChatInputCommandInteraction>interaction).reply({content: 'Bot does not have permission to **embed links** in this channel. :frowning2:', ephemeral: true});
+    //     return;
+    // }
+    // else if (!interaction.guild.members.me.permissionsIn(interaction.channelId!).has(PermissionsBitField.Flags.UseExternalEmojis)) {
+    //     (<ChatInputCommandInteraction>interaction).reply({content: 'Bot does not have permission to **use external emojis** in this channel. :frowning2:', ephemeral: true});   
+    //     return;
+    // }
     // else if (!interaction.guild.members.me.permissionsIn(interaction.channelId!).has(PermissionsBitField.Flags.AddReactions))  {
     //     (<ChatInputCommandInteraction>interaction).reply({content: 'Bot does not have permission to **add reactions** in this channel. :frowning2:', ephemeral: true});
     //     return;
     // }
-    else if (!interaction.guild.members.me.permissionsIn(interaction.channelId).has(discord_js_1.PermissionsBitField.Flags.ManageMessages)) {
-        interaction.reply({ content: 'Bot does not have permission to **manage messages** in this channel. :frowning2:', ephemeral: true });
-        return;
-    }
+    // else if (!interaction.guild.members.me.permissionsIn(interaction.channelId!).has(PermissionsBitField.Flags.ManageMessages))  {
+    //     (<ChatInputCommandInteraction>interaction).reply({content: 'Bot does not have permission to **manage messages** in this channel. :frowning2:', ephemeral: true});        
+    //     return;
+    // }
     //interaction can be used in place of message, they share the same info, except author -> user
     //you have to reply to the interaction or else it sends an error message, even if it was executed fine
     //regular / command
@@ -83,6 +83,22 @@ client.on(discord_js_1.Events.InteractionCreate, async (interaction) => {
             //parse cmd name
             let cmd = interaction.commandName;
             if (cmd == 'new') {
+                if (!interaction.guild?.members.me?.permissionsIn(interaction.channelId).has(discord_js_1.PermissionsBitField.Flags.SendMessages)) {
+                    interaction.reply({ content: 'Bot does not have permission to **send messages** in this channel. :frowning2:', ephemeral: true });
+                    return;
+                }
+                if (!interaction.guild?.members.me?.permissionsIn(interaction.channelId).has(discord_js_1.PermissionsBitField.Flags.EmbedLinks)) {
+                    interaction.reply({ content: 'Bot does not have permission to **embed links** in this channel. :frowning2:', ephemeral: true });
+                    return;
+                }
+                if (!interaction.guild?.members.me?.permissionsIn(interaction.channelId).has(discord_js_1.PermissionsBitField.Flags.ViewChannel)) {
+                    interaction.reply({ content: 'Bot does not have permission to **view channel** in this channel. :frowning2:', ephemeral: true });
+                    return;
+                }
+                if (!interaction.guild?.members.me?.permissionsIn(interaction.channelId).has(discord_js_1.PermissionsBitField.Flags.ReadMessageHistory)) {
+                    interaction.reply({ content: 'Bot does not have permission to **read message history** in this channel. :frowning2:', ephemeral: true });
+                    return;
+                }
                 // defer must be command-specific in order to determine if its ephemeral
                 await interaction.deferReply({ ephemeral: false });
                 switch (await (0, new_1.canInitiateNewGame)(interaction)) {
@@ -128,7 +144,7 @@ client.on(discord_js_1.Events.InteractionCreate, async (interaction) => {
                         // a channel is de-active if it has no owner
                         q_ch[0].setOwner("");
                         result = await DOBuilder_1.DO.updateQuestionChannel(q_ch[0], result);
-                        interaction.editReply({ content: `The Barbie Trivia Game has been terminated. Use the /new_trivia command to continue the game.` });
+                        interaction.editReply({ content: `The Barbie Trivia Game has been terminated. Use the /new    command to continue the game.` });
                     }
                     else {
                         interaction.editReply({ content: `You must be the owner or a trivia admin to end a game. Please ask the owner <@${q_ch[0].getOwner()}> to end the game instead..` });
@@ -139,6 +155,22 @@ client.on(discord_js_1.Events.InteractionCreate, async (interaction) => {
                 }
             }
             else if (cmd == 'add') {
+                if (!interaction.guild?.members.me?.permissionsIn(interaction.channelId).has(discord_js_1.PermissionsBitField.Flags.SendMessages)) {
+                    interaction.reply({ content: 'Bot does not have permission to **send messages** in this channel. :frowning2:', ephemeral: true });
+                    return;
+                }
+                if (!interaction.guild?.members.me?.permissionsIn(interaction.channelId).has(discord_js_1.PermissionsBitField.Flags.EmbedLinks)) {
+                    interaction.reply({ content: 'Bot does not have permission to **embed links** in this channel. :frowning2:', ephemeral: true });
+                    return;
+                }
+                if (!interaction.guild?.members.me?.permissionsIn(interaction.channelId).has(discord_js_1.PermissionsBitField.Flags.ViewChannel)) {
+                    interaction.reply({ content: 'Bot does not have permission to **view channel** in this channel. :frowning2:', ephemeral: true });
+                    return;
+                }
+                if (!interaction.guild?.members.me?.permissionsIn(interaction.channelId).has(discord_js_1.PermissionsBitField.Flags.ReadMessageHistory)) {
+                    interaction.reply({ content: 'Bot does not have permission to **read message history** in this channel. :frowning2:', ephemeral: true });
+                    return;
+                }
                 let result = await (0, prompt_1.addPrompt)(interaction);
             }
             else if (cmd == 'profile') {
@@ -189,7 +221,7 @@ client.on(discord_js_1.Events.InteractionCreate, async (interaction) => {
                 Currently there are ${q_list.length} total questions in circulation, and ${Math.floor(q_from_server / q_list.length * 100)}% have been displayed in this server.\n\n
                 **Commands**:\n \
                 \`/new\` Starts a new trivia game. There can only be one per server.\n \
-                \`/end\` End an existing trivia game. It can be continued later with \`/new_trivia\`.\n \
+                \`/end\` End an existing trivia game. It can be continued later with \`/new\`.\n \
                 \`/add\` Add new trivia to the database! (Screened by admins).\n \
                 \`/profile\` See stats of yourself and friends!\n \
                 \n \
@@ -222,7 +254,7 @@ client.on('ready', async () => {
     }
     console.log(`${client.user?.username} Online -- Version: ${BCONST_1.BCONST.VERSION}`);
     // on start up, make sure that all the question_channels are running.
-    if (!BCONST_1.BCONST.USE_DEV) {
+    if (true || !BCONST_1.BCONST.USE_DEV) {
         (0, startup_1.startAllQuestionChannels)(client);
     }
     else {

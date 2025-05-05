@@ -63,8 +63,11 @@ export async function hasPermissionToEnd(userID: string, game: QuestionChannelO,
     }
 }
 
-// if the game has an owner 
-export async function gameStillActive(channel_id: string): Promise<boolean> {
+// if the game has an owner
+// also
+// check if the bot is still in a question_channel's server
+// remove the owner (deactive the game) if they are not
+export async function gameStillActive(channel_id: string, client: Client): Promise<boolean> {
     console.log(channel_id);
     let game: QuestionChannelO | null = null;
     let result = 0;
@@ -76,10 +79,31 @@ export async function gameStillActive(channel_id: string): Promise<boolean> {
         for (let i=0; i < existingGame.length; i++) {
             let ch = existingGame[i];
             console.log(`game [${i}] ${ch.getOwner()}`)
-            if (ch.getOwner().length > 0)
+            if (ch.getOwner().length > 0) {
+                const guild = client.guilds.cache.get(ch.getServer()!!);
+
+                if (guild) {
+                    console.log(`Still in guild: ${guild.name}`);
+                } else {
+                    console.log(`Bot is no longer in the guild ${ch.getServer}.`);
+                    // delete the current question
+                    let latest_question = await DO.getLatestAskedQuestion(ch.getChannel());
+                    if (latest_question.length > 0) {
+                        if (latest_question[0].getActive()) {
+                            result = await DO.deleteAskedQuestion(latest_question[0].getAskID())
+                        }
+                    }
+                    // set the owner to ""
+                    ch.setOwner("");
+                    result = await DO.updateQuestionChannel(ch, result);
+                    return false;
+                }
+
                 return true;
-        }
+            }
+        }    
     }
+
     
     return false;
 }

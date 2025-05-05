@@ -6,7 +6,7 @@ require('dotenv').config() // get our passwords and such
 
 export class BCONST {
     // Bot Information
-    static DISCORD_URL = "https://discord.com/oauth2/authorize?client_id=1266967306752491580&permissions=395137345600&integration_type=0&scope=bot";
+    static DISCORD_URL = "https://discord.com/oauth2/authorize?client_id=1266967306752491580&permissions=84992&integration_type=0&scope=bot";
     static USE_DEV = !!parseInt(process.env["IS_DEV"] ? process.env["IS_DEV"] : "1"); // 1 or 0
     static BOT_KEY = (this.USE_DEV) ? process.env["DEV_TOKEN"] : process.env["TOKEN"];
     static CLIENT_ID = (this.USE_DEV) ? process.env["DEV_CLIENT_ID"] : process.env["CLIENT_ID"];
@@ -72,6 +72,7 @@ export class BCONST {
 
     // Game Specific Information
     static TIME_UNTIL_ANSWER = 23 * 60 * 60 * 1000; //ms
+    static TIME_UNTIL_NEXT_QUESTION_MAX = 60 * 60 * 8 * 1000; // 23 hours in ms
     static INVALID_IMAGE_URL = "https://cdn.discordapp.com/attachments/1305182222214496288/1337795538887770233/invalid_image_url.png?ex=67a8beaf&is=67a76d2f&hm=4ab2c0ab907fbb65d06132094250e65e5184a82e5161e1895a90cb7c88d53f6b&"
 
     static QUESTION_INTERVALS = [

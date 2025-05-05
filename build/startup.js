@@ -7,14 +7,25 @@ const DOBuilder_1 = require("./data/DOBuilder");
 const Errors_1 = require("./Errors");
 const new_1 = require("./new");
 const question_cycle_1 = require("./question_cycle");
+const end_1 = require("./end");
 async function startAllQuestionChannels(client) {
     let result = 0;
     let question_channels = await DOBuilder_1.DO.getQuestionChannels();
     for (let i = 0; i < question_channels.length; i++) {
         let qc = question_channels[i];
+        console.log("checking if game is active (startup)");
+        if (!(await (0, end_1.gameStillActive)(qc.getChannel()))) {
+            console.log(`The game in channel  ${qc.getChannel()} is no longer active.`);
+            result = Errors_1.GameInteractionErr.GameDoesNotExist;
+            continue;
+        }
+        console.log("game is active?: ", result);
         let channel = await client.channels.cache.get(qc.getChannel());
-        if (typeof channel === 'undefined')
+        if (typeof channel === 'undefined') {
+            console.log(`Unable to find channel ${qc.getChannel()}`);
             result = Errors_1.GameInteractionErr.GuildDataUnavailable;
+            continue;
+        }
         channel = channel;
         // get the last submitted question to the question channel, and resubmit it.
         let latest_question = await DOBuilder_1.DO.getLatestAskedQuestion(qc.getChannel());
@@ -33,20 +44,34 @@ async function startAllQuestionChannels(client) {
             if (latest_question[0].getActive() > 0) {
                 console.log("Question is active");
                 // pretend this question has reached its time limit (even though it hasn't) and move on to the next question
-                // get the message id
+                // collect the responses to this question
+                let responses_raw = await DOBuilder_1.DO.getPlayerAnswers(latest_question[0].getAskID());
+                // filter responses to only include answers that were _submitted_
+                let responses = [];
+                responses_raw.forEach((r, i) => {
+                    if (r.getSubmtitted() > 0) {
+                        responses.push(r);
+                    }
+                });
                 // TODO check if channel is undefined; this can happen if the bot isn't in the server
-                if (time - latest_question[0].getShowResultTime() >= 0) {
+                if (time - latest_question[0].getShowResultTime() >= 0 && responses.length > 1) {
                     console.log("Time to show the result");
                     let message = await channel.messages.fetch(latest_question[0].getMessageID());
-                    console.log(message);
                     (0, question_cycle_1.showQuestionResult)(message, latest_question[0].getAskID());
                 }
                 else {
+                    let description = "";
+                    if (responses.length < 2) {
+                        if (responses.length < 1)
+                            description = `Because nobody has responded to the trivia question, the question is being extended another 24 hours.`;
+                        else
+                            description = `Because only one person has responded to the trivia question, the question is being extended another 24 hours.`;
+                    }
                     console.log("restart the same question");
                     let thumbnail = BCONST_1.BCONST.MAXIMUS_IMAGES[Math.floor(Math.random() * BCONST_1.BCONST.MAXIMUS_IMAGES.length)].url;
                     const embed = new discord_js_1.EmbedBuilder().setTimestamp().setThumbnail(thumbnail).setFooter({ text: 'Barbie Trivia', iconURL: BCONST_1.BCONST.LOGO });
                     embed.setTitle('**Restart Error**');
-                    let description = `There appeared to have been an error. Please respond to the new prompt for your answers. (Previous answers are still recorded).`;
+                    description = `There appeared to have been an error. Please respond to the new prompt for your answers. (Previous answers are still recorded). ${description}`;
                     embed.setDescription(description);
                     channel.send({ embeds: [embed] });
                     let new_time_difference = latest_question[0].getShowResultTime() - time;
