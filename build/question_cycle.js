@@ -11,7 +11,7 @@ async function showQuestionResult(message, ask_id) {
     console.log("etnering show question result");
     let result = 0;
     // check if the game is still active
-    if (!(await (0, end_1.gameStillActive)(message.channelId))) {
+    if (!(await (0, end_1.gameStillActive)(message.channelId, message.client))) {
         result = Errors_1.GameInteractionErr.GameDoesNotExist;
     }
     // question

@@ -152,7 +152,7 @@ export async function createNewQuestion(serverID: string, channelID: string, cli
 
     // check if the game is still active
     console.log("checking if game is active");
-    if (!(await gameStillActive(channelID))) {
+    if (!(await gameStillActive(channelID, client))) {
         result = GameInteractionErr.GameDoesNotExist;
     }
     console.log("game is active?: ", result)
@@ -418,7 +418,7 @@ async function pressGoButton(interaction: Interaction, message: Message, questio
     let player_answer_number = -1;
     let player_answer: PlayerAnswerO[];
 
-    if (interaction.channelId != null && await gameStillActive(interaction.channelId)) {
+    if (interaction.channelId != null && await gameStillActive(interaction.channelId, message.client)) {
 
         let currentQuestions = await DO.getAskedQuestion(questionID, interaction.channelId);
         let currentQuestion: AskedQuestionO | null = null;

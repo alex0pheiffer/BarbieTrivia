@@ -13,7 +13,7 @@ export async function showQuestionResult(message: Message, ask_id: number): Prom
     let result = 0;
 
     // check if the game is still active
-    if (!(await gameStillActive(message.channelId))) {
+    if (!(await gameStillActive(message.channelId, message.client))) {
         result = GameInteractionErr.GameDoesNotExist;
     }
 

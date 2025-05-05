@@ -15,7 +15,7 @@ export async function startAllQuestionChannels(client: Client) {
         let qc = question_channels[i];
 
         console.log("checking if game is active (startup)");
-        if (!(await gameStillActive(qc.getChannel()))) {
+        if (!(await gameStillActive(qc.getChannel(), client))) {
             console.log(`The game in channel  ${qc.getChannel()} is no longer active.`)
             result = GameInteractionErr.GameDoesNotExist;
             continue;
