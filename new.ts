@@ -175,9 +175,18 @@ export async function createNewQuestion(serverID: string, channelID: string, cli
         console.log("master server");
 
         let unused_questions = await DO.getUnusedQuestions();
-        let rand = Math.floor(Math.random()*unused_questions.length);
-        question = unused_questions[rand];
 
+        if (unused_questions.length > 0) {
+            let rand = Math.floor(Math.random()*unused_questions.length);
+            question = unused_questions[rand];
+        }
+        else {
+            console.log("All questions have been used. Selecting a completely random question.");
+            let all_questions = await DO.getAllQuestions();
+            all_questions.sort((a,b) => a.getShownTotal() - b.getShownTotal());
+            question = all_questions[0];
+        }
+    
         console.log(`Selected question: [${question.getQuestionID()}][${question.getQuestion()}]`);
 
         question_id = question.getQuestionID();

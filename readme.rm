@@ -3,6 +3,9 @@ directory: D:/Important_Things/Applications/DiscordJS/BarbieTrivia/
 tsc -p tsconfig.json    // build the typescript
 node ./build/main.js
 
+##### Send to Caesar #####
+scp -r ./build alex@192.168.1.4:~/BarbieTrivia
+
 ##### Docker ######
 first, verify the ip address the docker is using with the
     const {networkInterfaces}= require('os');
