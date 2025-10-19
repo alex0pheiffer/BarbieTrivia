@@ -121,7 +121,7 @@ export class SQLDATA {
                 return resolve([]);
             }
             // determine if this column already exists
-            const sqlq = `SELECT * FROM asked_question WHERE question_id = ? AND channel_id = ?;`;
+            const sqlq = `SELECT * FROM asked_question WHERE question_id = ? AND channel_id = ? ORDER BY show_result_time DESC;`;
             let arr = [question_id, channel_id]
             con.conn.execute(sqlq, arr, (err: any, result: Array<string>) => {
                 if (err) {

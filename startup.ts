@@ -65,11 +65,13 @@ export async function startAllQuestionChannels(client: Client) {
                 }
                 else {
                     let description = "";
+                    let extend_time = false;
                     if (responses.length < 2) {
                         if (responses.length < 1)
                             description = `Because nobody has responded to the trivia question, the question is being extended another 24 hours.`
                         else
                             description = `Because only one person has responded to the trivia question, the question is being extended another 24 hours.`
+                        extend_time = true;
                     }
                     console.log("restart the same question");
                     let thumbnail = BCONST.MAXIMUS_IMAGES[Math.floor(Math.random()*BCONST.MAXIMUS_IMAGES.length)].url;
@@ -79,6 +81,7 @@ export async function startAllQuestionChannels(client: Client) {
                     embed.setDescription(description);
                     channel.send({ embeds:[embed]});
                     let new_time_difference = latest_question[0].getShowResultTime() - time;
+                    if (extend_time) new_time_difference = new_time_difference + 24*60*60*1000;
                     createNewQuestion(qc.getServer()!!, qc.getChannel(), client, latest_question[0].getQuestionID(), new_time_difference);
                     
                     // let latest_question_remake = await DO.getLatestAskedQuestion(qc.getChannel());

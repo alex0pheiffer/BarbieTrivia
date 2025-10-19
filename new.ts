@@ -244,7 +244,7 @@ export async function createNewQuestion(serverID: string, channelID: string, cli
         duration = prev_question_time_remaining;
     }
 
-    console.log("result beforoe date: ", result)
+    console.log("result before date: ", result)
     if (!result) {
         const d = new Date();
         let time = d.getTime();
@@ -260,7 +260,7 @@ export async function createNewQuestion(serverID: string, channelID: string, cli
         aq_sql  = await DO.getAskedQuestion(question_id!!, channelID);
         let max_img_index = Math.floor(Math.random()*BCONST.MAXIMUS_IMAGES.length);
         let answers_scrambled: ShuffledAnswerItem[];
-        if (aq_sql.length <= 0) {
+        if (aq_sql.length <= 0 || (aq_sql[0].getActive() < 1 && aq_sql[0].getNextQuestionTime() > 0)) {
             // check if the answers are " A ", " B ", " C ", " D " ; don't scramble if they are.
             if (question!!.getAnswers()[0].toLowerCase().includes(" a ") &&
             question!!.getAnswers()[1].toLowerCase().includes(" b ") &&
@@ -296,7 +296,7 @@ export async function createNewQuestion(serverID: string, channelID: string, cli
             aq_sql = await DO.getAskedQuestion(question_id!!, channelID);
         }
         else {
-            console.log("usingn aq sql scrambled answers")
+            console.log("Asked-question already exists. Using existing question.")
             answers_scrambled = aq_sql[0].getAnswersScrambled(question!!);
         }
         console.log(answers_scrambled);
